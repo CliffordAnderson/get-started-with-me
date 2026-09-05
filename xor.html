@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exclusive or — getstartedwith.me</title>
+<meta name="description" content="Why a single-layer perceptron cannot compute XOR, and what a hidden layer changes. A short interactive lesson.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+#xor-table td:not(.hi):not(:first-child){color:var(--ink-2)}
+#xor-table tr.live td{background:rgba(34,38,44,.06)}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <a class="away" href="../index.html">All lessons</a>
+</div>
+
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">exclusive or · x₁ ⊕ x₂</p>
+      <h1>One line, four points</h1>
+      <p class="lede">A perceptron sorts the plane with a single straight cut. Everything on one side is a 1, everything on the other is a 0. Three of XOR's four cases will fall into place. The fourth never does.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout"><b id="hero-score">3</b> of 4 correct</p>
+      <p class="msg" id="hero-msg">Drag either handle to move the cut. Or focus the plot and use the arrow keys.</p>
+      <div class="legend">
+        <span><i class="swatch zero"></i>should output 0</span>
+        <span><i class="swatch one"></i>should output 1</span>
+      </div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window">
+        <canvas id="hero-plot" tabindex="0" role="img"
+          aria-label="Interactive plot: the four XOR cases in the unit square with a draggable decision line. Arrow keys move the line; left and right rotate it."></canvas>
+      </div>
+      <figcaption>The input space. Each corner is one row of the XOR truth table.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<section id="xor" class="panel" role="tabpanel" aria-labelledby="tab-xor">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>Exclusive or</h2>
+      <p>Exclusive or is the <em>or</em> of ordinary speech. Tea or coffee offers you one of them, not both. The plain OR of logic is inclusive and accepts both; the exclusive version rules that case out. XOR answers 1 when exactly one of its two inputs is on, and 0 when the inputs agree — whether they agree on 1 or on 0.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <div id="board">
+        <div class="switches">
+          <button type="button" class="bit" data-bit="0" aria-pressed="false"><span>x₁</span><span class="bv">0</span></button>
+          <button type="button" class="bit" data-bit="1" aria-pressed="false"><span>x₂</span><span class="bv">0</span></button>
+        </div>
+        <p class="note" style="margin:.7rem 0 0">Flip the inputs. OR and XOR answer alike in three of the four cases and part company on the last, where both inputs are on.</p>
+      </div>
+
+      <table id="xor-table">
+        <thead><tr><th>x₁ x₂</th><th>OR</th><th>AND</th><th class="hi">XOR</th></tr></thead>
+        <tbody>
+          <tr data-row="0"><td>0 0</td><td>0</td><td>0</td><td class="hi">0</td></tr>
+          <tr data-row="1"><td>0 1</td><td>1</td><td>0</td><td class="hi">1</td></tr>
+          <tr data-row="2"><td>1 0</td><td>1</td><td>0</td><td class="hi">1</td></tr>
+          <tr data-row="3"><td>1 1</td><td>1</td><td>1</td><td class="hi">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <p>Two other readings of the same function are worth carrying forward. XOR reports whether its inputs <em>differ</em>, which makes it a comparator. And it reports their parity — whether an odd number of them are on — which is the reading that survives past two inputs.</p>
+      <p>None of this is exotic. XOR is the sum bit of binary addition, with AND supplying the carry; it is the parity bit that catches a flipped bit in transmission; it is what a one-time pad applies to a message. What makes it awkward for a perceptron is narrow and specific. Of the sixteen functions of two binary inputs, fourteen can be settled by a single weighted threshold. XOR and its negation are the two that cannot.</p>
+    </div>
+  </div>
+</section>
+
+<section id="brief" class="panel brief" role="tabpanel" aria-labelledby="tab-brief">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>The problem, as Minsky and Papert posed it</h2>
+      <p>A perceptron in their sense is not a single unit but a small machine: an array of input points, a layer of predicates that each see only some limited part of it, and one threshold unit that takes a weighted vote of what those predicates report. Their question was how much of the input a single predicate must see before that vote can come out right. They called that number the <em>order</em> of the function.</p>
+      <p>AND, OR and majority have order 1 — one point apiece is enough. XOR does not, and it is the light case of a heavy result: parity, whether an odd number of inputs are on, has an order equal to the entire input. No quantity of local evidence, however it is weighted, settles it. XOR is the version you can draw.</p>
+      <p class="cite">Marvin Minsky and Seymour Papert, <em>Perceptrons: An Introduction to Computational Geometry</em> (MIT Press, 1969; expanded edition 1988). The order results run through Part I; parity and connectedness, not XOR, are the book's real subjects.</p>
+    </div>
+  </div>
+</section>
+
+<section id="unit" class="panel" role="tabpanel" aria-labelledby="tab-unit">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>What the unit actually does</h2>
+      <p>A perceptron multiplies each input by a weight, adds a bias, and fires when the total clears zero. The weights tilt the boundary, the bias slides it — but the boundary is always a straight line, and that is the whole of what the unit can represent. Choose a target and try to place it.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="unit-plot" role="img" aria-label="Decision boundary for the current weights, with the four cases marked correct or incorrect."></canvas></div>
+      <figcaption id="unit-cap">Shaded region: inputs the unit answers 1.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div>
+        <h3>Target function</h3>
+        <div class="segmented" id="unit-target" role="group" aria-label="Target function">
+          <button type="button" data-fn="AND" aria-pressed="false">AND</button>
+          <button type="button" data-fn="OR" aria-pressed="false">OR</button>
+          <button type="button" data-fn="NAND" aria-pressed="false">NAND</button>
+          <button type="button" data-fn="XOR" aria-pressed="true">XOR</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="formula" id="unit-formula">y = step( 1.00·x₁ + 1.00·x₂ − 0.40 )</p>
+        <div class="ctl">
+          <label for="w1">w₁</label><input id="w1" type="range" min="-2" max="2" step="0.02" value="1"><output id="w1o">1.00</output>
+          <label for="w2">w₂</label><input id="w2" type="range" min="-2" max="2" step="0.02" value="1"><output id="w2o">1.00</output>
+          <label for="bb">b</label><input id="bb" type="range" min="-3" max="3" step="0.02" value="-0.4"><output id="bbo">−0.40</output>
+        </div>
+      </div>
+
+      <table id="unit-table">
+        <thead><tr><th>x₁ x₂</th><th>target</th><th>w·x + b</th><th>y</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="row">
+        <button class="btn" id="unit-search" type="button">Search all weights</button>
+        <span class="readout" id="unit-score">3 / 4</span>
+      </div>
+      <p class="msg" id="unit-msg"></p>
+    </div>
+  </div>
+</section>
+
+<section id="train" class="panel" role="tabpanel" aria-labelledby="tab-train">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Let it train itself</h2>
+      <p>The perceptron learning rule repairs mistakes one case at a time: when the unit answers wrongly, push the weights a step toward the right answer. Rosenblatt proved this always terminates — as long as some separating line exists. Run it on a function that has one, then on the one that doesn't.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="train-plot" role="img" aria-label="The decision boundary moving as the learning rule updates the weights."></canvas></div>
+      <figcaption>The line as the rule moves it. A flashing ring marks the case being checked.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div>
+        <h3>Train on</h3>
+        <div class="segmented" id="train-target" role="group" aria-label="Function to train on">
+          <button type="button" data-fn="AND" aria-pressed="true">AND</button>
+          <button type="button" data-fn="OR" aria-pressed="false">OR</button>
+          <button type="button" data-fn="XOR" aria-pressed="false">XOR</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="train-run" type="button">Start training</button>
+        <button class="btn" id="train-step" type="button">One update</button>
+        <button class="btn" id="train-reset" type="button">Reset weights</button>
+      </div>
+
+      <p class="readout" id="train-stats">0 passes, 0 weight updates</p>
+      <p class="formula" id="train-formula">y = step( 0.00·x₁ + 0.00·x₂ + 0.00 )</p>
+
+      <figure>
+        <div class="window"><canvas id="train-trace" class="trace" role="img" aria-label="Chart of how many of the four cases were wrong on each pass through the data."></canvas></div>
+        <figcaption>Mistakes on each pass through the four cases.</figcaption>
+      </figure>
+
+      <p class="msg" id="train-msg">AND is separable, so this settles quickly and stops.</p>
+    </div>
+  </div>
+</section>
+
+<section id="proof" class="panel" role="tabpanel" aria-labelledby="tab-proof">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>The reason, in four lines</h2>
+      <p>The failure isn't a matter of searching harder. Read each row of the XOR truth table as a demand on the weights and the four demands turn out to contradict each other.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <ol class="proof" id="proof-list">
+        <li class="on">b &lt; 0<span class="why">from x = (0,0), which must output 0</span></li>
+        <li class="on">w₁ + b ≥ 0<span class="why">from x = (1,0), which must output 1</span></li>
+        <li class="on">w₂ + b ≥ 0<span class="why">from x = (0,1), which must output 1</span></li>
+        <li class="on">w₁ + w₂ + b &lt; 0<span class="why">from x = (1,1), which must output 0</span></li>
+        <li id="p5">w₁ + w₂ + 2b ≥ 0<span class="why">add the second and third lines</span></li>
+        <li id="p6">w₁ + w₂ + b ≥ −b &gt; 0<span class="why">move one b across; the first line says −b is positive</span></li>
+        <li id="p7" class="punch">w₁ + w₂ + b is both positive and negative<span class="why">which no three numbers can arrange</span></li>
+      </ol>
+      <div class="row">
+        <button class="btn" id="proof-next" type="button">Combine the lines</button>
+        <button class="btn" id="proof-reset" type="button">Start over</button>
+      </div>
+      <p class="note">The same argument works for any threshold, any sign convention, any scaling of the weights. Nothing about the unit is under-powered; the demands are simply inconsistent.</p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 320 300" width="100%" role="img" aria-label="The unit square with its two diagonals drawn. The segment joining the two 1-corners crosses the segment joining the two 0-corners.">
+        <g fill="none" stroke="#C7C4B6" stroke-width="1">
+          <rect x="60" y="50" width="180" height="180"/>
+        </g>
+        <line x1="60" y1="230" x2="240" y2="50" stroke="#274B8F" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="60" y1="50" x2="240" y2="230" stroke="#8A5206" stroke-width="2"/>
+        <circle cx="150" cy="140" r="4.5" fill="#A8382B"/>
+        <circle cx="60" cy="230" r="7" fill="#EFEDE5" stroke="#274B8F" stroke-width="2.5"/>
+        <circle cx="240" cy="50" r="7" fill="#EFEDE5" stroke="#274B8F" stroke-width="2.5"/>
+        <rect x="53" y="43" width="14" height="14" fill="#8A5206" rx="2"/>
+        <rect x="233" y="223" width="14" height="14" fill="#8A5206" rx="2"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B6067">
+          <text x="46" y="252" text-anchor="middle">0,0</text>
+          <text x="254" y="252" text-anchor="middle">1,0</text>
+          <text x="46" y="36" text-anchor="middle">0,1</text>
+          <text x="254" y="36" text-anchor="middle">1,1</text>
+          <text x="141" y="128" fill="#A8382B" text-anchor="end" font-size="11">they cross here</text>
+        </g>
+      </svg>
+      <figcaption>The two 1s sit at opposite corners; so do the two 0s. If a line kept both 1s on one side, it would keep the whole segment between them on that side — crossing point included. The same argument for the 0s puts that crossing point on the other side. One point, two sides.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="fold" class="panel" role="tabpanel" aria-labelledby="tab-fold">
+  <div class="sec-head">
+    <div class="sec-num">6</div>
+    <div>
+      <h2>Give it a place to bend</h2>
+      <p>Put two units between the inputs and the output. Each one is still just a straight cut — nothing has become more expressive on its own. What changes is that their two outputs become the coordinates the last unit reads. Slide the control and watch where the four cases end up.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="fold-plot" role="img" aria-label="The four cases moving from input space into the space of the two hidden unit outputs, where a separating line appears."></canvas></div>
+      <figcaption id="fold-cap">Input space. Axes are x₁ and x₂.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="ctl" style="grid-template-columns:auto 1fr auto">
+        <label for="morph">fold</label>
+        <input id="morph" type="range" min="0" max="100" step="1" value="0" aria-label="Morph from input space to hidden space">
+        <output id="morpho">0%</output>
+      </div>
+      <div class="row">
+        <button class="btn" id="fold-play" type="button">Fold the space</button>
+      </div>
+
+      <div>
+        <h3>Hidden unit activation</h3>
+        <div class="segmented" id="fold-act" role="group" aria-label="Hidden unit activation">
+          <button type="button" data-act="step" aria-pressed="true">step</button>
+          <button type="button" data-act="soft" aria-pressed="false">sigmoid</button>
+          <button type="button" data-act="none" aria-pressed="false">none</button>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 300 150" width="100%" style="max-width:300px" role="img"
+        aria-label="Network diagram: inputs x1 and x2 both feed hidden units h1 and h2, which feed the output unit y.">
+        <g stroke="#5B6067" stroke-width="1.2">
+          <line x1="42" y1="40" x2="128" y2="40"/><line x1="42" y1="40" x2="128" y2="110"/>
+          <line x1="42" y1="110" x2="128" y2="40"/><line x1="42" y1="110" x2="128" y2="110"/>
+          <line x1="172" y1="40" x2="248" y2="75"/><line x1="172" y1="110" x2="248" y2="75"/>
+        </g>
+        <g fill="#EFEDE5" stroke="#22262C" stroke-width="1.6">
+          <circle cx="30" cy="40" r="15"/><circle cx="30" cy="110" r="15"/>
+          <circle cx="150" cy="40" r="18"/><circle cx="150" cy="110" r="18"/>
+          <circle cx="262" cy="75" r="15"/>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="#22262C" text-anchor="middle">
+          <text x="30" y="44">x₁</text><text x="30" y="114">x₂</text>
+          <text x="150" y="44">h₁</text><text x="150" y="114">h₂</text><text x="262" y="79">y</text>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#5B6067" text-anchor="middle">
+          <text x="150" y="16">fires at one or more</text>
+          <text x="150" y="142">fires only at two</text>
+        </g>
+      </svg>
+
+      <table id="fold-table">
+        <thead><tr><th>x₁ x₂</th><th>h₁</th><th>h₂</th><th>y</th><th>XOR</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <p class="formula" id="fold-formula">h₁ = step(x₁ + x₂ − 0.5)
+h₂ = step(x₁ + x₂ − 1.5)</p>
+      <p class="msg" id="fold-msg"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <p class="note">Both hidden units read the same quantity: how many inputs are on. One of them fires at a count of one or more, the other only at two. Between them they turn a count into a two-bit code — 00, 10, 11 — and in that code the two awkward cases, (0,1) and (1,0), land in exactly the same place. Once they are the same point, no line has to separate them from each other.</p>
+    <p class="note">Set the activation to <em>none</em> and the fold disappears. Two linear maps compose into one linear map, so the network collapses back to a single cut and the ceiling returns to three. The layer is not what bought the extra power. The bend inside it did.</p>
+  </div>
+</section>
+
+<section id="close" class="panel" role="tabpanel" aria-labelledby="tab-close">
+  <div class="sec-head">
+    <div class="sec-num">7</div>
+    <div>
+      <h2>What the second layer changed</h2>
+    </div>
+  </div>
+  <div class="split">
+    <div>
+      <p>A single-layer perceptron can ask only one question: which side of a line is this point on? Whatever cannot be split that way is outside what the architecture expresses, and no amount of training reaches it. The limit belongs to the model, not to the optimizer.</p>
+      <p>A hidden layer with a nonlinearity between the layers lets the network re-plot its inputs before the final cut. Each hidden unit still contributes a straight boundary, but the region they carve out jointly can be a corner, a stripe, or an island. Enough hidden units and you can approximate any reasonable decision region to whatever tolerance you like.</p>
+    </div>
+    <div>
+      <p>The book is more careful than its reputation. Minsky and Papert observed in passing that a universal computer could be assembled out of linear threshold units, so the power of layered machines was never the question. What they doubted, in a short section near the end, was that a learning theory as clean as the perceptron rule would extend to them — <q>our intuitive judgment that the extension is sterile</q>, a judgment they invited their readers to refute.</p>
+      <p>The step function is part of the difficulty: its gradient is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the sigmoid setting above does, restores that signal, and backpropagation (Rumelhart, Hinton and Williams, 1986) uses it to assign credit through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep.</p>
+    </div>
+  </div>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 2 of 2</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">More lessons are being written. Each one is a working instrument like this.</p>
+  </div>
+</a>
+
+<footer>
+  <p>Every plot here is computed live in the browser: the boundary, the search over weights, the learning rule and the fold all run from the values on screen.</p>
+</footer>
+
+</main>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+const PTS   = [[0,0],[0,1],[1,0],[1,1]];
+const NAMES = ["00","01","10","11"];
+const FN = { AND:[0,0,0,1], OR:[0,1,1,1], NAND:[1,1,1,0], XOR:[0,1,1,0] };
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const cv = document.getElementById("hero-plot");
+  const p  = Plot(cv, [-0.4,1.4,-0.4,1.4]);
+  const scoreEl = document.getElementById("hero-score");
+  const msgEl   = document.getElementById("hero-msg");
+  const labels  = FN.XOR;
+
+  let A = [-0.28, 0.68], B = [0.68, -0.28];
+  let drag = null, touched = false, reached3 = false;
+
+  function weights(){
+    const dx = B[0]-A[0], dy = B[1]-A[1];
+    let w1 = dy, w2 = -dx;
+    let b  = -(w1*A[0] + w2*A[1]);
+    // orient the "1" side to whichever assignment scores better
+    const s1 = score(w1,w2,b), s2 = score(-w1,-w2,-b);
+    return s2 > s1 ? [-w1,-w2,-b] : [w1,w2,b];
+  }
+  function score(w1,w2,b){
+    let s = 0;
+    for(let i=0;i<4;i++) if(step(w1*PTS[i][0] + w2*PTS[i][1] + b) === labels[i]) s++;
+    return s;
+  }
+
+  function draw(){
+    const [w1,w2,b] = weights();
+    field(p, "x₁", "x₂");
+    drawBoundary(p, w1, w2, b);
+    for(let i=0;i<4;i++){
+      const ok = step(w1*PTS[i][0] + w2*PTS[i][1] + b) === labels[i];
+      drawPoint(p, PTS[i][0], PTS[i][1], labels[i], !ok, NAMES[i]);
+    }
+    // handles
+    const g = p.ctx;
+    [A,B].forEach(h => {
+      g.fillStyle = C.field; g.strokeStyle = C.ink; g.lineWidth = 2;
+      g.beginPath(); g.arc(p.X(h[0]), p.Y(h[1]), 7, 0, Math.PI*2); g.fill(); g.stroke();
+      g.fillStyle = C.ink;
+      g.beginPath(); g.arc(p.X(h[0]), p.Y(h[1]), 2.4, 0, Math.PI*2); g.fill();
+    });
+
+    const s = score(w1,w2,b);
+    scoreEl.textContent = s;
+    if(s === 3 && touched && !reached3){
+      reached3 = true;
+      msgEl.innerHTML = "Three is the ceiling. Nothing here reaches four, and <a href=\"#proof\">the proof</a> says why.";
+      msgEl.classList.add("hit");
+    }
+  }
+
+  function nearest(pt){
+    const d = h => Math.hypot(p.X(h[0])-p.X(pt[0]), p.Y(h[1])-p.Y(pt[1]));
+    const dA = d(A), dB = d(B);
+    if(Math.min(dA,dB) > 26) return null;
+    return dA <= dB ? "A" : "B";
+  }
+
+  cv.addEventListener("pointerdown", e => {
+    const pt = pointerPos(p, e);
+    drag = nearest(pt);
+    if(drag){ cv.setPointerCapture(e.pointerId); touched = true; e.preventDefault(); }
+  });
+  cv.addEventListener("pointermove", e => {
+    if(!drag) return;
+    const pt = pointerPos(p, e);
+    const h = [clamp(pt[0], p.view[0], p.view[1]), clamp(pt[1], p.view[2], p.view[3])];
+    if(drag === "A") A = h; else B = h;
+    draw();
+  });
+  ["pointerup","pointercancel"].forEach(ev => cv.addEventListener(ev, () => { drag = null; }));
+
+  cv.addEventListener("keydown", e => {
+    const k = e.key, d = 0.05;
+    let mx = 0, my = 0, rot = 0;
+    if(k === "ArrowUp") my = d;
+    else if(k === "ArrowDown") my = -d;
+    else if(k === "ArrowRight") rot = 0.08;
+    else if(k === "ArrowLeft") rot = -0.08;
+    else return;
+    e.preventDefault();
+    touched = true;
+    if(rot){
+      const cx = (A[0]+B[0])/2, cy = (A[1]+B[1])/2, c = Math.cos(rot), s = Math.sin(rot);
+      [A,B].forEach(h => {
+        const x = h[0]-cx, y = h[1]-cy;
+        h[0] = cx + x*c - y*s; h[1] = cy + x*s + y*c;
+      });
+    } else {
+      A = [A[0]+mx, A[1]+my]; B = [B[0]+mx, B[1]+my];
+    }
+    draw();
+  });
+
+  redraws.push(() => { p.fit(); draw(); });
+  draw();
+})();
+
+/* ============================ 1. exclusive or ============================ */
+
+(function board(){
+  const wrap = document.getElementById("board");
+  const btns = Array.prototype.slice.call(wrap.querySelectorAll(".bit"));
+  const rows = Array.prototype.slice.call(document.querySelectorAll("#xor-table tbody tr"));
+  const bits = [0,0];
+  function render(){
+    btns.forEach((b,i) => {
+      b.setAttribute("aria-pressed", String(!!bits[i]));
+      b.querySelector(".bv").textContent = bits[i];
+    });
+    const at = bits[0]*2 + bits[1];
+    rows.forEach((r,i) => r.classList.toggle("live", i === at));
+  }
+  btns.forEach((b,i) => b.addEventListener("click", () => { bits[i] = bits[i] ? 0 : 1; render(); }));
+  render();
+})();
+
+/* ============================ 2. the unit ============================ */
+
+(function unit(){
+  const cv = document.getElementById("unit-plot");
+  const p  = Plot(cv, [-0.4,1.4,-0.4,1.4]);
+  const sl = { w1:document.getElementById("w1"), w2:document.getElementById("w2"), b:document.getElementById("bb") };
+  const ou = { w1:document.getElementById("w1o"), w2:document.getElementById("w2o"), b:document.getElementById("bbo") };
+  const tbody   = document.querySelector("#unit-table tbody");
+  const formula = document.getElementById("unit-formula");
+  const scoreEl = document.getElementById("unit-score");
+  const msgEl   = document.getElementById("unit-msg");
+  const searchBtn = document.getElementById("unit-search");
+  const group   = document.getElementById("unit-target");
+
+  let fn = "XOR";
+
+  function vals(){ return [parseFloat(sl.w1.value), parseFloat(sl.w2.value), parseFloat(sl.b.value)]; }
+
+  function render(){
+    const [w1,w2,b] = vals();
+    const labels = FN[fn];
+    ou.w1.textContent = num(w1); ou.w2.textContent = num(w2); ou.b.textContent = num(b);
+    formula.textContent = "y = step( " + num(w1) + "·x₁ + " + num(w2) + "·x₂ " + signed(b) + " )";
+
+    field(p, "x₁", "x₂");
+    drawBoundary(p, w1, w2, b);
+    let s = 0, rows = "";
+    for(let i=0;i<4;i++){
+      const z = w1*PTS[i][0] + w2*PTS[i][1] + b;
+      const y = step(z), ok = y === labels[i];
+      if(ok) s++;
+      drawPoint(p, PTS[i][0], PTS[i][1], labels[i], !ok, NAMES[i]);
+      rows += "<tr class='" + (ok ? "" : "bad") + "'><td>" + PTS[i][0] + " " + PTS[i][1] + "</td><td>" +
+              labels[i] + "</td><td>" + num(z) + "</td><td>" + y + "</td><td class='mark'>" +
+              (ok ? "" : "\u2715") + "</td></tr>";
+    }
+    tbody.innerHTML = rows;
+    scoreEl.textContent = s + " / 4";
+  }
+
+  function setFn(next){
+    fn = next;
+    Array.prototype.forEach.call(group.querySelectorAll("button"), b =>
+      b.setAttribute("aria-pressed", String(b.dataset.fn === fn)));
+    msgEl.textContent = "";
+    msgEl.classList.remove("hit");
+    render();
+  }
+
+  group.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if(b) setFn(b.dataset.fn);
+  });
+  Object.keys(sl).forEach(k => sl[k].addEventListener("input", () => {
+    msgEl.textContent = ""; msgEl.classList.remove("hit"); render();
+  }));
+
+  searchBtn.addEventListener("click", () => {
+    const labels = FN[fn];
+    let best = { s:-1 }, tried = 0;
+    for(let a=-2; a<=2.0001; a+=0.1)
+      for(let c=-2; c<=2.0001; c+=0.1)
+        for(let d=-3; d<=3.0001; d+=0.1){
+          tried++;
+          let s = 0;
+          for(let i=0;i<4;i++) if(step(a*PTS[i][0] + c*PTS[i][1] + d) === labels[i]) s++;
+          if(s > best.s) best = { s:s, a:a, c:c, d:d };
+        }
+    sl.w1.value = best.a.toFixed(2);
+    sl.w2.value = best.c.toFixed(2);
+    sl.b.value  = best.d.toFixed(2);
+    render();
+    const n = tried.toLocaleString();
+    msgEl.innerHTML = best.s === 4
+      ? "Found in a sweep of " + n + " weight settings: " + fn + " needs only one line."
+      : "Swept " + n + " weight settings. The best of them gets 3 of 4 — and a finer sweep would not help. " +
+        "<a href=\"#proof\">The proof</a> says why.";
+    msgEl.classList.add("hit");
+  });
+
+  redraws.push(() => { p.fit(); render(); });
+  setFn("XOR");
+})();
+
+/* ============================ 3. learning ============================ */
+
+(function train(){
+  const cv = document.getElementById("train-plot");
+  const tc = document.getElementById("train-trace");
+  const p  = Plot(cv, [-0.4,1.4,-0.4,1.4]);
+  const tp = Plot(tc, [0,1,0,1]);
+  const group   = document.getElementById("train-target");
+  const runBtn  = document.getElementById("train-run");
+  const stepBtn = document.getElementById("train-step");
+  const resetBtn= document.getElementById("train-reset");
+  const stats   = document.getElementById("train-stats");
+  const formula = document.getElementById("train-formula");
+  const msg     = document.getElementById("train-msg");
+
+  const LR = 0.35;
+  let fn = "AND";
+  const W0 = [-0.78, 0.52], B0 = 0.43;
+  let w = W0.slice(), b = B0, idx = 0, passes = 0, updates = 0;
+  let errsThisPass = 0, trace = [], running = false, done = false, last = 0, flash = -1;
+
+  function reset(keepMsg){
+    w = W0.slice(); b = B0; idx = 0; passes = 0; updates = 0;
+    errsThisPass = 0; trace = []; done = false; flash = -1;
+    running = false; runBtn.textContent = "Start training";
+    if(!keepMsg) msg.classList.remove("hit");
+    render();
+  }
+
+  function update(){
+    if(done) return;
+    const labels = FN[fn];
+    const x = PTS[idx], t = labels[idx];
+    const y = step(w[0]*x[0] + w[1]*x[1] + b);
+    flash = idx;
+    if(y !== t){
+      const e = t - y;
+      w[0] += LR*e*x[0]; w[1] += LR*e*x[1]; b += LR*e;
+      updates++; errsThisPass++;
+    }
+    idx++;
+    if(idx === 4){
+      idx = 0; passes++;
+      trace.push(errsThisPass);
+      if(trace.length > 44) trace.shift();
+      if(errsThisPass === 0){
+        done = true; running = false;
+        runBtn.textContent = "Start training";
+        msg.textContent = "Settled after " + plural(passes,"pass") + " and " + plural(updates,"weight update") +
+          ". A full pass with no mistakes means the line has stopped moving for good.";
+        msg.classList.add("hit");
+      } else if(passes >= 30 && fn === "XOR"){
+        msg.textContent = "Thirty passes, still wrong on " + errsThisPass +
+          " of four, and the mistake count never reaches zero. The rule is working exactly as specified — it is the line that cannot exist.";
+        msg.classList.add("hit");
+      }
+      errsThisPass = 0;
+    }
+    render();
+  }
+
+  function render(){
+    const labels = FN[fn];
+    field(p, "x₁", "x₂");
+    drawBoundary(p, w[0], w[1], b);
+    for(let i=0;i<4;i++){
+      const ok = step(w[0]*PTS[i][0] + w[1]*PTS[i][1] + b) === labels[i];
+      drawPoint(p, PTS[i][0], PTS[i][1], labels[i], !ok, NAMES[i]);
+      if(i === flash){
+        const g = p.ctx;
+        g.strokeStyle = C.ink; g.lineWidth = 1.4; g.setLineDash([3,3]);
+        g.beginPath(); g.arc(p.X(PTS[i][0]), p.Y(PTS[i][1]), 15, 0, Math.PI*2); g.stroke();
+        g.setLineDash([]);
+      }
+    }
+    stats.textContent = plural(passes,"pass") + ", " + plural(updates,"weight update");
+    formula.textContent = "y = step( " + num(w[0]) + "·x₁ + " + num(w[1]) + "·x₂ " + signed(b) + " )";
+    drawTrace();
+  }
+
+  function drawTrace(){
+    const g = tp.ctx;
+    g.clearRect(0,0,tp.w,tp.h);
+    g.fillStyle = C.field; g.fillRect(0,0,tp.w,tp.h);
+    const padL = 26, padB = 16, padT = 10;
+    const h = tp.h - padB - padT, wid = tp.w - padL - 8;
+
+    g.strokeStyle = C.grid; g.lineWidth = 1;
+    g.font = '400 10px "IBM Plex Mono", monospace';
+    g.fillStyle = C.ink2; g.textAlign = "right"; g.textBaseline = "middle";
+    for(let v=0; v<=4; v++){
+      const y = Math.round(padT + h - h*v/4) + .5;
+      g.beginPath(); g.moveTo(padL, y); g.lineTo(tp.w-8, y); g.stroke();
+      if(v % 2 === 0) g.fillText(String(v), padL-6, y);
+    }
+    if(!trace.length){
+      g.textAlign = "left"; g.fillStyle = C.ink2;
+      g.fillText("no passes yet", padL+6, padT + h/2);
+      return;
+    }
+    const bw = Math.min(16, wid/Math.max(trace.length,8));
+    trace.forEach((v,i) => {
+      const x = padL + i*bw;
+      const bh = h*v/4;
+      g.fillStyle = v === 0 ? C.off : C.alert;
+      g.fillRect(x+1, padT + h - bh, Math.max(bw-2,2), Math.max(bh,1.5));
+    });
+    g.fillStyle = C.ink2; g.textAlign = "left"; g.textBaseline = "top";
+    g.fillText("pass " + Math.max(passes,1), padL, padT + h + 3);
+  }
+
+  function tick(ts){
+    if(!running) return;
+    if(ts - last > 170){ last = ts; update(); }
+    requestAnimationFrame(tick);
+  }
+
+  runBtn.addEventListener("click", () => {
+    if(done) reset();
+    running = !running;
+    runBtn.textContent = running ? "Pause" : "Start training";
+    if(running){ last = 0; requestAnimationFrame(tick); }
+  });
+  stepBtn.addEventListener("click", () => {
+    running = false; runBtn.textContent = "Start training";
+    if(done) reset();
+    update();
+  });
+  resetBtn.addEventListener("click", () => { reset(); msg.textContent = blurb(); });
+
+  function blurb(){
+    return fn === "XOR"
+      ? "XOR has no separating line, so there is nothing for the rule to converge to. Watch the mistake count refuse to reach zero."
+      : fn + " is separable, so this settles quickly and stops on its own.";
+  }
+
+  group.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    fn = btn.dataset.fn;
+    Array.prototype.forEach.call(group.querySelectorAll("button"), x =>
+      x.setAttribute("aria-pressed", String(x.dataset.fn === fn)));
+    reset();
+    msg.textContent = blurb();
+    msg.classList.remove("hit");
+  });
+
+  document.addEventListener("panelshow", e => {
+    if(e.detail !== "train" && running){ running = false; runBtn.textContent = "Start training"; }
+  });
+
+  redraws.push(() => { p.fit(); tp.fit(); render(); });
+  msg.textContent = blurb();
+  render();
+})();
+
+/* ============================ 4. proof ============================ */
+
+(function proof(){
+  const steps = ["p5","p6","p7"].map(id => document.getElementById(id));
+  const next  = document.getElementById("proof-next");
+  const reset = document.getElementById("proof-reset");
+  const labels= ["Combine the lines", "Use the first line", "Finish"];
+  let at = 0;
+
+  function sync(){
+    steps.forEach((el,i) => el.classList.toggle("on", i < at));
+    next.textContent = at < 3 ? labels[at] : "Done";
+    next.disabled = at >= 3;
+  }
+  next.addEventListener("click", () => { at = Math.min(at+1, 3); sync(); });
+  reset.addEventListener("click", () => { at = 0; sync(); });
+  sync();
+})();
+
+/* ============================ 5. the fold ============================ */
+
+(function fold(){
+  const cv = document.getElementById("fold-plot");
+  const p  = Plot(cv, [-0.4,1.4,-0.4,1.4]);
+  const morph  = document.getElementById("morph");
+  const morpho = document.getElementById("morpho");
+  const play   = document.getElementById("fold-play");
+  const group  = document.getElementById("fold-act");
+  const tbody  = document.querySelector("#fold-table tbody");
+  const cap    = document.getElementById("fold-cap");
+  const formula= document.getElementById("fold-formula");
+  const msg    = document.getElementById("fold-msg");
+  const labels = FN.XOR;
+
+  let act = "step";
+  const IN_VIEW  = [-0.4,1.4,-0.4,1.4];
+  const OUT_VIEW = { step:[-0.4,1.4,-0.4,1.4], soft:[-0.4,1.4,-0.4,1.4], none:[-1.9,1.9,-1.9,1.9] };
+
+  // hidden units: both read x1 + x2, at two different thresholds
+  const pre = (x, unit) => x[0] + x[1] + (unit === 0 ? -0.5 : -1.5);
+  function hidden(x, mode){
+    const a = pre(x,0), b = pre(x,1);
+    if(mode === "none") return [a, b];
+    if(mode === "soft") return [sig(4*a), sig(4*b)];
+    return [step(a), step(b)];
+  }
+  // smooth stand-in used only for drawing the deformed square
+  function hiddenSmooth(x, mode){
+    const a = pre(x,0), b = pre(x,1);
+    if(mode === "none") return [a, b];
+    const k = mode === "soft" ? 4 : 18;
+    return [sig(k*a), sig(k*b)];
+  }
+
+  function outline(){
+    const path = [];
+    const N = 34;
+    const edges = [[[0,0],[1,0]], [[1,0],[1,1]], [[1,1],[0,1]], [[0,1],[0,0]]];
+    edges.forEach(e => {
+      for(let i=0;i<N;i++){
+        const t = i/N;
+        path.push([lerp(e[0][0],e[1][0],t), lerp(e[0][1],e[1][1],t)]);
+      }
+    });
+    return path;
+  }
+  const SQ = outline();
+
+  function render(){
+    const t = parseFloat(morph.value)/100;
+    const ov = OUT_VIEW[act];
+    for(let i=0;i<4;i++) p.view[i] = lerp(IN_VIEW[i], ov[i], t);
+
+    const xl = t < 0.5 ? "x₁" : "h₁", yl = t < 0.5 ? "x₂" : "h₂";
+    field(p, xl, yl);
+
+    const mapped = PTS.map(x => hidden(x, act));
+    const pos = PTS.map((x,i) => [lerp(x[0], mapped[i][0], t), lerp(x[1], mapped[i][1], t)]);
+
+    // the deforming unit square
+    const g = p.ctx;
+    g.strokeStyle = "rgba(34,38,44,.28)";
+    g.lineWidth = 1.3;
+    g.setLineDash([4,3]);
+    g.beginPath();
+    SQ.forEach((x,i) => {
+      const m = hiddenSmooth(x, act);
+      const px = p.X(lerp(x[0], m[0], t)), py = p.Y(lerp(x[1], m[1], t));
+      i ? g.lineTo(px,py) : g.moveTo(px,py);
+    });
+    g.closePath(); g.stroke();
+    g.setLineDash([]);
+
+    // the network's own boundary, and the one that fits this frame of the fold
+    const fin = bestLine(mapped, labels);
+    const fr  = t > 0.999 ? fin : bestLine(pos, labels);
+    if(t > 0.5){
+      g.globalAlpha = Math.min(1, (t-0.5)/0.25);
+      drawBoundary(p, fr.w1, fr.w2, fr.b);
+      g.globalAlpha = 1;
+    }
+
+    // points, merging duplicates so a collapse is visible rather than hidden
+    const drawn = [];
+    for(let i=0;i<4;i++){
+      const twin = drawn.find(d => Math.hypot(d.x-pos[i][0], d.y-pos[i][1]) < 0.035);
+      if(twin){ twin.tags.push(NAMES[i]); continue; }
+      drawn.push({ x:pos[i][0], y:pos[i][1], cls:labels[i], tags:[NAMES[i]],
+                   ok: step(fr.w1*pos[i][0] + fr.w2*pos[i][1] + fr.b) === labels[i] });
+    }
+    drawn.forEach(d => drawPoint(p, d.x, d.y, d.cls, t > 0.55 && !d.ok, d.tags.join(" + ")));
+
+    morpho.textContent = Math.round(t*100) + "%";
+    cap.textContent = t < 0.02
+      ? "Input space. Axes are x₁ and x₂."
+      : (t > 0.98
+        ? "Hidden space. Axes are the two hidden outputs h₁ and h₂."
+        : "Between the two spaces.");
+
+    formula.textContent = act === "none"
+      ? "h₁ = x₁ + x₂ − 0.5\nh₂ = x₁ + x₂ − 1.5"
+      : (act === "soft"
+        ? "h₁ = σ(4(x₁ + x₂ − 0.5))\nh₂ = σ(4(x₁ + x₂ − 1.5))"
+        : "h₁ = step(x₁ + x₂ − 0.5)\nh₂ = step(x₁ + x₂ − 1.5)");
+
+    let rows = "";
+    for(let i=0;i<4;i++){
+      const h = mapped[i];
+      const y = step(fin.w1*h[0] + fin.w2*h[1] + fin.b);
+      const ok = y === labels[i];
+      rows += "<tr class='" + (ok ? "" : "bad") + "'><td>" + PTS[i][0] + " " + PTS[i][1] + "</td><td>" +
+              h[0].toFixed(2) + "</td><td>" + h[1].toFixed(2) + "</td><td>" + y + "</td><td>" + labels[i] + "</td></tr>";
+    }
+    tbody.innerHTML = rows;
+
+    msg.textContent = fin.score === 4
+      ? "The output unit gets 4 of 4. In hidden space (0,1) and (1,0) sit on the same point, and one line clears them from the other two."
+      : "Best possible output line: " + fin.score + " of 4. Without a nonlinearity the two layers collapse into one, and one line is all you ever had.";
+    msg.classList.toggle("hit", true);
+  }
+
+  morph.addEventListener("input", render);
+
+  play.addEventListener("click", () => {
+    if(REDUCE){ morph.value = morph.value === "100" ? "0" : "100"; render(); return; }
+    const from = parseFloat(morph.value);
+    const to = from > 50 ? 0 : 100;
+    const t0 = performance.now(), dur = 1400;
+    (function anim(now){
+      const k = clamp((now-t0)/dur, 0, 1);
+      const e = k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k+2, 3)/2;
+      morph.value = String(from + (to-from)*e);
+      render();
+      if(k < 1) requestAnimationFrame(anim);
+    })(t0);
+  });
+
+  group.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if(!b) return;
+    act = b.dataset.act;
+    Array.prototype.forEach.call(group.querySelectorAll("button"), x =>
+      x.setAttribute("aria-pressed", String(x.dataset.act === act)));
+    render();
+  });
+
+  redraws.push(() => { p.fit(); render(); });
+  render();
+})();
+
+initPanels([
+  ["xor","Exclusive or"], ["brief","Perceptrons, 1969"], ["unit","The unit"],
+  ["train","Learning"], ["proof","The proof"], ["fold","The fold"], ["close","Afterward"]
+]);
+</script>
+</body>
+</html>
