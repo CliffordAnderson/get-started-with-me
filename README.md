@@ -1,8 +1,5 @@
 # getstartedwith.me
 
-Static site, no build step. Open `index.html` directly or serve the folder from
-anything (GitHub Pages, Netlify, `python3 -m http.server`). All links are relative.
-
 ```
 index.html              landing page and lesson index
 lessons/perceptron.html lesson 1
