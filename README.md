@@ -2,6 +2,7 @@
 
 ```
 index.html              landing page and lesson index
+about.html              what the lessons are, how the site was made, who wrote it
 glossary.html           every technical term, explained plainly, linked to Wikipedia
 lessons/perceptron.html lesson 1 — one unit, two inputs
 lessons/images.html     lesson 2 — one unit, 144 pixel inputs
@@ -23,7 +24,9 @@ assets/lesson.js        shared plotting and panel machinery
 
    The rail, the prev/next pager, deep links and the numbering are generated from that list.
 3. Add an entry to `index.html`. Copy an existing `<a class="entry">` block, change the
-   number, title, description and thumbnail SVG.
+   number, title, description and thumbnail SVG. Give the new lesson's topbar the same
+   `Glossary` and `About` links every other page carries. If the lesson runs longer than
+   fifteen minutes, the masthead line on `index.html` stops being true and needs rewording.
 4. Point the previous lesson's `<a class="nextup">` at the new file, and point the new
    lesson's `nextup` at whatever follows it — the next lesson, or `../index.html` if it is
    the last one.

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — getstartedwith.me</title>
+<meta name="description" content="What these lessons are, how to read one, and how the site was made — written by Clifford Anderson in conversation with an AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="index.html">All lessons</a>
+    <a class="away" href="glossary.html">Glossary</a>
+  </nav>
+</div>
+
+<header class="masthead">
+  <p class="kicker">getstartedwith.me · about</p>
+  <div class="masthead-grid">
+    <h1>About</h1>
+    <p>What these lessons are, how to read one, and — since the question is a fair one to ask of a site like this — how it was made.</p>
+  </div>
+</header>
+
+<section class="page">
+  <div class="about-grid">
+    <div>
+      <h2>What these are</h2>
+      <p>Explanations you can take hold of. Every diagram on every page is computed in your browser from the numbers currently on screen: move a slider and the mathematics runs again. Nothing is a recording, so when a demonstration fails it is failing for the real reason, and you can go looking for it.</p>
+      <p>They assume no mathematics beyond multiplying and adding, and they stop where the honest account stops — each lesson is as clear about what its machine cannot do as about what it can. The first ends by setting out what its learning rule does not guarantee; the second finishes by breaking the classifier it has just trained.</p>
+      <p>Each one is fifteen minutes or less, and they are meant to be read in order, though nothing stops you starting anywhere.</p>
+    </div>
+    <div>
+      <h2>How to read one</h2>
+      <p>Each lesson is a few short panels with a rail across the top. They are written in order and build an argument, but any panel will stand on its own if you would rather jump. Nothing to install, no account, and every page works from a phone.</p>
+      <p>Technical words are linked to the <a href="glossary.html">glossary</a> where they first appear, and every entry there explains the term plainly before pointing at Wikipedia for the long version.</p>
+      <p>The examples are not stored anywhere. They are generated in the browser from a seeded random number generator each time a lesson runs, which is what lets a lesson draw as many fresh cases as it needs and keeps a held-out set genuinely held out.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="made">
+  <div class="about-grid">
+    <div>
+      <h2>How this was made</h2>
+      <p>Not by hand, or not by one pair of hands. The pages here were written, drawn and debugged in conversation with an AI — Claude, working directly in the repository, alongside a person who set the brief, argued with the drafts and decided what shipped. The commit history names the model as a co-author on the work it did, and it seems fair to say the same thing where a reader will see it.</p>
+      <p>Which sentence came from which is not a line that can be cleanly drawn at this point, and pretending otherwise would be its own small dishonesty. The prose went back and forth until it read in one voice, and so did the code.</p>
+    </div>
+    <div>
+      <h2>Why say so</h2>
+      <p>Partly because a site whose whole argument is that you should be able to look inside a machine and see what it is doing would be a poor place to be coy about how it was built.</p>
+      <p>Partly because the failure mode of working this way is a confident sentence about a number nobody measured. The rule adopted here is that no figure enters the prose until the shipped code has been run and made to produce it, and that rule caught several drafted claims outright: the error surface in the fourth lesson oscillates where a draft had it diverging, and the pair of cases a failed training run collapses together turned out to vary from run to run. What is left standing is what the measurement supported.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="about-grid">
+    <div>
+      <h2>Who wrote them</h2>
+      <p>Written by <a href="https://www.cliffordanderson.net/">Clifford Anderson</a>, with Claude. The source is on <a href="https://github.com/CliffordAnderson/get-started-with-me">GitHub</a>, where the commits record how each lesson came together and what had to be corrected on the way.</p>
+    </div>
+    <div>
+      <h2>Corrections</h2>
+      <p>If a lesson states something that is wrong, or a demonstration behaves differently on your machine than the prose says it should, that is worth reporting — open an issue on the repository. A site that claims its figures are measured rather than asserted has to be willing to hear when one of them is not.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Every plot on every lesson is computed live in your browser; no server does any of the arithmetic. <a href="index.html">Back to the lessons</a>.</p>
+</footer>
+
+</main>
+</body>
+</html>

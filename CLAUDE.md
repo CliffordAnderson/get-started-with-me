@@ -102,7 +102,7 @@ Appending is easy; inserting touches more than you would expect, and the compile
 
 ## The glossary
 
-`glossary.html` is a fifth page, not a lesson: one alphabetical entry per technical term, each
+`glossary.html` is not a lesson: one alphabetical entry per technical term, each
 a plain paragraph then an `.exact` one, then the lessons it appears in and a Wikipedia link.
 Lessons link a term on its **first mention only**, `<a class="term" href="../glossary.html#id">`.
 That restraint is deliberate — the prose carries the teaching, and a paragraph strewn with
@@ -112,15 +112,23 @@ links stops reading like prose. Adding a term touches three places: the entry, t
 Check outbound links resolve before shipping them; a term with no good article says so rather
 than pointing somewhere approximate.
 
-## The colophon
+## The about page
 
-The landing page ends with a `#made` section saying plainly that the site was co-created with
-an AI rather than written by one hand, and every other page links to it from the topbar as
-`<a class="away" href="…/index.html#made">Colophon</a>`. A new page gets that link too.
+`about.html` carries the prose the landing page used to end with: what the lessons are, how to
+read one, how the site was made, and who wrote it. The landing page is deliberately spare —
+masthead, lesson list, footer — so that it stays short as lessons are added. Anything
+explanatory that wants to go on `index.html` almost certainly belongs here instead.
 
-Keep the section as specific as it is. The general admission is cheap and worth little; what
-carries it is the named example of a measurement overturning a drafted claim, which is also
-the practice the rest of this file is about.
+Its `#made` section says plainly that the site was co-created with an AI rather than written
+by one hand, and the footer of the landing page says the same in one sentence. Every other
+page links to `about.html` from the topbar; a new page gets that link too. Keep the section as
+specific as it is — the general admission is cheap and worth little, and what carries it is
+the named example of a measurement overturning a drafted claim, which is the practice the
+rest of this file is about.
+
+The landing page states no lesson count, on purpose. `every lesson fifteen minutes or less` in
+the masthead is a claim about the entry metas below it, so it has to stay true of the slowest
+lesson.
 
 ## Voice
 

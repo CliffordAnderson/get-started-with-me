@@ -214,17 +214,15 @@ body.js-panels .panel.is-on{display:block}
 .entry-meta{margin:.5rem 0 0;font-size:.86rem;color:var(--ink-2)}
 .entry svg{display:block;width:168px;height:118px;border:1px solid var(--rule);background:var(--field)}
 
-.about{padding:clamp(2.2rem,4vw,3rem) 0 0;padding-left:calc(2.4rem + 1.6rem)}
-.about ~ footer{padding-left:calc(2.4rem + 1.6rem)}
+/* two-column prose sections on the about page. The left indent is the width
+   of an .entry-num plus its gap, so the measure lines up with the lesson list. */
+.page{padding:clamp(2.2rem,4vw,3rem) 0;padding-left:calc(2.4rem + 1.6rem);
+  scroll-margin-top:1.2rem}
+.index ~ footer,.page ~ footer{padding-left:calc(2.4rem + 1.6rem)}
 .about-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(1.4rem,4vw,3rem)}
-.about h2,.colophon h2{font-size:1.3rem;margin-bottom:.5rem}
-.about-start{margin-bottom:0}
-.about-start a{text-underline-offset:3px}
-/* how the site was made: same measure as .about, set off by its own rule */
-.colophon{padding:clamp(2.2rem,4vw,3rem) 0 0;padding-left:calc(2.4rem + 1.6rem);
-  margin-top:clamp(2.2rem,4vw,3rem);scroll-margin-top:1.2rem}
-.colophon p{font-size:.97rem}
-.colophon p:last-child{margin-bottom:0}
+.about-grid h2{font-size:1.3rem;margin-bottom:.5rem}
+.page p{font-size:.97rem}
+.page p:last-child{margin-bottom:0}
 
 /* ---- end-of-lesson handoff ---- */
 .nextup{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.4rem;align-items:center;
@@ -241,7 +239,7 @@ body.js-panels .panel.is-on{display:block}
 canvas.bar{aspect-ratio:auto;height:150px}
 
 @media (max-width:880px){
-  .masthead,.about,.colophon,.about ~ footer{padding-left:0}
+  .masthead,.page,.index ~ footer,.page ~ footer{padding-left:0}
   .masthead-grid,.about-grid{grid-template-columns:minmax(0,1fr)}
   .masthead-grid{align-items:start;gap:1.1rem}
   .entry{grid-template-columns:1.8rem minmax(0,1fr)}

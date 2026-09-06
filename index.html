@@ -13,13 +13,20 @@
 <body>
 <main>
 
+<div class="topbar">
+  <a class="wordmark" href="index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="glossary.html">Glossary</a>
+    <a class="away" href="about.html">About</a>
+  </nav>
+</div>
+
 <header class="masthead">
-  <p class="kicker">getstartedwith.me</p>
   <div class="masthead-grid">
     <h1>Get started with</h1>
     <div>
       <p>Short lessons in machine learning, each built around one idea small enough to hold in your hand and operate.</p>
-      <p class="masthead-meta">four lessons · about an hour altogether · nothing to install</p>
+      <p class="masthead-meta">every lesson fifteen minutes or less · nothing to install</p>
     </div>
   </div>
 </header>
@@ -122,39 +129,10 @@
 
 </div>
 
-<section class="about">
-  <div class="about-grid">
-    <div>
-      <h2>What these are</h2>
-      <p>Explanations you can take hold of. Every diagram on every page is computed in your browser from the numbers currently on screen: move a slider and the mathematics runs again. Nothing is a recording, so when a demonstration fails it is failing for the real reason, and you can go looking for it.</p>
-      <p>They assume no mathematics beyond multiplying and adding, and they stop where the honest account stops — each lesson is as clear about what its machine cannot do as about what it can.</p>
-    </div>
-    <div>
-      <h2>How to read one</h2>
-      <p>Each lesson is a few short panels with a rail across the top. They are written in order and build an argument, but any panel will stand on its own if you would rather jump. Nothing to install, no account, and every page works from a phone.</p>
-      <p>Technical words are linked to the <a href="glossary.html">glossary</a> where they first appear, and every entry there explains the term plainly before pointing at Wikipedia for the long version.</p>
-      <p class="about-start"><a href="lessons/perceptron.html">Start with the first lesson</a></p>
-    </div>
-  </div>
-</section>
-
-<section class="colophon" id="made">
-  <div class="about-grid">
-    <div>
-      <h2>How this was made</h2>
-      <p>Not by hand, or not by one pair of hands. The pages here were written, drawn and debugged in conversation with an AI — Claude, working directly in the repository, alongside a person who set the brief, argued with the drafts and decided what shipped. The commit history names the model as a co-author on the work it did, and it seems fair to say the same thing at the front door.</p>
-      <p>Which sentence came from which is not a line that can be cleanly drawn at this point, and pretending otherwise would be its own small dishonesty. The prose went back and forth until it read in one voice, and so did the code.</p>
-    </div>
-    <div>
-      <h2>Why say so</h2>
-      <p>Partly because a site whose whole argument is that you should be able to look inside a machine and see what it is doing would be a poor place to be coy about how it was built.</p>
-      <p>Partly because the failure mode of working this way is a confident sentence about a number nobody measured. The rule adopted here is that no figure enters the prose until the shipped code has been run and made to produce it, and that rule caught several drafted claims outright: the error surface in the fourth lesson oscillates where a draft had it diverging, and the pair of cases a failed training run collapses together turned out to vary from run to run. What is left standing is what the measurement supported.</p>
-    </div>
-  </div>
-</section>
-
 <footer>
-  <p>Co-created with an AI and checked by a person, as described above. The lessons are independent of one another except where one says otherwise, and no server does any of the arithmetic.</p>
+  <p>Written by Clifford Anderson, with Claude: this site was co-created with an AI rather than
+    written by one hand, and <a href="about.html#made">the about page says how</a>. The lessons are
+    independent of one another except where one says otherwise, and no server does any of the arithmetic.</p>
 </footer>
 
 </main>
