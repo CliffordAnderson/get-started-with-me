@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expert systems — getstartedwith.me</title>
+<meta name="description" content="A machine whose knowledge is a list of sentences you can read. Backward chaining, certainty factors, and the edge of the rule base, after MYCIN (Stanford, 1974).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+/* the rule base, read as text — the whole point of the lesson */
+.rulebase{border-top:1px solid var(--rule);margin:.4rem 0 0}
+/* the panel 2 copy sits beside a running consultation and may scroll;
+   the panel 1 copy must not, since the prose says all fifteen are in view */
+#c-rules{max-height:30rem;overflow-y:auto}
+.rule{font-family:var(--mono);font-size:.82rem;line-height:1.5;
+  border-bottom:1px solid rgba(199,196,182,.55);padding:.5rem .1rem .5rem 2.3rem;
+  position:relative;opacity:.45;transition:opacity .3s ease,background-color .3s ease}
+.rule.lit{opacity:1}
+.rule.fired{opacity:1;background:rgba(138,82,6,.07)}
+.rule.dead{opacity:1;background:rgba(39,75,143,.06)}
+.rule .rid{position:absolute;left:.1rem;top:.5rem;color:var(--ink-2);font-size:.76rem}
+.rule .kw{color:var(--ink-2)}
+.rule .val{color:var(--on)}
+.rule .cf{color:var(--ink-2)}
+.rule.dead .val{color:var(--off)}
+
+/* the consultation */
+.qbox{border:1px solid var(--ink);border-radius:3px;background:var(--field);padding:.85rem .95rem}
+.qbox .qtext{font-size:.98rem;margin:0 0 .7rem;max-width:44ch}
+.qbox .qwhy{font-size:.83rem;color:var(--ink-2);margin:0 0 .7rem;font-family:var(--mono)}
+.facts{font-family:var(--mono);font-size:.84rem;line-height:1.7;margin:.5rem 0 0;
+  list-style:none;padding:0}
+.facts li{display:flex;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.facts .fcf{color:var(--ink-2)}
+.facts .pos{color:var(--on)}
+.facts .neg{color:var(--off)}
+.goals{font-family:var(--mono);font-size:.84rem;color:var(--ink-2);margin:.4rem 0 0}
+.nb{font-family:var(--mono);font-size:.92em;white-space:nowrap}
+canvas.tree{aspect-ratio:auto;height:300px}
+canvas.wide{aspect-ratio:auto;height:210px}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+    <a class="away" href="../about.html">About</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 5 · expert systems</p>
+      <h1>A machine you can argue with</h1>
+      <p class="lede">Everything the last four lessons built keeps its knowledge as numbers, and the numbers are unreadable. This one — an <a class="term" href="../glossary.html#expert-system">expert system</a>, in the language of the 1970s — keeps its knowledge as sentences. You can read every one of them, disagree with any of them, and follow exactly how it reached its answer — and it still fails, for reasons that have nothing to do with a boundary in the wrong place.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout" id="hero-read">15 rules</p>
+      <p class="msg" id="hero-msg">Running a consultation from the top.</p>
+      <div class="row"><button class="btn" id="hero-again" type="button">Run it again</button></div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window"><canvas id="hero-tree" class="tree" role="img"
+        aria-label="A tree of goals and subgoals building downward as the system works backwards from a therapy recommendation to the questions it needs answered."></canvas></div>
+      <figcaption>The system works backwards: to recommend a therapy it must know the organism, and to know the organism it must ask.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<section id="rules" class="panel" role="tabpanel" aria-labelledby="tab-rules">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>Knowledge you can read</h2>
+      <p>A <a class="term" href="../glossary.html#production-rule">rule</a> is an <span class="nb">IF</span>&nbsp;/&nbsp;<span class="nb">THEN</span> sentence about the world, with a number on the end saying how strongly the one supports the other. Here is the entire <a class="term" href="../glossary.html#rule-base">rule base</a> of the machine in this lesson — fifteen sentences, all of them in front of you. That is the whole of what it knows.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="rulebase" id="rb-list"></div>
+    </div>
+    <div class="stack">
+      <p>Compare it with the first lesson. That perceptron also knew exactly three numbers, and you could print them; but knowing that <span class="nb">w₁ = 0.63</span> tells you nothing you can argue with. Here the knowledge is in a language you already speak. If rule 9 is wrong, you can say so, and say why, and change it — and nothing else in the machine needs retraining, because nothing in the machine was trained.</p>
+      <p>This is the trade the whole approach is built on. It was called <a class="term" href="../glossary.html#knowledge-engineering">knowledge engineering</a>: sit with an expert, get the rules out of them, write the rules down. What the machine knows is what somebody told it — and the program that applies the rules, the <a class="term" href="../glossary.html#inference-engine">inference engine</a>, knows nothing about medicine whatever.</p>
+      <p class="note">These fifteen rules are a teaching reconstruction in the shape of <a class="term" href="../glossary.html#mycin">MYCIN</a>'s, not MYCIN's own. The real system had several hundred, written and revised over years with infectious disease specialists at Stanford. Nothing here is medical advice, and the therapies named are the ones a program of the middle 1970s would have reached for.</p>
+    </div>
+  </div>
+</section>
+
+<section id="chain" class="panel" role="tabpanel" aria-labelledby="tab-chain">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>Working backwards</h2>
+      <p>Nobody runs the rules <a class="term" href="../glossary.html#forward-chaining">forwards</a> from everything known, because most of what could be concluded is beside the point. The machine starts from the question it was asked — what therapy? — and works back. To recommend a therapy it needs the organism; to get the organism it needs the kind of meningitis and the Gram stain; and when it runs out of rules for something, it asks you. That is <a class="term" href="../glossary.html#backward-chaining">backward chaining</a>, and it is why a consultation feels like an interrogation.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <div class="qbox" id="cq">
+        <p class="qwhy" id="cq-why">goal: therapy</p>
+        <p class="qtext" id="cq-text">Press start to begin the consultation.</p>
+        <div class="row" id="cq-opts"></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="c-start" type="button">Start a consultation</button>
+        <button class="btn" id="c-auto" type="button">Answer it for me</button>
+      </div>
+      <p class="msg" id="c-msg">The machine asks only for what it needs. Answer, and watch which rules become reachable.</p>
+    </div>
+    <div>
+      <h3>What it knows so far</h3>
+      <ul class="facts" id="c-facts"><li><span>nothing yet</span><span class="fcf"></span></li></ul>
+      <p class="goals" id="c-stack"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <div class="rulebase" id="c-rules"></div>
+    </div>
+    <div>
+      <p>Brown means the rule fired: its premise was established well enough to pass, and it has added something to what the machine believes. Blue means the rule was reached and failed — the machine looked at it, could not establish the premise, and moved on. Faint means it was never reached at all, because nothing the machine wanted ever depended on it.</p>
+      <p>Notice how few rules are ever consulted. That is the payoff of working backwards, and it is also the first thing that makes the machine feel intelligent when it is not: it asks a small number of pointed questions, in an order that looks like judgement, and the order is nothing but the shape of the tree above.</p>
+    </div>
+  </div>
+</section>
+
+<section id="why" class="panel" role="tabpanel" aria-labelledby="tab-why">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>Why it said that</h2>
+      <p>Ask the second lesson's classifier why it called a picture a dog and the only honest answer is a grid of 144 numbers. Ask this machine and it can hand you the derivation: this, because of that rule, whose premise held because of these two facts, one of which you told it. MYCIN could do this in 1975, and it mattered more than the diagnosis — the doctors would not use a program that could not show its work.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <figure>
+        <div class="window"><canvas id="why-tree" class="tree" role="img"
+          aria-label="The proof tree for the last consultation: the therapy at the root, the rules that concluded it, and the facts underneath."></canvas></div>
+        <figcaption>The derivation for the consultation in the previous panel. Every edge is a rule; every leaf is something you were asked.</figcaption>
+      </figure>
+    </div>
+    <div class="stack">
+      <ol class="proof" id="why-steps"></ol>
+      <p class="msg" id="why-msg">Run a consultation in the previous panel to see its derivation.</p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <p>This is the property the approach was really selling, and the reason it is still argued about. The machine is not just accountable in principle — you cannot merely say that its behaviour is determined by its rules, the way a network's behaviour is determined by its weights. You can be handed the specific sentences responsible for this answer, on this case, and go and check them against a textbook.</p>
+      <p class="cite">Edward Shortliffe, Randall Davis, Stanton Axline, Bruce Buchanan, C. Cordell Green and Stanley Cohen, &ldquo;Computer-Based Consultations in Clinical Therapeutics: Explanation and Rule Acquisition Capabilities of the MYCIN System,&rdquo; <em>Computers and Biomedical Research</em> 8 (1975), is where the explanation facility is set out. That it appears in the title, alongside rule acquisition and ahead of any claim about accuracy, is worth noticing.</p>
+    </div>
+    <div>
+      <p>It is worth being exact about what the derivation does and does not settle. It tells you faithfully how this answer followed from these rules. It says nothing at all about whether the rules are right. A rule base can be perfectly transparent and perfectly wrong, and the tree will explain the wrong answer with the same clarity as the right one — a point the fifth panel makes on purpose.</p>
+      <p>The contrast with a trained network is real, but it is narrower than it is usually made to sound. What you gain is not correctness. It is the ability to locate a disagreement in a particular sentence, which is what makes an argument possible at all.</p>
+    </div>
+  </div>
+</section>
+
+<section id="certainty" class="panel" role="tabpanel" aria-labelledby="tab-certainty">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Not quite probability</h2>
+      <p>Medicine is not made of certainties, so every rule carries a number: a <a class="term" href="../glossary.html#certainty-factor">certainty factor</a> between −1 and +1, where +1 is settled truth, −1 settled falsity and 0 no evidence either way. Two rules that reach the same conclusion have their certainties combined. The arithmetic is not Bayes, and its authors knew it was not.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <div class="ctl">
+        <label for="cf-a">rule A</label>
+        <input type="range" id="cf-a" min="-0.95" max="0.95" step="0.05" value="0.6">
+        <output id="cf-a-out">+0.60</output>
+      </div>
+      <div class="ctl">
+        <label for="cf-b">rule B</label>
+        <input type="range" id="cf-b" min="-0.95" max="0.95" step="0.05" value="0.5">
+        <output id="cf-b-out">+0.50</output>
+      </div>
+      <p class="formula" id="cf-work">…</p>
+      <p class="msg" id="cf-msg"></p>
+    </div>
+    <div>
+      <figure>
+        <div class="window"><canvas id="cf-plot" class="wide" role="img"
+          aria-label="A curve showing the combined certainty factor as the second rule's certainty is varied, with the first held fixed."></canvas></div>
+        <figcaption>Rule A held where you left it; rule B swept across its range. The combination never leaves the interval, and never quite reaches the ends.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <p>The rules are sensible enough. Two pieces of evidence pointing the same way reinforce each other with diminishing returns, so belief creeps towards 1 without arriving. Evidence pointing opposite ways partly cancels. A premise is only as strong as its weakest conjunct, so <span class="nb">AND</span> takes the minimum. And a rule whose premise is under 0.2 does not fire at all, which stops the machine from accumulating a strong conclusion out of a heap of faint suggestions.</p>
+      <p>What the scheme buys is modularity, and that is the whole reason it exists. Each rule carries its own number, elicited from an expert on its own, and the numbers combine without anyone ever having to write down how all the evidence is jointly distributed. Asking a physician for a full <a class="term" href="../glossary.html#joint-distribution">joint distribution</a> over dozens of findings was not a thing that could be done in 1975, or now.</p>
+    </div>
+    <div>
+      <p>What it costs is that the numbers do not mean what they look like they mean. A certainty factor is a measure of how much the evidence <em>shifts</em> belief, not of how likely something is, and the combining rule is exact only when the pieces of evidence are conditionally independent given the hypothesis — which, for two findings on the same patient, they generally are not. Feed it correlated evidence and it will happily double-count.</p>
+      <p class="cite">The model is set out in Edward Shortliffe and Bruce Buchanan, &ldquo;A Model of Inexact Reasoning in Medicine,&rdquo; <em>Mathematical Biosciences</em> 23 (1975). David Heckerman, &ldquo;Probabilistic Interpretations for MYCIN's Certainty Factors&rdquo; (1986), later worked out the conditions under which the scheme agrees with probability theory, and they are restrictive. The authors of MYCIN were explicit from the start that certainty factors were not probabilities.</p>
+    </div>
+  </div>
+</section>
+
+<section id="edge" class="panel" role="tabpanel" aria-labelledby="tab-edge">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>The edge of the rule base</h2>
+      <p>The second lesson broke its classifier by moving two pixels. This machine breaks differently, and worse. Hand it a case its rules were never written for and it does not hesitate, hedge, or report that it is out of its depth. It answers, in the same tone, with the same derivation, at whatever certainty the arithmetic happens to produce.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <div class="row" id="edge-cases"></div>
+      <p class="formula" id="edge-out">…</p>
+      <p class="msg" id="edge-msg">Pick a case. Two of them are inside what the rules cover; two are not.</p>
+    </div>
+    <div>
+      <h3>What it concluded</h3>
+      <ul class="facts" id="edge-facts"></ul>
+      <p class="note" id="edge-note"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <p>This is <a class="term" href="../glossary.html#brittleness">brittleness</a>, and it is the characteristic failure of the whole family. A trained network degrades: push it away from what it saw and its confidence usually sags along with its accuracy, which is at least a signal. A rule base has no gradient to sag along. Inside its coverage it is often excellent. One step outside, it is not a worse version of itself; it is a machine confidently applying rules about bacteria to a patient who has a fungus, because no sentence in it says that fungi exist.</p>
+      <p>Nothing in the design can fix this from the inside. The machine cannot know what it has not been told, and it has no representation of the boundary of its own competence — there is no rule that says <em>if none of the above, stop talking</em>, and even if you wrote one, you would have to know in advance what the above failed to cover.</p>
+    </div>
+    <div>
+      <p>The usual answer was to write more rules, which works, at a price that grows. Every new case at the margin is another interview, another sentence, another chance for the new sentence to interact with the six hundred already there in a way nobody predicted. The rule base is readable one rule at a time and quite unreadable all at once.</p>
+      <p>That is the honest shape of the trade against a learned model, and it is not a rout in either direction. One of them is legible and cannot generalise. The other generalises and cannot be read. The forty years since have mostly been spent discovering that you would like both.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cost" class="panel" role="tabpanel" aria-labelledby="tab-cost">
+  <div class="sec-head">
+    <div class="sec-num">6</div>
+    <div>
+      <h2>What it cost, and what it was worth</h2>
+      <p>The machine in this lesson took an afternoon to write because its fifteen rules are made up. MYCIN's were not. Every one of them came out of a conversation with somebody who knew something, and getting them out was the expensive part — expensive enough that the field gave it a name and treated it as the central obstacle.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <p>The <a class="term" href="../glossary.html#knowledge-acquisition">knowledge acquisition</a> bottleneck is the plain observation that experts cannot simply state what they know. They can decide cases fluently and explain any particular decision, and turn out, when pressed for the general rule, to produce something they immediately want to qualify. Extracting a few hundred usable rules from that is years of work with a person whose time is scarce, and it has to be redone as the field moves. MYCIN's knowledge of antimicrobials began going out of date the moment it was written.</p>
+      <p>Set against that: it worked. In a blinded evaluation published in 1979, eight specialists in infectious disease judged therapy recommendations for ten meningitis cases, not knowing which came from the program and which from the nine human prescribers. MYCIN's recommendations were rated acceptable 65% of the time; the five faculty specialists scored between 42.5% and 62.5%.</p>
+    </div>
+    <div>
+      <p>It was never used on a patient. Not because of the evaluation, but because a consultation meant sitting at a terminal wired to a Stanford mainframe and typing answers for half an hour, because nobody had solved who would be liable if it were wrong, and because the knowledge base would have needed a permanent staff to keep current. The obstacles were of their period, and the first of them dissolved entirely within twenty years.</p>
+      <p>What the programme established was narrower and more durable than the AI-in-medicine headlines it produced: that a machine could reach expert-level conclusions in a real domain by <a class="term" href="../glossary.html#symbolic-ai">manipulating symbols</a>, and could show its working while it did — and that the cost of telling it everything it needed to know was the thing that would stop you.</p>
+      <p class="cite">Edward Shortliffe, <em>Computer-Based Medical Consultations: MYCIN</em> (Elsevier, 1976), is the system itself, written as his Stanford doctoral thesis under Bruce Buchanan and Stanley Cohen. The evaluation is Victor Yu, Lawrence Fagan, Sharon Wraith et&nbsp;al., &ldquo;Antimicrobial Selection by a Computer: A Blinded Evaluation by Infectious Diseases Experts,&rdquo; <em>JAMA</em> 242 (1979) — ten cases, which is a small evaluation, and the authors present it as one. Rule counts differ by source and by year, since the base grew throughout the project; figures of roughly 450 and roughly 600 are both commonly given.</p>
+    </div>
+  </div>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 5 of 5</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">More lessons are being written. Each one is a working instrument like this.</p>
+  </div>
+</a>
+
+<footer>
+  <p>The rule base on this page is interpreted live in your browser. The backward chainer really recurses, the certainty factors are combined by MYCIN's own arithmetic, and the derivations shown are built from the consultation you just ran.</p>
+</footer>
+
+</main>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+/* ============================================================
+   The rule base. Fifteen sentences, in the shape of MYCIN's but
+   not MYCIN's own — see the note in panel 1.
+   ============================================================ */
+
+const RULES = [
+  {id:1,  if:[["cells","pmn"],["glucose","low"]],                      then:["type","bacterial"],        cf:0.90},
+  {id:2,  if:[["cells","lymph"],["glucose","normal"]],                 then:["type","viral"],            cf:0.80},
+  {id:3,  if:[["type","bacterial"],["stain","gpc"]],                   then:["organism","pneumococcus"], cf:0.90},
+  {id:4,  if:[["type","bacterial"],["stain","gnc"]],                   then:["organism","meningococcus"],cf:0.90},
+  {id:5,  if:[["type","bacterial"],["stain","gnr"],["age","elderly"]], then:["organism","e-coli"],       cf:0.60},
+  {id:6,  if:[["type","bacterial"],["stain","none"],["age","adult"]],  then:["organism","pneumococcus"], cf:0.40},
+  {id:7,  if:[["type","bacterial"],["alcohol","yes"]],                 then:["organism","pneumococcus"], cf:0.30},
+  {id:8,  if:[["type","bacterial"],["immuno","yes"]],                  then:["organism","listeria"],     cf:0.40},
+  {id:9,  if:[["type","bacterial"],["age","elderly"]],                 then:["organism","listeria"],     cf:0.30},
+  {id:10, if:[["type","bacterial"],["stain","none"],["age","child"]],  then:["organism","h-influenzae"], cf:0.50},
+  {id:11, if:[["organism","pneumococcus"]],                            then:["therapy","penicillin"],       cf:0.90},
+  {id:12, if:[["organism","meningococcus"]],                           then:["therapy","penicillin"],       cf:0.90},
+  {id:13, if:[["organism","listeria"]],                                then:["therapy","ampicillin"],       cf:0.80},
+  {id:14, if:[["organism","h-influenzae"]],                            then:["therapy","chloramphenicol"],  cf:0.80},
+  {id:15, if:[["organism","e-coli"]],                                  then:["therapy","gentamicin"],       cf:0.70}
+];
+const BY_ID = {};
+RULES.forEach(r => { BY_ID[r.id] = r; });
+
+/* Parameters the machine has no rules for, so it must ask. */
+const ASK = {
+  cells:   { q:"What kind of white cell predominates in the spinal fluid?",
+             opts:[["pmn","polymorphonuclear"],["lymph","lymphocyte"]] },
+  glucose: { q:"Is the spinal fluid glucose low or normal?",
+             opts:[["low","low"],["normal","normal"]] },
+  stain:   { q:"What did the Gram stain of the spinal fluid show?",
+             opts:[["gpc","gram-positive cocci"],["gnc","gram-negative cocci"],
+                   ["gnr","gram-negative rods"],["none","nothing seen"]] },
+  age:     { q:"How old is the patient?",
+             opts:[["newborn","newborn"],["child","child"],["adult","adult"],["elderly","elderly"]] },
+  alcohol: { q:"Is the patient a heavy drinker?",
+             opts:[["yes","yes"],["no","no"]] },
+  immuno:  { q:"Is the patient immunocompromised?",
+             opts:[["yes","yes"],["no","no"]] }
+};
+
+const NAME = {
+  cells:"white cells", glucose:"csf glucose", stain:"gram stain", age:"age",
+  alcohol:"heavy drinker", immuno:"immunocompromised",
+  type:"meningitis", organism:"organism", therapy:"therapy"
+};
+
+const THRESH = 0.2;   /* a rule whose premise is weaker than this does not fire */
+
+/* ---- MYCIN's certainty arithmetic ---- */
+
+function combine(a, b){
+  if(a >= 0 && b >= 0) return a + b - a*b;
+  if(a <= 0 && b <= 0) return a + b + a*b;
+  return (a + b) / (1 - Math.min(Math.abs(a), Math.abs(b)));
+}
+
+function cfOf(ctx, param, value){
+  const m = ctx[param];
+  return (m && typeof m[value] === "number") ? m[value] : 0;
+}
+
+function put(ctx, param, value, cf){
+  if(!ctx[param]) ctx[param] = {};
+  const prev = ctx[param][value];
+  ctx[param][value] = (typeof prev === "number") ? combine(prev, cf) : cf;
+}
+
+/* ---- the backward chainer ----------------------------------
+   findout(p) establishes p: it applies every rule that concludes p,
+   recursing into each premise first, and asks the user for anything
+   no rule concludes. When it needs an answer it does not have, it
+   unwinds and reports which parameter it stopped on, so the caller
+   can ask and run it again. The engine is deterministic and cheap,
+   so replaying from the top is simpler than suspending it.
+   ------------------------------------------------------------ */
+
+const STOP = {};
+
+function run(answers, goal){
+  const ctx = {}, sought = {}, trace = [], asked = [], stack = [];
+  let need = null, needStack = null;
+
+  function findout(param){
+    if(sought[param]) return;
+    sought[param] = true;
+    stack.push(param);
+
+    const rules = RULES.filter(r => r.then[0] === param);
+    for(let i = 0; i < rules.length; i++){
+      const r = rules[i];
+      for(let k = 0; k < r.if.length; k++) findout(r.if[k][0]);
+      let premise = 1;
+      for(let k = 0; k < r.if.length; k++)
+        premise = Math.min(premise, cfOf(ctx, r.if[k][0], r.if[k][1]));
+      const fired = premise > THRESH;
+      if(fired) put(ctx, r.then[0], r.then[1], premise * r.cf);
+      trace.push({ id:r.id, premise:premise, cf:premise * r.cf, fired:fired });
+    }
+
+    if(rules.length === 0 && ASK[param]){
+      if(!Object.prototype.hasOwnProperty.call(answers, param)){
+        need = param; needStack = stack.slice();
+        throw STOP;
+      }
+      asked.push(param);
+      if(answers[param]) put(ctx, param, answers[param], 1);
+    }
+    stack.pop();
+  }
+
+  try { findout(goal || "therapy"); }
+  catch(e){ if(e !== STOP) throw e; }
+
+  return { ctx:ctx, trace:trace, asked:asked, need:need, needStack:needStack };
+}
+
+/* the value of a parameter with the highest certainty, if any is positive */
+function best(ctx, param){
+  const m = ctx[param];
+  if(!m) return null;
+  let bv = null, bc = 0;
+  for(const v in m) if(m[v] > bc){ bc = m[v]; bv = v; }
+  return bv === null ? null : { value:bv, cf:bc };
+}
+
+/* the strongest single chain supporting a conclusion, for drawing */
+function spine(ctx, trace, param, value, depth){
+  const node = { param:param, value:value, cf:cfOf(ctx,param,value), rule:null, kids:[] };
+  if(depth >= 4) return node;
+  let pick = null;
+  for(let i = 0; i < trace.length; i++){
+    const t = trace[i];
+    if(!t.fired) continue;
+    const r = BY_ID[t.id];
+    if(r.then[0] !== param || r.then[1] !== value) continue;
+    if(!pick || t.cf > pick.t.cf) pick = { t:t, r:r };
+  }
+  if(pick){
+    node.rule = pick.r.id;
+    node.kids = pick.r.if.map(c => spine(ctx, trace, c[0], c[1], depth+1));
+  }
+  return node;
+}
+
+/* ---- rendering the rule base as readable text ---- */
+
+function ruleHTML(r){
+  const conds = r.if.map(c =>
+    '<span class="kw">' + NAME[c[0]] + '</span> is <span class="val">' + c[1] + '</span>'
+  ).join(' <span class="kw">and</span> ');
+  return '<span class="rid">R' + r.id + '</span>' +
+    '<span class="kw">if</span> ' + conds +
+    '<br><span class="kw">then</span> <span class="kw">' + NAME[r.then[0]] + '</span> is ' +
+    '<span class="val">' + r.then[1] + '</span> ' +
+    '<span class="cf">(' + num(r.cf, 2) + ')</span>';
+}
+
+function paintRules(host, state){
+  host.innerHTML = "";
+  RULES.forEach(r => {
+    const d = document.createElement("div");
+    d.className = "rule" + (state && state[r.id] ? " " + state[r.id] : "");
+    d.innerHTML = ruleHTML(r);
+    host.appendChild(d);
+  });
+}
+
+function stateFromTrace(trace){
+  const st = {};
+  trace.forEach(t => { st[t.id] = t.fired ? "fired" : "dead"; });
+  return st;
+}
+
+/* ---- the derivation tree painter ---- */
+
+function measure(node){
+  if(!node.kids.length){ node.span = 1; return 1; }
+  let s = 0;
+  node.kids.forEach(k => { s += measure(k); });
+  node.span = s;
+  return s;
+}
+
+function place(node, x0, x1, depth, out){
+  node.x = (x0 + x1) / 2;
+  node.depth = depth;
+  out.push(node);
+  let x = x0;
+  node.kids.forEach(k => {
+    const w = (x1 - x0) * (k.span / node.span);
+    place(k, x, x + w, depth + 1, out);
+    x += w;
+  });
+}
+
+function drawTree(p, root, reveal){
+  const g = p.ctx;
+  g.clearRect(0, 0, p.w, p.h);
+  g.fillStyle = C.field; g.fillRect(0, 0, p.w, p.h);
+  if(!root) return;
+
+  measure(root);
+  const nodes = [];
+  place(root, 12, p.w - 12, 0, nodes);
+
+  let deepest = 0;
+  nodes.forEach(n => { if(n.depth > deepest) deepest = n.depth; });
+  const top = 30, bot = p.h - 26;
+  const yOf = d => deepest === 0 ? top : top + (bot - top) * (d / deepest);
+  const shown = (reveal === undefined) ? 99 : reveal;
+
+  /* edges first, labelled with the rule that carried them */
+  g.lineWidth = 1.4;
+  g.font = '400 10px "IBM Plex Mono", monospace';
+  g.textAlign = "center";
+  nodes.forEach(n => {
+    if(n.depth >= shown) return;
+    /* clear of the value and its certainty, which sit at y-3 and y+12 */
+    const y0 = yOf(n.depth) + 28;
+    n.kids.forEach(k => {
+      const y1 = yOf(k.depth) - 20;
+      g.strokeStyle = C.rule;
+      g.beginPath();
+      g.moveTo(n.x, y0);
+      g.bezierCurveTo(n.x, (y0+y1)/2, k.x, (y0+y1)/2, k.x, y1);
+      g.stroke();
+    });
+    if(n.rule !== null && n.kids.length){
+      const ly = (y0 + (yOf(n.depth + 1) - 20)) / 2;
+      const lab = "R" + n.rule;
+      g.textBaseline = "middle";
+      const wdt = g.measureText(lab).width + 8;
+      g.fillStyle = C.field;
+      g.fillRect(n.x - wdt/2, ly - 7, wdt, 14);
+      g.fillStyle = C.ink2;
+      g.fillText(lab, n.x, ly);
+    }
+  });
+
+  /* then the facts */
+  nodes.forEach(n => {
+    if(n.depth > shown) return;
+    const y = yOf(n.depth);
+    g.textAlign = "center";
+    g.font = '400 10px "IBM Plex Mono", monospace';
+    g.fillStyle = C.ink2;
+    g.textBaseline = "bottom";
+    g.fillText(NAME[n.param], n.x, y - 6);
+    g.font = '500 13px "IBM Plex Mono", monospace';
+    g.fillStyle = n.cf >= 0 ? C.on : C.off;
+    g.textBaseline = "top";
+    g.fillText(n.value, n.x, y - 3);
+    if(n.cf){
+      g.font = '400 10px "IBM Plex Mono", monospace';
+      g.fillStyle = C.ink2;
+      g.fillText(num(n.cf, 2), n.x, y + 12);
+    }
+  });
+}
+
+/* a full set of answers, used where the lesson needs a finished consultation */
+const DEMO = { cells:"pmn", glucose:"low", stain:"gpc", age:"adult", alcohol:"no", immuno:"no" };
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const p = Plot(document.getElementById("hero-tree"), [0,1,0,1]);
+  const read = document.getElementById("hero-read");
+  const msg  = document.getElementById("hero-msg");
+  const again = document.getElementById("hero-again");
+
+  const res = run(DEMO);
+  const t = best(res.ctx, "therapy");
+  const root = t ? spine(res.ctx, res.trace, "therapy", t.value, 0) : null;
+  const fired = res.trace.filter(x => x.fired).length;
+
+  let reveal = 0, timer = null, token = 0;
+
+  function render(){ drawTree(p, root, reveal); }
+
+  function step(){
+    reveal++;
+    render();
+    if(reveal >= 3){
+      msg.textContent = "Six questions asked, " + plural(fired, "rule") +
+        " fired, and one recommendation with a certainty attached to it.";
+      read.innerHTML = "<b>" + (t ? t.value : "none") + "</b> " + (t ? num(t.cf,2) : "");
+      return;
+    }
+    timer = setTimeout(step, 700);
+  }
+
+  function start(){
+    const mine = ++token;
+    clearTimeout(timer);
+    reveal = 0;
+    read.textContent = "15 rules";
+    msg.textContent = "Working backwards from the goal.";
+    render();
+    if(REDUCE){ reveal = 3; render(); step(); return; }
+    timer = setTimeout(function tick(){ if(mine === token) step(); }, 450);
+  }
+
+  /* The hero sits above the rail and is never hidden, so it has nothing to
+     pause for — and initPanels fires panelshow once on load, which would
+     otherwise cancel this animation before it started. */
+  again.addEventListener("click", start);
+  redraws.push(() => { p.fit(); render(); });
+  start();
+})();
+
+/* ======================= 1. the rule base ======================= */
+
+(function rulesPanel(){
+  paintRules(document.getElementById("rb-list"), null);
+  document.querySelectorAll("#rb-list .rule").forEach(el => el.classList.add("lit"));
+})();
+
+/* ====================== 2. the consultation ====================== */
+
+let LAST = null;   /* the most recent finished consultation, for panel 3 */
+
+(function chainPanel(){
+  const why   = document.getElementById("cq-why");
+  const text  = document.getElementById("cq-text");
+  const opts  = document.getElementById("cq-opts");
+  const facts = document.getElementById("c-facts");
+  const stack = document.getElementById("c-stack");
+  const msg   = document.getElementById("c-msg");
+  const rules = document.getElementById("c-rules");
+  const bStart = document.getElementById("c-start");
+  const bAuto  = document.getElementById("c-auto");
+
+  let answers = null;
+
+  function paintFacts(ctx){
+    facts.innerHTML = "";
+    const order = ["cells","glucose","stain","age","alcohol","immuno","type","organism","therapy"];
+    let any = false;
+    order.forEach(param => {
+      const m = ctx[param];
+      if(!m) return;
+      for(const v in m){
+        any = true;
+        const li = document.createElement("li");
+        const a = document.createElement("span");
+        a.innerHTML = NAME[param] + " is <span class=\"" +
+          (m[v] >= 0 ? "pos" : "neg") + "\">" + v + "</span>";
+        const b = document.createElement("span");
+        b.className = "fcf";
+        b.textContent = num(m[v], 2);
+        li.appendChild(a); li.appendChild(b);
+        facts.appendChild(li);
+      }
+    });
+    if(!any) facts.innerHTML = "<li><span>nothing yet</span><span class=\"fcf\"></span></li>";
+  }
+
+  function finish(res){
+    LAST = res;
+    const t = best(res.ctx, "therapy");
+    const o = best(res.ctx, "organism");
+    why.textContent = "consultation complete";
+    opts.innerHTML = "";
+    if(t){
+      text.innerHTML = "Recommended therapy: <b>" + t.value + "</b>, at certainty " + num(t.cf,2) +
+        (o ? ", on the strength of " + o.value + " at " + num(o.cf,2) + "." : ".");
+      msg.textContent = "The third panel shows how it got there.";
+      msg.classList.add("hit");
+    } else {
+      text.innerHTML = "<b>No recommendation.</b> Nothing in the rule base concluded a therapy for this patient.";
+      msg.textContent = "It does not say why, and it has no way to. The fifth panel is about this.";
+      msg.classList.add("hit");
+    }
+    document.dispatchEvent(new CustomEvent("mycin:done"));
+  }
+
+  function advance(){
+    const res = run(answers);
+    paintFacts(res.ctx);
+    paintRules(rules, stateFromTrace(res.trace));
+    if(!res.need){ finish(res); return; }
+
+    const spec = ASK[res.need];
+    why.textContent = "goal: " + res.needStack.map(x => NAME[x]).join(" ‹ ");
+    text.textContent = spec.q;
+    opts.innerHTML = "";
+    spec.opts.forEach(o => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "btn"; b.textContent = o[1];
+      b.addEventListener("click", () => { answers[res.need] = o[0]; advance(); });
+      opts.appendChild(b);
+    });
+    stack.textContent = "still to establish: " + res.needStack.map(x => NAME[x]).reverse().join(", ");
+    msg.classList.remove("hit");
+    msg.textContent = "It is asking because " + NAME[res.needStack[res.needStack.length-2] || "therapy"] +
+      " cannot be settled without it.";
+  }
+
+  bStart.addEventListener("click", () => { answers = {}; advance(); });
+  bAuto.addEventListener("click", () => {
+    answers = {};
+    for(const k in DEMO) answers[k] = DEMO[k];
+    advance();
+  });
+
+  paintRules(rules, null);
+  paintFacts({});
+})();
+
+/* ========================= 3. the derivation ========================= */
+
+(function whyPanel(){
+  const p = Plot(document.getElementById("why-tree"), [0,1,0,1]);
+  const steps = document.getElementById("why-steps");
+  const msg = document.getElementById("why-msg");
+  let root = null;
+
+  function render(){ drawTree(p, root); }
+
+  function rebuild(){
+    const res = LAST || run(DEMO);
+    const t = best(res.ctx, "therapy");
+    root = t ? spine(res.ctx, res.trace, "therapy", t.value, 0) : null;
+
+    steps.innerHTML = "";
+    const fired = res.trace.filter(x => x.fired);
+    fired.forEach(f => {
+      const r = BY_ID[f.id];
+      const li = document.createElement("li");
+      li.className = "on";
+      li.innerHTML = "R" + r.id + " → " + NAME[r.then[0]] + " is " + r.then[1] +
+        " (" + num(f.cf,2) + ")" +
+        "<span class=\"why\">premise held at " + num(f.premise,2) +
+        ", attenuated by the rule's own " + num(r.cf,2) + "</span>";
+      steps.appendChild(li);
+    });
+
+    if(!fired.length){
+      msg.textContent = "No rule fired on that consultation, so there is nothing to derive.";
+    } else if(root){
+      msg.textContent = "The tree shows the strongest chain; the list beside it is every rule that fired, " +
+        "including the ones that added support without being the strongest.";
+    } else {
+      msg.textContent = "Rules fired, but none of them reached a therapy.";
+    }
+    render();
+  }
+
+  document.addEventListener("mycin:done", rebuild);
+  document.addEventListener("panelshow", e => { if(e.detail === "why") rebuild(); });
+  redraws.push(() => { p.fit(); render(); });
+  rebuild();
+})();
+
+/* ======================= 4. certainty factors ======================= */
+
+(function cfPanel(){
+  const p = Plot(document.getElementById("cf-plot"), [-1.05,1.05,-1.05,1.05]);
+  const sa = document.getElementById("cf-a"), oa = document.getElementById("cf-a-out");
+  const sb = document.getElementById("cf-b"), ob = document.getElementById("cf-b-out");
+  const work = document.getElementById("cf-work");
+  const msg = document.getElementById("cf-msg");
+
+  function render(){
+    const a = +sa.value, b = +sb.value;
+    oa.textContent = signed(a,2).replace(" ","");
+    ob.textContent = signed(b,2).replace(" ","");
+    const c = combine(a,b);
+
+    let line;
+    if(a >= 0 && b >= 0) line = "both positive:  a + b − ab";
+    else if(a <= 0 && b <= 0) line = "both negative:  a + b + ab";
+    else line = "opposite signs:  (a + b) / (1 − min(|a|,|b|))";
+    work.textContent =
+      "a = " + num(a,2) + "\nb = " + num(b,2) + "\n" + line + "\ncombined = " + num(c,2);
+
+    if(a > 0 && b > 0 && c < a + b)
+      msg.textContent = "Two rules agreeing add up to less than the sum of their parts, and can never reach 1.";
+    else if(a * b < 0)
+      msg.textContent = "Disagreement cancels, and the denominator keeps the result inside the interval.";
+    else if(a < 0 && b < 0)
+      msg.textContent = "Two rules agreeing that it is not so, mirrored on the negative side.";
+    else
+      msg.textContent = "With one of them at zero the other stands alone: no evidence changes nothing.";
+
+    field(p, "b", "combined");
+    const g = p.ctx;
+    g.strokeStyle = C.on; g.lineWidth = 2;
+    g.beginPath();
+    for(let i = 0; i <= 220; i++){
+      const x = -1 + 2*i/220, y = combine(a, x);
+      const px = p.X(x), py = p.Y(y);
+      i ? g.lineTo(px,py) : g.moveTo(px,py);
+    }
+    g.stroke();
+    /* the line the result would follow if the two simply added */
+    g.strokeStyle = C.rule; g.lineWidth = 1.4; g.setLineDash([4,4]);
+    g.beginPath();
+    g.moveTo(p.X(-1), p.Y(clamp(a-1,-1.05,1.05)));
+    g.lineTo(p.X(1),  p.Y(clamp(a+1,-1.05,1.05)));
+    g.stroke(); g.setLineDash([]);
+
+    g.fillStyle = C.ink;
+    g.beginPath(); g.arc(p.X(b), p.Y(c), 5, 0, Math.PI*2); g.fill();
+  }
+
+  sa.addEventListener("input", render);
+  sb.addEventListener("input", render);
+  redraws.push(() => { p.fit(); render(); });
+  render();
+})();
+
+/* ==================== 5. the edge of the rule base ==================== */
+
+(function edgePanel(){
+  const host  = document.getElementById("edge-cases");
+  const out   = document.getElementById("edge-out");
+  const msg   = document.getElementById("edge-msg");
+  const facts = document.getElementById("edge-facts");
+  const note  = document.getElementById("edge-note");
+
+  const CASES = [
+    { lab:"Gram-positive cocci, adult", inside:true,
+      a:{ cells:"pmn", glucose:"low", stain:"gpc", age:"adult", alcohol:"no", immuno:"no" },
+      note:"Squarely inside the rules. R1 settles the kind of meningitis, R3 names the organism from the stain, R11 picks the drug." },
+    { lab:"Elderly and immunocompromised", inside:true,
+      a:{ cells:"pmn", glucose:"low", stain:"none", age:"elderly", alcohol:"no", immuno:"yes" },
+      note:"Also inside, and the interesting case: two separate rules point at listeria, and their certainties combine into something stronger than either." },
+    { lab:"Findings that look bacterial but are not", inside:false,
+      a:{ cells:"pmn", glucose:"low", stain:"none", age:"adult", alcohol:"no", immuno:"no" },
+      note:"Nothing here is bacterial, but the two findings the rules key on both point that way, and no sentence in the base can raise the possibility that they mislead. It answers, and it is wrong, and the derivation is impeccable." },
+    { lab:"A newborn", inside:false,
+      a:{ cells:"pmn", glucose:"low", stain:"none", age:"newborn", alcohol:"no", immuno:"no" },
+      note:"No rule mentions a newborn. The machine establishes that the meningitis is bacterial, gets to the organism, finds nothing that applies, and stops — with no recommendation and no account of why one is missing." }
+  ];
+
+  let at = -1;
+
+  function show(i){
+    at = i;
+    const c = CASES[i];
+    Array.prototype.forEach.call(host.children, (b,k) =>
+      b.setAttribute("aria-pressed", String(k === i)));
+
+    const res = run(c.a);
+    const t = best(res.ctx, "therapy");
+    const o = best(res.ctx, "organism");
+    const ty = best(res.ctx, "type");
+
+    out.textContent =
+      "meningitis  " + (ty ? ty.value + "  " + num(ty.cf,2) : "— not established") + "\n" +
+      "organism    " + (o ? o.value + "  " + num(o.cf,2) : "— not established") + "\n" +
+      "therapy     " + (t ? t.value + "  " + num(t.cf,2) : "— none recommended");
+
+    facts.innerHTML = "";
+    res.trace.filter(x => x.fired).forEach(f => {
+      const r = BY_ID[f.id];
+      const li = document.createElement("li");
+      li.innerHTML = "<span>R" + r.id + " → " + r.then[1] + "</span>" +
+        "<span class=\"fcf\">" + num(f.cf,2) + "</span>";
+      facts.appendChild(li);
+    });
+    if(!facts.children.length)
+      facts.innerHTML = "<li><span>no rule fired</span><span class=\"fcf\"></span></li>";
+
+    note.textContent = c.note;
+    msg.classList.add("hit");
+    if(c.inside)
+      msg.textContent = "Inside the rules, and it does well: " +
+        (t ? t.value + " at " + num(t.cf,2) + "." : "no therapy, unexpectedly.");
+    else if(t)
+      msg.textContent = "Outside the rules, and it does not hesitate: " + t.value +
+        " at " + num(t.cf,2) + ", in exactly the tone it used when it was right.";
+    else
+      msg.textContent = "Outside the rules, and it simply stops. No therapy, no warning, no reason given.";
+  }
+
+  CASES.forEach((c,i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "btn"; b.textContent = c.lab;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", () => show(i));
+    host.appendChild(b);
+  });
+  show(0);
+})();
+
+initPanels([
+  ["rules","The rules"], ["chain","Working backwards"], ["why","The derivation"],
+  ["certainty","Certainty"], ["edge","The edge"], ["cost","What it cost"]
+]);
+</script>
+</body>
+</html>

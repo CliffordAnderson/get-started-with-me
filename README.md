@@ -8,13 +8,14 @@ lessons/perceptron.html lesson 1 — one unit, two inputs
 lessons/images.html     lesson 2 — one unit, 144 pixel inputs
 lessons/xor.html        lesson 3 — where one unit runs out
 lessons/backprop.html   lesson 4 — where the weights come from
+lessons/mycin.html      lesson 5 — knowledge written down instead of learned
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting and panel machinery
 ```
 
 ## Adding a lesson
 
-1. Copy an existing lesson as a starting point. `perceptron.html` is the simplest of the three.
+1. Copy an existing lesson as a starting point. `perceptron.html` is the simplest of them.
 2. Give each panel a `<section id="…" class="panel" role="tabpanel" aria-labelledby="tab-…">`
    and end the inline script with:
 

@@ -34,34 +34,47 @@
   <a href="#adaline">ADALINE</a>
   <a href="#artificial-neuron">artificial neuron</a>
   <a href="#backpropagation">backpropagation</a>
+  <a href="#backward-chaining">backward chaining</a>
   <a href="#bias">bias</a>
+  <a href="#brittleness">brittleness</a>
+  <a href="#certainty-factor">certainty factor</a>
   <a href="#chain-rule">chain rule</a>
   <a href="#decision-boundary">decision boundary</a>
   <a href="#delta-rule">delta rule</a>
   <a href="#epoch">epoch</a>
   <a href="#error-surface">error surface</a>
+  <a href="#expert-system">expert system</a>
   <a href="#feature">feature</a>
+  <a href="#forward-chaining">forward chaining</a>
   <a href="#generalisation">generalisation</a>
   <a href="#gradient">gradient</a>
   <a href="#gradient-descent">gradient descent</a>
   <a href="#half-plane">half-plane</a>
   <a href="#held-out-set">held-out set</a>
   <a href="#hidden-layer">hidden layer</a>
+  <a href="#inference-engine">inference engine</a>
+  <a href="#joint-distribution">joint distribution</a>
+  <a href="#knowledge-acquisition">knowledge acquisition</a>
+  <a href="#knowledge-engineering">knowledge engineering</a>
   <a href="#label">label</a>
   <a href="#learning-rate">learning rate</a>
   <a href="#linear-classifier">linear classifier</a>
   <a href="#linearly-separable">linearly separable</a>
   <a href="#local-minimum">local minimum</a>
   <a href="#margin">margin</a>
+  <a href="#mycin">MYCIN</a>
   <a href="#parity">parity</a>
   <a href="#perceptron">perceptron</a>
   <a href="#perceptrons-1969">Perceptrons (1969)</a>
   <a href="#pixel">pixel</a>
+  <a href="#production-rule">production rule</a>
+  <a href="#rule-base">rule base</a>
   <a href="#seeded-generator">seeded generator</a>
   <a href="#sigmoid">sigmoid</a>
   <a href="#squared-error">squared error</a>
   <a href="#step-function">step function</a>
   <a href="#supervised-learning">supervised learning</a>
+  <a href="#symbolic-ai">symbolic AI</a>
   <a href="#template">template</a>
   <a href="#threshold">threshold</a>
   <a href="#translation-invariance">translation invariance</a>
@@ -111,12 +124,39 @@
   </div>
 </article>
 
+<article class="gloss" id="backward-chaining">
+  <h2>backward chaining</h2>
+  <div>
+    <p>Working from the question towards the evidence. Rather than grinding through everything that could be concluded from what is known, the machine starts with the goal it was set, finds the rules that would establish it, and takes each of their premises as a new goal — asking only when it reaches something no rule concludes.</p>
+    <p class="exact">Goal-directed inference over a <a href="#rule-base">rule base</a>: a depth-first search backwards through the rules, in which an unestablished premise becomes a subgoal and the leaves of the search are questions put to the user. Its complement is <a href="#forward-chaining">forward chaining</a>. It is what makes a consultation feel like an interrogation, and what keeps the number of questions small.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Backward_chaining">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="bias">
   <h2>bias</h2>
   <div>
     <p>A number added to the total regardless of what the inputs are. It sets how eager the unit is to say yes: a large positive bias makes it fire on the slightest encouragement, a large negative one makes it hard to convince.</p>
     <p class="exact">The constant term in the weighted sum. Geometrically it slides the <a href="#decision-boundary">decision boundary</a> without rotating it; without one, every boundary would be forced through the origin.</p>
     <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="brittleness">
+  <h2>brittleness</h2>
+  <div>
+    <p>The habit of working well inside the cases a system was built for and failing without warning just outside them. A brittle system does not grow gradually less reliable as you leave familiar ground; it carries on answering in the same confident tone while being wrong.</p>
+    <p class="exact">The characteristic failure of <a href="#symbolic-ai">symbolic</a> rule-based systems, whose competence stops exactly where their rules stop and which hold no representation of their own boundary. Learned models have a softer version of the same problem, degrading away from the data they were trained on, though usually with some sag in confidence to go with it. Wikipedia’s article on software brittleness describes a different phenomenon, the decay of code under modification.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><span class="no-out">no Wikipedia article</span></p>
+  </div>
+</article>
+
+<article class="gloss" id="certainty-factor">
+  <h2>certainty factor</h2>
+  <div>
+    <p>A number between −1 and +1 attached to a rule or a conclusion, saying how strongly the evidence supports it: +1 settled truth, −1 settled falsity, 0 no evidence either way. Two rules reaching the same conclusion have their numbers combined, so agreement accumulates without ever quite arriving at certainty.</p>
+    <p class="exact">MYCIN’s scheme for inexact reasoning, set out by Shortliffe and Buchanan in 1975. A certainty factor measures how far evidence <em>shifts</em> belief rather than how probable something is, and the combining rules — a + b − ab for two positives, a normalised sum where they disagree — coincide with probability theory only under conditions that are usually not met. It was adopted because eliciting a <a href="#joint-distribution">joint distribution</a> from an expert was impossible and a number attached to a single rule was not.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Certainty_factor">Wikipedia</a></p>
   </div>
 </article>
 
@@ -165,12 +205,30 @@
   </div>
 </article>
 
+<article class="gloss" id="expert-system">
+  <h2>expert system</h2>
+  <div>
+    <p>A program that reaches conclusions in one narrow professional domain by applying a body of rules gathered from human specialists. What it knows is held as sentences rather than as numbers, applied by a general-purpose interpreter, and it can usually show which sentences produced a given answer.</p>
+    <p class="exact">The dominant applied form of <a href="#symbolic-ai">symbolic AI</a> from the middle 1970s into the 1980s, conventionally divided into a <a href="#rule-base">rule base</a> and an <a href="#inference-engine">inference engine</a> so that what the system knows can be replaced without touching the machinery that reasons. <a href="#mycin">MYCIN</a> is the canonical example.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Expert_system">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="feature">
   <h2>feature</h2>
   <div>
     <p>One of the individual measurements you hand the machine about a thing. If the thing is a small picture, one feature might be the brightness of a single <a href="#pixel">pixel</a>; if it is a person, it might be their height.</p>
     <p class="exact">A component of the input vector. Choosing what the features should be was for decades most of the work; what changed with layered networks is that a network can compose its own from raw measurements.</p>
     <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Feature_(machine_learning)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="forward-chaining">
+  <h2>forward chaining</h2>
+  <div>
+    <p>Working from what is known towards whatever follows from it. The machine takes the facts it has, fires every rule whose premise they satisfy, adds the conclusions to what it knows, and goes round again until nothing new appears.</p>
+    <p class="exact">Data-directed inference, the complement of <a href="#backward-chaining">backward chaining</a>. It suits situations where facts arrive continuously and anything derivable is worth deriving. It is a poor fit for consultation, where most of what could be concluded is beside the point and every new fact costs somebody an answer.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Forward_chaining">Wikipedia</a></p>
   </div>
 </article>
 
@@ -228,6 +286,42 @@
   </div>
 </article>
 
+<article class="gloss" id="inference-engine">
+  <h2>inference engine</h2>
+  <div>
+    <p>The part of a rule-based system that does the reasoning, as distinct from the rules it reasons over. It chooses which rule to consider next, works out how to establish a premise and how to combine what it finds — and it knows nothing whatever about the subject matter.</p>
+    <p class="exact">The interpreter in an <a href="#expert-system">expert system</a>. Its separation from the <a href="#rule-base">rule base</a> is the design’s central claim: one engine serves any domain, and a domain is changed by editing sentences rather than code. EMYCIN — <a href="#mycin">MYCIN</a> with its medical rules taken out — was the first widely used demonstration.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Inference_engine">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="joint-distribution">
+  <h2>joint distribution</h2>
+  <div>
+    <p>A statement of how likely every combination of several quantities is, taken together rather than one at a time. Knowing how common each finding is on its own does not tell you how often they turn up in company, and it is the company that usually matters.</p>
+    <p class="exact">The probability distribution over a set of variables considered as a whole. Correct reasoning under uncertainty in general requires it, which is what makes exact probabilistic inference expensive: the table grows exponentially with the number of variables. <a href="#certainty-factor">Certainty factors</a> were an attempt to get by without one.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Joint_probability_distribution">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="knowledge-acquisition">
+  <h2>knowledge acquisition</h2>
+  <div>
+    <p>Getting what an expert knows out of the expert and into a form a machine can use. In practice this means long interviews, because people who decide cases fluently are often unable to state the rule they are following, and want to qualify whatever they do state.</p>
+    <p class="exact">The bottleneck of the <a href="#expert-system">expert system</a> programme, and the reason a <a href="#rule-base">rule base</a> is expensive to build and expensive to keep current. Edward Feigenbaum named it as the central obstacle. Obtaining the rules from data instead is what the rest of these lessons are about.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Knowledge_acquisition">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="knowledge-engineering">
+  <h2>knowledge engineering</h2>
+  <div>
+    <p>The discipline of building a rule base: interviewing specialists, turning what they say into rules, testing the result against cases, and going back with the failures. The knowledge engineer is the person who does this, and is generally not the expert.</p>
+    <p class="exact">The practice built around <a href="#knowledge-acquisition">knowledge acquisition</a> and the design of <a href="#expert-system">expert systems</a>. It treats what a system knows as something to be elicited and written down rather than inferred from examples, which is the whole of the distinction between this tradition and machine learning.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Knowledge_engineering">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="label">
   <h2>label</h2>
   <div>
@@ -282,6 +376,15 @@
   </div>
 </article>
 
+<article class="gloss" id="mycin">
+  <h2>MYCIN</h2>
+  <div>
+    <p>A program written at Stanford in the early 1970s to recommend antibiotic therapy for bacterial infections. It put questions to a physician, applied several hundred rules, and produced a recommendation with a certainty attached and a derivation available on request.</p>
+    <p class="exact">Edward Shortliffe’s doctoral work, supervised by Bruce Buchanan and Stanley Cohen, written in Lisp and developed over five or six years. In a blinded evaluation published in 1979 its meningitis recommendations were judged acceptable more often than those of the five faculty specialists it was compared against. It was never used on a patient. Counts of its rules differ by source and by year, the base having grown throughout; figures of roughly 450 and roughly 600 are both given.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Mycin">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="parity">
   <h2>parity</h2>
   <div>
@@ -315,6 +418,24 @@
     <p>One square of a picture, holding a single brightness. A picture is a grid of them, and to a machine it arrives as a list of numbers rather than as a picture at all.</p>
     <p class="exact">The smallest addressable element of a raster image. Lesson 2 uses a twelve by twelve grid, so each picture is a list of 144 numbers and the unit needs 144 weights, one per pixel.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Pixel">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="production-rule">
+  <h2>production rule</h2>
+  <div>
+    <p>An IF/THEN sentence: a premise about the world, and something to conclude when the premise holds. A rule says nothing about when it ought to be applied or what else is true — that is the interpreter’s business — which is what allows rules to be added and removed one at a time.</p>
+    <p class="exact">The unit of knowledge in a production system. Modularity is the point and also the catch: rules are independent by construction, so nobody need hold the whole base in mind to write one, and nobody can easily foresee how a new rule will interact with the several hundred already there.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Production_system_(computer_science)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="rule-base">
+  <h2>rule base</h2>
+  <div>
+    <p>The collection of rules a system reasons over — everything it knows, kept separate from the machinery that applies it. You can read a rule base, disagree with one line of it, and change that line without retraining anything.</p>
+    <p class="exact">The knowledge half of an <a href="#expert-system">expert system</a>, divided from the <a href="#inference-engine">inference engine</a>. Legible one rule at a time and a good deal less so in bulk: the interactions between rules are written down nowhere, which is where <a href="#brittleness">brittleness</a> and the cost of maintenance both come from.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Knowledge_base">Wikipedia</a></p>
   </div>
 </article>
 
@@ -360,6 +481,15 @@
     <p>Learning from examples that come with their answers attached. Somebody has already gone through and marked each one, and the machine's job is to reproduce those markings and then extend them to cases nobody has marked.</p>
     <p class="exact">Learning a mapping from inputs to targets given <a href="#label">labelled</a> pairs. Every lesson here is supervised; the labels are known because the examples are generated with their class decided first.</p>
     <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="symbolic-ai">
+  <h2>symbolic AI</h2>
+  <div>
+    <p>The tradition that treats intelligence as the manipulation of symbols standing for things in the world — sentences, rules, logical structures — rather than as numbers adjusted by experience. Its systems are built by being told things, not by being trained on them.</p>
+    <p class="exact">The mainstream of artificial intelligence research from the 1950s into the 1980s and the setting for <a href="#expert-system">expert systems</a>; sometimes called GOFAI, after John Haugeland. The connectionist tradition the other lessons follow is its counterpart, and the two have exchanged prominence more than once.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Symbolic_artificial_intelligence">Wikipedia</a></p>
   </div>
 </article>
 

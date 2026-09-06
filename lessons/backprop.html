@@ -311,18 +311,38 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
       <p>The second button is a different failure and a shorter one. Start every weight at zero and the two hidden units are identical; being identical, they receive identical blame; receiving identical blame, they take identical steps and stay identical for ever. The gradient is not wrong, and the network never moves. Random <a class="term" href="../glossary.html#weight-initialisation">initialisation</a> is not a convenience here, it is what breaks the symmetry.</p>
     </div>
     <div>
-      <p>None of this stopped the method from working. It stops it from being a theorem, which is a different complaint and the one Minsky and Papert actually made. What was found in the 1980s was not a proof that layered learning converges — there is none — but that in practice, on problems people cared about, it converged often enough to be worth the trouble, and that the trouble scaled.</p>
+      <p>None of this stopped the method from working. It stops it from being a theorem, which is a different complaint and the one Minsky and Papert actually made. What was found in the 1980s was not a proof that layered learning converges — there is none — but that in practice, on problems people cared about, it converged often enough to be worth the trouble, and that the trouble scaled. The next lesson goes back to the years in between, when the field had largely given up on finding weights at all and was building machines that were told everything they knew.</p>
       <p class="cite">David Rumelhart, Geoffrey Hinton and Ronald Williams, &ldquo;Learning Representations by Back-Propagating Errors,&rdquo; <em>Nature</em> 323 (1986), is the paper that made the method common property, and it is candid about the local minima. The rule itself had been arrived at before, by Seppo Linnainmaa (1970) as a general method for the accumulated rounding error of a composite function, and by Paul Werbos (1974) for exactly this purpose in a doctoral thesis that went largely unread.</p>
     </div>
   </div>
 </section>
 
-<a class="nextup" href="../index.html">
+<a class="nextup" href="mycin.html">
   <div>
-    <p class="lab">Lesson 4 of 4</p>
-    <span class="ttl">Back to all lessons</span>
-    <p class="say">More lessons are being written. Each one is a working instrument like this.</p>
+    <p class="lab">Next lesson</p>
+    <span class="ttl">A machine you can argue with</span>
+    <p class="say">Everything in these four lessons keeps what it knows as numbers nobody can read. The next lesson goes back to the 1970s, to the tradition that wrote its knowledge down in sentences instead — and found a quite different way to fail.</p>
   </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+      <g stroke="#D7D4C7" stroke-width="1">
+        <path d="M12 24H156M12 62H156M12 100H156"/>
+      </g>
+      <g stroke="#22262C" stroke-width="1.5" fill="none" stroke-linecap="round">
+        <path d="M84 30 50 56"/><path d="M50 68 30 94"/><path d="M50 68 70 94"/>
+      </g>
+      <g stroke="#C7C4B6" stroke-width="1.3" fill="none" stroke-linecap="round">
+        <path d="M84 30 118 56"/><path d="M118 68 100 94"/><path d="M118 68 140 94"/>
+      </g>
+      <g fill="#8A5206">
+        <rect x="79" y="19" width="10" height="10" rx="2"/>
+        <rect x="45" y="57" width="10" height="10" rx="2"/>
+        <rect x="25" y="95" width="10" height="10" rx="2"/>
+        <rect x="65" y="95" width="10" height="10" rx="2"/>
+      </g>
+      <g fill="#EFEDE5" stroke="#274B8F" stroke-width="2">
+        <circle cx="118" cy="62" r="5"/><circle cx="100" cy="99" r="4.5"/><circle cx="140" cy="99" r="4.5"/>
+      </g>
+    </svg>
 </a>
 
 <footer>

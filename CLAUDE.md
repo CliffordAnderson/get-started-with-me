@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A static site of short interactive machine-learning lessons. No build step, no dependencies,
+A static site of short interactive lessons on artificial intelligence. No build step, no dependencies,
 no framework, no tests: hand-written HTML, one shared stylesheet, one shared script. Every
 page opens directly from the filesystem.
 
@@ -111,6 +111,23 @@ links stops reading like prose. Adding a term touches three places: the entry, t
 
 Check outbound links resolve before shipping them; a term with no good article says so rather
 than pointing somewhere approximate.
+
+## Lesson 5 is not a neural network
+
+`mycin.html` is the one lesson in the symbolic tradition, and it shares almost nothing with the
+others: no `Plot` scatter, no `drawPoint`, no training. What it does share is the palette and
+the discipline. Brown is a fact concluded true, blue one concluded false or a branch that
+failed, grey unknown — the same semantics as class 1 / class 0, so a derivation tree reads
+against the scatter plots without a second explanation.
+
+Its engine is pure symbol manipulation, which makes it the easiest lesson to test under Node:
+slice from `"use strict"` down to the hero IIFE, append a `module.exports`, and every claim the
+prose makes about a case can be measured directly. Do that before changing a rule — the panel 5
+cases are chosen so that two land inside the rule base and two outside, and altering a
+certainty factor can silently move one across the line.
+
+The site says *artificial intelligence*, not *machine learning*, because of this lesson. Keep
+it that way if more symbolic material arrives.
 
 ## The about page
 
