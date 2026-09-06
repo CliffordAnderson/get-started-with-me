@@ -186,7 +186,7 @@
     <div>
       <p>What the rule does not do is tell you which situation you are in. Run it on classes that no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. There is no signal in the procedure that distinguishes not yet from never. That gap between a model that cannot express something and an optimizer that keeps trying is worth holding onto; it recurs at every scale of this subject.</p>
       <p>The other thing to keep separate is the unit from the machine. What we have been operating is one threshold unit. Rosenblatt's perceptron was a larger arrangement: a grid of input cells, a middle bank of feature detectors wired to them at random and never adjusted, and a final layer of threshold units whose weights were the only things that learned.</p>
-      <p>That distinction is what the next lesson turns on. A single unit reaches its limit at a function small enough to draw on the back of an envelope.</p>
+      <p>The next lesson keeps the single unit and points it at something closer to what that machine was built for: a small grid of pixels to be sorted into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after it shrinks that same limit down to a function you could draw on the back of an envelope, where it can be proved rather than demonstrated.</p>
     </div>
 
     <div>
@@ -231,22 +231,30 @@
   </div>
 </section>
 
-<a class="nextup" href="xor.html">
+<a class="nextup" href="images.html">
   <div>
     <p class="lab">Next lesson</p>
-    <span class="ttl">Exclusive or</span>
-    <p class="say">The smallest function no single line can settle, and what a second layer does about it.</p>
+    <span class="ttl">Cats and dogs</span>
+    <p class="say">The same unit with 144 inputs instead of two, sorting pictures — and the weights you can look at as a picture themselves.</p>
   </div>
   <svg viewBox="0 0 168 118" aria-hidden="true">
-    <g stroke="#D7D4C7" stroke-width="1">
-      <path d="M42 12V106M84 12V106M126 12V106M12 30H156M12 59H156M12 88H156"/>
+    <rect x="40" y="15" width="88" height="88" fill="#EFEDE5"/>
+    <g fill="#274B8F">
+      <rect x="51" y="15" width="11" height="11"/><rect x="62" y="15" width="11" height="11"/>
+      <rect x="51" y="26" width="11" height="11"/>
+      <rect x="95" y="15" width="11" height="11"/><rect x="106" y="15" width="11" height="11"/>
+      <rect x="106" y="26" width="11" height="11"/>
     </g>
-    <line x1="24" y1="106" x2="150" y2="16" stroke="#22262C" stroke-width="1.8"/>
-    <rect x="38" y="26" width="11" height="11" rx="2" fill="#8A5206"/>
-    <rect x="120" y="82" width="11" height="11" rx="2" fill="#8A5206"/>
-    <circle cx="43.5" cy="87.5" r="5.5" fill="#EFEDE5" stroke="#274B8F" stroke-width="2.2"/>
-    <circle cx="125.5" cy="31.5" r="5.5" fill="#EFEDE5" stroke="#274B8F" stroke-width="2.2"/>
-    <circle cx="125.5" cy="31.5" r="10" fill="none" stroke="#A8382B" stroke-width="1.5"/>
+    <g fill="#8A5206">
+      <rect x="40" y="48" width="11" height="11"/><rect x="40" y="59" width="11" height="11"/>
+      <rect x="40" y="70" width="11" height="11"/><rect x="51" y="59" width="11" height="11"/>
+      <rect x="117" y="48" width="11" height="11"/><rect x="117" y="59" width="11" height="11"/>
+      <rect x="117" y="70" width="11" height="11"/><rect x="106" y="59" width="11" height="11"/>
+    </g>
+    <g stroke="#C7C4B6" stroke-width="1">
+      <path d="M51 15V103M62 15V103M73 15V103M84 15V103M95 15V103M106 15V103M117 15V103M40 26H128M40 37H128M40 48H128M40 59H128M40 70H128M40 81H128M40 92H128"/>
+    </g>
+    <rect x="40" y="15" width="88" height="88" fill="none" stroke="#22262C" stroke-width="1.4"/>
   </svg>
 </a>
 

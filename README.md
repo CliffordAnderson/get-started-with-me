@@ -2,8 +2,9 @@
 
 ```
 index.html              landing page and lesson index
-lessons/perceptron.html lesson 1
-lessons/xor.html        lesson 2
+lessons/perceptron.html lesson 1 — one unit, two inputs
+lessons/images.html     lesson 2 — one unit, 144 pixel inputs
+lessons/xor.html        lesson 3 — where one unit runs out
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting and panel machinery
 ```
@@ -52,3 +53,10 @@ so a plot that does not register will render one pixel wide when its panel opens
 - Deep links are skipped when `history.replaceState` is unavailable, which is the case in
   an `about:srcdoc` preview. In-page links to `#panel-id` are intercepted and work anyway.
 - `prefers-reduced-motion` is respected: page-load animations jump to their end state.
+- Sample data is generated from a seeded PRNG rather than checked in, so a lesson can draw
+  as many fresh examples as it needs and a held-out set is genuinely held out. `images.html`
+  keeps its picture generator and its 12×12 canvas painters inline, since nothing else uses
+  them; only machinery shared by more than one lesson belongs in `assets/lesson.js`.
+- One trained model per lesson, in a single mutable object the panels all read. A panel that
+  retrains it changes what the later panels show, which is the honest behaviour — panels that
+  can be reached with an untrained model say so rather than reporting a meaningless score.
