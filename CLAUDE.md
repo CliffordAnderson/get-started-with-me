@@ -112,6 +112,16 @@ links stops reading like prose. Adding a term touches three places: the entry, t
 Check outbound links resolve before shipping them; a term with no good article says so rather
 than pointing somewhere approximate.
 
+## The colophon
+
+The landing page ends with a `#made` section saying plainly that the site was co-created with
+an AI rather than written by one hand, and every other page links to it from the topbar as
+`<a class="away" href="…/index.html#made">Colophon</a>`. A new page gets that link too.
+
+Keep the section as specific as it is. The general admission is cheap and worth little; what
+carries it is the named example of a measurement overturning a drafted claim, which is also
+the practice the rest of this file is about.
+
 ## Voice
 
 Lessons are written, not templated, and the prose carries as much of the teaching as the

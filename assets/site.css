@@ -198,6 +198,8 @@ body.js-panels .panel.is-on{display:block}
 .masthead .kicker{margin-bottom:1rem}
 .masthead h1{font-size:clamp(2.5rem,6.4vw,4.3rem);line-height:.99;letter-spacing:-.03em}
 .masthead p{font-size:1.06rem;margin:0 0 .35rem;max-width:34ch;color:var(--ink)}
+.masthead-meta{font-family:var(--mono);font-size:.8rem;line-height:1.5;
+  color:var(--ink-2);margin:.95rem 0 .35rem !important;max-width:none}
 
 .index{border-top:1px solid var(--ink)}
 .entry{display:grid;grid-template-columns:2.4rem minmax(0,1fr) auto;gap:.4rem 1.6rem;
@@ -215,7 +217,14 @@ body.js-panels .panel.is-on{display:block}
 .about{padding:clamp(2.2rem,4vw,3rem) 0 0;padding-left:calc(2.4rem + 1.6rem)}
 .about ~ footer{padding-left:calc(2.4rem + 1.6rem)}
 .about-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(1.4rem,4vw,3rem)}
-.about h2{font-size:1.3rem;margin-bottom:.5rem}
+.about h2,.colophon h2{font-size:1.3rem;margin-bottom:.5rem}
+.about-start{margin-bottom:0}
+.about-start a{text-underline-offset:3px}
+/* how the site was made: same measure as .about, set off by its own rule */
+.colophon{padding:clamp(2.2rem,4vw,3rem) 0 0;padding-left:calc(2.4rem + 1.6rem);
+  margin-top:clamp(2.2rem,4vw,3rem);scroll-margin-top:1.2rem}
+.colophon p{font-size:.97rem}
+.colophon p:last-child{margin-bottom:0}
 
 /* ---- end-of-lesson handoff ---- */
 .nextup{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.4rem;align-items:center;
@@ -232,7 +241,7 @@ body.js-panels .panel.is-on{display:block}
 canvas.bar{aspect-ratio:auto;height:150px}
 
 @media (max-width:880px){
-  .masthead,.about,.about ~ footer{padding-left:0}
+  .masthead,.about,.colophon,.about ~ footer{padding-left:0}
   .masthead-grid,.about-grid{grid-template-columns:minmax(0,1fr)}
   .masthead-grid{align-items:start;gap:1.1rem}
   .entry{grid-template-columns:1.8rem minmax(0,1fr)}
