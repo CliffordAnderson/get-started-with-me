@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A slope to follow — getstartedwith.me</title>
+<meta name="description" content="How a network with a hidden layer trains itself: smooth units, an error surface, and the chain rule that shares the blame backwards. A short interactive lesson.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+canvas.curve{aspect-ratio:auto;height:270px}
+canvas.net{aspect-ratio:auto;height:240px}
+canvas.hist{aspect-ratio:auto;height:132px}
+#blame-table td.pos{color:var(--on)}
+#blame-table td.neg{color:var(--off)}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <a class="away" href="../index.html">All lessons</a>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 4 · backpropagation</p>
+      <h1>A slope to follow</h1>
+      <p class="lede">The last lesson built a network that computes XOR and then handed you its weights, already set. This one throws them away. Every number here starts as a small random one, and the network finds the fold on its own — by measuring how wrong it is and walking downhill.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout"><b id="hero-epoch">0</b> epochs · <span id="hero-score">2 of 4</span></p>
+      <p class="msg" id="hero-msg">Starting from small random weights.</p>
+      <div class="legend">
+        <span><i class="swatch zero"></i>should output 0</span>
+        <span><i class="swatch one"></i>should output 1</span>
+      </div>
+      <div class="row" style="margin-top:.9rem">
+        <button class="btn" id="hero-again" type="button">Train from a new start</button>
+      </div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window">
+        <canvas id="hero-plot" role="img"
+          aria-label="The unit square shaded by what the network currently answers, from blue for zero to brown for one, redrawn as training proceeds. The four XOR cases are marked on it."></canvas>
+      </div>
+      <figcaption>What the network answers at every point of the input square, as it learns. The four corners are the cases it is being shown.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<section id="dial" class="panel" role="tabpanel" aria-labelledby="tab-dial">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>A dial instead of a switch</h2>
+      <p>To walk downhill you need a hill. The threshold unit of the first three lessons does not give you one: its answer is 0 or 1 and nothing in between, so the error it makes sits on a flat step and stays there however you nudge the weights, right up to the moment it jumps. Replace the switch with a dial — a sigmoid, which slides smoothly from 0 to 1 — and the same error becomes a surface with a slope you can read off.</p>
+      <p>The unit below has two inputs and is being asked for AND. Its second weight and its bias are held still; you may move the first. Watch the error as you do.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div class="stack">
+      <figure>
+        <div class="window"><canvas id="dial-curve" class="curve" role="img"
+          aria-label="Total error plotted against the first weight. Under the step unit it is a staircase with flat treads; under the sigmoid it is a smooth valley. A marker shows the current weight and, for the sigmoid, the tangent at that point."></canvas></div>
+        <figcaption id="dial-cap">Total error as the first weight varies. The marker is where you are; the short bar through it is the slope.</figcaption>
+      </figure>
+      <figure>
+        <div class="window"><canvas id="dial-plot" role="img"
+          aria-label="The input square shaded by the unit's output, with the four cases of AND marked."></canvas></div>
+        <figcaption>The same unit seen in input space. The step unit paints two flat regions; the sigmoid paints a ramp between them.</figcaption>
+      </figure>
+    </div>
+
+    <div class="stack">
+      <div>
+        <h3>Activation</h3>
+        <div class="segmented" id="dial-act" role="group" aria-label="Activation function">
+          <button type="button" data-act="step" aria-pressed="true">step</button>
+          <button type="button" data-act="sig" aria-pressed="false">sigmoid</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ctl">
+          <label for="dw1">w₁</label><input id="dw1" type="range" min="-2" max="4" step="0.02" value="-1.2"><output id="dw1o">−1.20</output>
+        </div>
+        <p class="formula" id="dial-formula">y = step( −1.20·x₁ + 1.00·x₂ − 1.50 )</p>
+      </div>
+
+      <p class="readout">E = <b id="dial-err">0.500</b></p>
+      <p class="readout" id="dial-slope">∂E/∂w₁ = 0.0000</p>
+
+      <table id="dial-table">
+        <thead><tr><th>x₁ x₂</th><th>target</th><th>y</th><th>½(y−t)²</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <p class="msg" id="dial-msg"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <p class="note">The staircase is not a poor slope; it is no slope at all. On every tread the derivative is exactly zero, so a rule that asks <em>which way is down</em> is told nothing, and at the two risers it is undefined. The perceptron rule sidesteps this by not asking — it moves the weights by a fixed recipe whenever the answer comes out wrong — but that recipe needs to know which unit was wrong, and in a network with a hidden layer nobody tells the hidden units what they should have said.</p>
+    <p class="note">The sigmoid's valley has its lowest point at w₁ = 1.00, which is the middle of the flat tread where the step unit gets all four cases right. The smooth version is not solving a different problem; it is solving the same one in a way that leaves a trail to follow. Note also that its error there is 0.230 rather than zero — a sigmoid never quite reaches 0 or 1, so a correct answer is always a confident approximation and never an exact one.</p>
+  </div>
+</section>
+
+<section id="surface" class="panel" role="tabpanel" aria-labelledby="tab-surface">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>The error surface</h2>
+      <p>Free the second weight as well and the curve becomes a landscape: one height, the error, over every pair of weights the unit could hold. Learning is now a matter of standing somewhere on it and repeatedly stepping in the direction that goes down fastest. That direction is the gradient, and for a single smooth unit it costs almost nothing to work out.</p>
+      <p>Drag the marker to put the weights anywhere you like, then take the steps by hand or let them run.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="surf-plot" tabindex="0" role="img"
+        aria-label="The error over both weights drawn as a shaded map, pale where the error is low and red where it is high, with a draggable marker, an arrow showing the downhill direction, and a trail of the steps taken."></canvas></div>
+      <figcaption>Error over the two weights. Pale is low, red is high. The arrow is the downhill direction; the trail is where the steps have taken you.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="ctl">
+        <label for="lr">rate</label><input id="lr" type="range" min="0.5" max="20" step="0.5" value="6"><output id="lro">6.0</output>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="surf-step" type="button">One step</button>
+        <button class="btn" id="surf-run" type="button">Run</button>
+        <button class="btn" id="surf-reset" type="button">Back to the corner</button>
+      </div>
+
+      <p class="formula" id="surf-formula">w₁ = −1.20   w₂ = 3.40
+∂E/∂w₁ = 0.0000   ∂E/∂w₂ = 0.0000</p>
+      <p class="readout">E = <b id="surf-err">0.000</b> · <span id="surf-steps">0 steps</span></p>
+      <p class="msg" id="surf-msg"></p>
+
+      <p class="cite">Bernard Widrow and Marcian Hoff, &ldquo;Adaptive Switching Circuits,&rdquo; <em>IRE WESCON Convention Record</em> (1960), introduced this least-mean-squares rule for a single adaptive element they built in hardware and called ADALINE. It is the perceptron's exact contemporary, and it descends an error surface rather than counting mistakes — but for one unit only. Reaching through a hidden layer took another twenty-six years to become common knowledge.</p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <p class="note">The step size matters more than it looks. Small and the descent is faithful but slow; too large and each step overshoots the valley floor and lands part of the way up the far side, so the error rises on the very move that was meant to lower it. Anything up to about 8 on this surface arrives exactly at the bottom; from 10 upward the marker never settles at all, crossing and re-crossing the valley for as long as you let it run. It does not fly off to infinity — the sigmoid flattens out at the edges and holds it in — it simply circles, and nothing in the rule notices or corrects for that.</p>
+    <p class="note">This surface is smooth and has a single lowest point, so any rate small enough to be stable arrives at the same place. That property belongs to the single unit, not to the method. It is the first thing lost when a hidden layer is added, and the last panel is about what is lost with it.</p>
+  </div>
+</section>
+
+<section id="blame" class="panel" role="tabpanel" aria-labelledby="tab-blame">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>Sharing out the blame</h2>
+      <p>Now the network from the last lesson: two inputs, two hidden units, one output, every activation a sigmoid. The output unit's error is plain enough — it answered <em>y</em> and should have answered <em>t</em>. The hidden units are the difficulty. No one ever said what they should have answered, so their share of the mistake has to be worked out from the output's, passed back along the very weights that carried their answers forward.</p>
+      <p>That is the whole of the idea. A hidden unit that fed a large weight into a badly wrong output is largely to blame; one whose weight was near zero is not, whatever it did. Choose a case and read the two passes.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="blame-net" class="net" role="img"
+        aria-label="The two-two-one network drawn with its current activations printed inside the units and its weights as connecting edges. Edge thickness shows the size of each weight's gradient and colour shows its sign: blue for negative, brown for positive."></canvas></div>
+      <figcaption>Values inside the units are the forward pass. Edge thickness is how strongly the error wants that weight to change, and colour is which way — brown to raise it, blue to lower it.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div>
+        <h3>Case being shown</h3>
+        <div class="segmented" id="blame-case" role="group" aria-label="Which training case to show">
+          <button type="button" data-i="0" aria-pressed="true">0 0</button>
+          <button type="button" data-i="1" aria-pressed="false">0 1</button>
+          <button type="button" data-i="2" aria-pressed="false">1 0</button>
+          <button type="button" data-i="3" aria-pressed="false">1 1</button>
+        </div>
+      </div>
+
+      <p class="formula" id="blame-formula">δ_y = (y − t)·y(1 − y)
+δ_j = δ_y · v_j · h_j(1 − h_j)</p>
+
+      <p class="readout" id="blame-out">y = 0.000 · t = 0 · E = 0.000</p>
+
+      <table id="blame-table">
+        <thead><tr><th>parameter</th><th>value</th><th>∂E/∂·</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="row">
+        <button class="btn" id="blame-step" type="button">Apply one update</button>
+        <button class="btn" id="blame-seed" type="button">New random weights</button>
+      </div>
+      <p class="msg" id="blame-msg"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <p class="note">The second line is the one that does the work, and it is only the chain rule written out. The hidden unit's blame is the output's blame, multiplied by the weight along which its answer travelled, multiplied by how much its own output would have moved had its input moved — which is <em>h</em>(1 − <em>h</em>), and which is nearly zero when the unit is already saturated near 0 or 1. A confident hidden unit is a deaf one. That factor is where the step function's flatness has gone: it has not been abolished, only softened into something that is merely small rather than exactly zero.</p>
+    <p class="note">Nothing above is specific to two layers. The same two lines applied again reach a third layer, and again a fourth, each one multiplying in one more weight and one more slope. That is the whole method, and also its long-running weakness: a product of many small factors is a very small number, and a hidden unit twenty layers back can be told almost nothing about what it did wrong.</p>
+  </div>
+</section>
+
+<section id="learn" class="panel" role="tabpanel" aria-labelledby="tab-learn">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Finding the fold</h2>
+      <p>Put the two passes in a loop over all four cases and let it run. The last lesson set the hidden weights by hand so that both units counted how many inputs were on, one firing at a count of one, the other only at two — which folded the awkward pair onto a single point. Nobody is going to tell this network about that. Watch where it puts the four cases instead.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <figure>
+      <div class="window"><canvas id="learn-in" role="img"
+        aria-label="The input square shaded by the network's output as it trains, with the four XOR cases marked."></canvas></div>
+      <figcaption>Input space, shaded by what the network answers. Once it has learned, the region it carves out is no longer a half-plane.</figcaption>
+    </figure>
+    <figure>
+      <div class="window"><canvas id="learn-hid" role="img"
+        aria-label="The two hidden unit outputs plotted against each other, showing where the four cases land in hidden space and the straight boundary the output unit draws there."></canvas></div>
+      <figcaption id="learn-cap">Hidden space: the same four cases, plotted by what the two hidden units say about them, with the output unit's line.</figcaption>
+    </figure>
+  </div>
+
+  <div class="split" style="margin-top:1.8rem">
+    <div class="stack">
+      <div class="row">
+        <button class="btn" id="learn-run" type="button">Train</button>
+        <button class="btn" id="learn-epoch" type="button">One epoch</button>
+        <button class="btn" id="learn-new" type="button">New random start</button>
+      </div>
+      <p class="readout"><b id="learn-epochs">0</b> epochs · E = <span id="learn-err">0.500</span> · <span id="learn-score">2 of 4</span></p>
+      <figure>
+        <div class="window"><canvas id="learn-trace" class="trace" role="img"
+          aria-label="Chart of the total error over the epochs run so far."></canvas></div>
+        <figcaption>Total error against epochs. Long flat stretches are ordinary here.</figcaption>
+      </figure>
+    </div>
+    <div class="stack">
+      <p class="formula" id="learn-formula">h₁ = σ(0.00·x₁ + 0.00·x₂ + 0.00)
+h₂ = σ(0.00·x₁ + 0.00·x₂ + 0.00)
+y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
+      <p class="msg" id="learn-msg"></p>
+      <p class="note" id="learn-merge">Distance in hidden space between the images of (0,1) and (1,0): measured once training has moved.</p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <p class="note">Watch the trace rather than the epoch counter. A run usually sheds a little error early on, then hangs for a long stretch, moving so slowly that it looks finished, before dropping steeply near the end. It is tempting to say that the flat stretch is the two hidden units sitting identical until the fold appears, but that is not what the weights show — they have already drifted well apart by then, and the stall is something less tidy. Nothing schedules the shape, and no part of the rule knows about it. It falls out of the surface the weights are walking on.</p>
+    <p class="note">Train it a few times over and the solutions it finds will not all be the same. Sometimes it recovers the neat arrangement from the last lesson, with the two awkward cases landing on the same point; often it finds some other corner of hidden space where a line happens to work, with the four cases spread out and no tidy interpretation available. Both compute XOR. Only one of them was the answer anybody would have written down, and the method has no preference between them.</p>
+  </div>
+</section>
+
+<section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>What descent does not promise</h2>
+      <p>Rosenblatt's rule came with a theorem: if a separating line exists, the perceptron will find it, in a finite number of corrections, from any starting weights. Gradient descent through a hidden layer has no such guarantee and cannot have one. The surface is no longer a single valley, and a method that only ever moves downhill stops wherever the ground is level — whether or not that place is any good.</p>
+      <p>The button below trains this same network from two hundred different random starts and counts what happens. The runs are not stored anywhere; they are run when you press it.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div class="stack">
+      <div class="row">
+        <button class="btn" id="lim-run" type="button">Run 200 restarts</button>
+        <span class="readout" id="lim-tally">not yet run</span>
+      </div>
+      <figure>
+        <div class="window"><canvas id="lim-hist" class="hist" role="img"
+          aria-label="Histogram of how many epochs each successful restart needed, with a final bar counting the restarts that never succeeded."></canvas></div>
+        <figcaption>Epochs needed, across the restarts. The last bar counts the runs that never got there.</figcaption>
+      </figure>
+      <p class="msg" id="lim-msg"></p>
+    </div>
+
+    <div class="stack">
+      <figure>
+        <div class="window"><canvas id="lim-hid" role="img"
+          aria-label="Hidden space for a run that failed to learn XOR, showing two of the four cases collapsed onto a single point."></canvas></div>
+        <figcaption id="lim-cap">Hidden space for a stuck run.</figcaption>
+      </figure>
+      <div class="row">
+        <button class="btn" id="lim-show" type="button">Show me a stuck one</button>
+        <button class="btn" id="lim-zero" type="button">Start every weight at zero</button>
+      </div>
+      <p class="formula" id="lim-out">x 00   t = 0</p>
+      <p class="msg" id="lim-msg2"></p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <p>The failures nearly all look alike, which is what makes them interesting. The network does fold the space — but it folds the wrong pair together. Which pair varies from one stuck run to the next; that the two cases disagree about the answer almost never does. Once they sit on the same point in hidden space they are a single input as far as the output unit is concerned, and no weights on it can pull them apart again. So it answers close to 0.50 to both, which is half a mistake each and the best available without unfolding first. Unfolding means going uphill, and the method will not go uphill.</p>
+      <p>The second button is a different failure and a shorter one. Start every weight at zero and the two hidden units are identical; being identical, they receive identical blame; receiving identical blame, they take identical steps and stay identical for ever. The gradient is not wrong, and the network never moves. Random initialisation is not a convenience here, it is what breaks the symmetry.</p>
+    </div>
+    <div>
+      <p>None of this stopped the method from working. It stops it from being a theorem, which is a different complaint and the one Minsky and Papert actually made. What was found in the 1980s was not a proof that layered learning converges — there is none — but that in practice, on problems people cared about, it converged often enough to be worth the trouble, and that the trouble scaled.</p>
+      <p class="cite">David Rumelhart, Geoffrey Hinton and Ronald Williams, &ldquo;Learning Representations by Back-Propagating Errors,&rdquo; <em>Nature</em> 323 (1986), is the paper that made the method common property, and it is candid about the local minima. The rule itself had been arrived at before, by Seppo Linnainmaa (1970) as a general method for the accumulated rounding error of a composite function, and by Paul Werbos (1974) for exactly this purpose in a doctoral thesis that went largely unread.</p>
+    </div>
+  </div>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 4 of 4</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">More lessons are being written. Each one is a working instrument like this.</p>
+  </div>
+</a>
+
+<footer>
+  <p>Every plot here is computed live in the browser. The error curves are evaluated point by point from the weights on screen, the gradients are the network's own, and the two hundred restarts in the last panel really run when you press the button.</p>
+</footer>
+
+</main>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+const PTS   = [[0,0],[0,1],[1,0],[1,1]];
+const NAMES = ["00","01","10","11"];
+const AND   = [0,0,0,1];
+const XOR   = [0,1,1,0];
+const LR    = 2.0;
+
+/* xorshift, so a run is reproducible from its seed */
+function rng(seed){
+  let x = (seed * 2654435761) >>> 0 || 1;
+  return function(){
+    x ^= x << 13; x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;  x >>>= 0;
+    return x / 4294967296;
+  };
+}
+
+/* ---------------- the 2-2-1 network ---------------- */
+
+function makeNet(seed){
+  const r = rng(seed), u = () => (r()*2 - 1)*1.2;
+  return { w:[[u(),u()],[u(),u()]], bh:[u(),u()], v:[u(),u()], bo:u() };
+}
+function zeroNet(){
+  return { w:[[0,0],[0,0]], bh:[0,0], v:[0,0], bo:0 };
+}
+function fwd(n, x){
+  const a = [n.w[0][0]*x[0] + n.w[0][1]*x[1] + n.bh[0],
+             n.w[1][0]*x[0] + n.w[1][1]*x[1] + n.bh[1]];
+  const h = [sig(a[0]), sig(a[1])];
+  return { h:h, y: sig(n.v[0]*h[0] + n.v[1]*h[1] + n.bo) };
+}
+function blankGrad(){
+  return { w:[[0,0],[0,0]], bh:[0,0], v:[0,0], bo:0 };
+}
+/* one example: the forward values, the two deltas, and every partial */
+function gradOne(n, x, t){
+  const f = fwd(n, x);
+  const dOut = (f.y - t) * f.y * (1 - f.y);
+  const dH = [dOut * n.v[0] * f.h[0] * (1 - f.h[0]),
+              dOut * n.v[1] * f.h[1] * (1 - f.h[1])];
+  const g = blankGrad();
+  g.v[0] = dOut * f.h[0]; g.v[1] = dOut * f.h[1]; g.bo = dOut;
+  for(let j=0;j<2;j++){
+    g.w[j][0] = dH[j]*x[0]; g.w[j][1] = dH[j]*x[1]; g.bh[j] = dH[j];
+  }
+  return { g:g, E:0.5*(f.y-t)*(f.y-t), y:f.y, h:f.h, dOut:dOut, dH:dH };
+}
+/* summed over all four cases */
+function gradAll(n, labels){
+  const g = blankGrad();
+  let E = 0, right = 0;
+  for(let i=0;i<4;i++){
+    const o = gradOne(n, PTS[i], labels[i]);
+    E += o.E;
+    if((o.y >= 0.5 ? 1 : 0) === labels[i]) right++;
+    g.v[0]+=o.g.v[0]; g.v[1]+=o.g.v[1]; g.bo+=o.g.bo;
+    for(let j=0;j<2;j++){ g.w[j][0]+=o.g.w[j][0]; g.w[j][1]+=o.g.w[j][1]; g.bh[j]+=o.g.bh[j]; }
+  }
+  return { g:g, E:E, right:right };
+}
+function descend(n, g, lr){
+  for(let j=0;j<2;j++){
+    n.w[j][0] -= lr*g.w[j][0]; n.w[j][1] -= lr*g.w[j][1]; n.bh[j] -= lr*g.bh[j];
+  }
+  n.v[0] -= lr*g.v[0]; n.v[1] -= lr*g.v[1]; n.bo -= lr*g.bo;
+}
+const solved = r => r.right === 4 && r.E < 0.02;
+
+/* train until solved or out of epochs; returns the epoch count reached */
+function trainTo(n, budget){
+  for(let e=0;e<budget;e++){
+    const r = gradAll(n, XOR);
+    if(solved(r)) return { ok:true, epochs:e, E:r.E };
+    descend(n, r.g, LR);
+  }
+  const r = gradAll(n, XOR);
+  return { ok:false, epochs:budget, E:r.E, right:r.right };
+}
+
+/* ---------------- painting ---------------- */
+
+const RGB = { field:[239,237,229], off:[39,75,143], on:[138,82,6], alert:[168,56,43] };
+function mix(a, b, t){
+  return "rgb(" + Math.round(lerp(a[0],b[0],t)) + "," +
+                  Math.round(lerp(a[1],b[1],t)) + "," +
+                  Math.round(lerp(a[2],b[2],t)) + ")";
+}
+/* a 0..1 output painted blue at 0, paper at 0.5, brown at 1 */
+function outColour(y){
+  const k = clamp(Math.abs(2*y - 1), 0, 1);
+  return mix(RGB.field, y < 0.5 ? RGB.off : RGB.on, 0.40*k);
+}
+/* fill the plot by sampling f at the centre of each cell */
+function paintCells(p, cells, f){
+  const g = p.ctx;
+  const cw = p.w/cells, ch = p.h/cells;
+  for(let i=0;i<cells;i++){
+    for(let j=0;j<cells;j++){
+      const px = (i+0.5)*cw, py = (j+0.5)*ch;
+      g.fillStyle = f(p.iX(px), p.iY(py));
+      g.fillRect(i*cw, j*ch, cw+1, ch+1);
+    }
+  }
+}
+/* axes and labels only — the grid would fight with a painted background */
+function paintedFrame(p, xlab, ylab){
+  const g = p.ctx;
+  g.strokeStyle = "rgba(199,196,182,.85)"; g.lineWidth = 1.4;
+  g.beginPath();
+  g.moveTo(0, Math.round(p.Y(0))+.5); g.lineTo(p.w, Math.round(p.Y(0))+.5);
+  g.moveTo(Math.round(p.X(0))+.5, 0); g.lineTo(Math.round(p.X(0))+.5, p.h);
+  g.stroke();
+  g.fillStyle = C.ink2;
+  g.font = '500 12px "IBM Plex Mono", monospace';
+  g.textAlign = "left"; g.textBaseline = "bottom";
+  g.fillText(xlab, p.w-26, p.h-8);
+  g.fillText(ylab, 10, 20);
+}
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const p = Plot(document.getElementById("hero-plot"), [-0.25,1.25,-0.25,1.25]);
+  const epochEl = document.getElementById("hero-epoch");
+  const scoreEl = document.getElementById("hero-score");
+  const msgEl   = document.getElementById("hero-msg");
+  const again   = document.getElementById("hero-again");
+  const BUDGET  = 3000;
+
+  let net = null, epochs = 0, running = false, stat = null;
+
+  function start(){
+    net = makeNet((Math.random()*1e9)|0);
+    epochs = 0; stat = gradAll(net, XOR);
+    msgEl.textContent = "Starting from small random weights.";
+    msgEl.classList.remove("hit");
+    running = true;
+    if(REDUCE){ while(epochs < BUDGET && !finish()) advance(240); }
+    else requestAnimationFrame(tick);
+    render();
+  }
+  function advance(k){
+    for(let i=0;i<k && epochs<BUDGET;i++){
+      stat = gradAll(net, XOR);
+      if(solved(stat)) break;
+      descend(net, stat.g, LR);
+      epochs++;
+    }
+  }
+  function finish(){
+    if(solved(stat)){
+      running = false;
+      msgEl.innerHTML = "Found in " + epochs + " epochs, with nothing set by hand. " +
+        "Whatever shape the shaded region has taken, it is no longer a half-plane — which is what the second layer bought.";
+      msgEl.classList.add("hit");
+      return true;
+    }
+    if(epochs >= BUDGET){
+      running = false;
+      msgEl.innerHTML = "This start never got there: it is stuck at " + stat.right +
+        " of 4 and the error has stopped falling. That happens, and " +
+        "<a href=\"#limits\">the last panel</a> counts how often.";
+      msgEl.classList.add("hit");
+      return true;
+    }
+    return false;
+  }
+  function tick(){
+    if(!running) return;
+    advance(24);
+    render();
+    if(!finish()) requestAnimationFrame(tick);
+  }
+  function render(){
+    paintCells(p, 56, (x,y) => outColour(fwd(net, [x,y]).y));
+    paintedFrame(p, "x₁", "x₂");
+    for(let i=0;i<4;i++){
+      const y = fwd(net, PTS[i]).y;
+      drawPoint(p, PTS[i][0], PTS[i][1], XOR[i], (y >= 0.5 ? 1 : 0) !== XOR[i], NAMES[i]);
+    }
+    epochEl.textContent = epochs;
+    scoreEl.textContent = stat.right + " of 4";
+  }
+
+  again.addEventListener("click", () => { running = false; start(); });
+  redraws.push(() => { p.fit(); if(net) render(); });
+  start();
+})();
+
+/* ============================ 1. the dial ============================ */
+
+(function dial(){
+  const cp = Plot(document.getElementById("dial-curve"), [-2,4,0,0.62]);
+  const ip = Plot(document.getElementById("dial-plot"), [-0.4,1.4,-0.4,1.4]);
+  const sl = document.getElementById("dw1"), ou = document.getElementById("dw1o");
+  const group   = document.getElementById("dial-act");
+  const formula = document.getElementById("dial-formula");
+  const errEl   = document.getElementById("dial-err");
+  const slopeEl = document.getElementById("dial-slope");
+  const tbody   = document.querySelector("#dial-table tbody");
+  const cap     = document.getElementById("dial-cap");
+  const msg     = document.getElementById("dial-msg");
+
+  const W2 = 1.0, B = -1.5;
+  let act = "step";
+
+  const out = (z) => act === "step" ? step(z) : sig(z);
+  function err(w1){
+    let e = 0;
+    for(let i=0;i<4;i++){
+      const y = out(w1*PTS[i][0] + W2*PTS[i][1] + B);
+      e += 0.5*(y-AND[i])*(y-AND[i]);
+    }
+    return e;
+  }
+  /* exact for the sigmoid; identically zero wherever the step is defined */
+  function slope(w1){
+    if(act === "step") return 0;
+    let g = 0;
+    for(let i=0;i<4;i++){
+      const y = sig(w1*PTS[i][0] + W2*PTS[i][1] + B);
+      g += (y-AND[i])*y*(1-y)*PTS[i][0];
+    }
+    return g;
+  }
+
+  function frame(){
+    const g = cp.ctx;
+    g.clearRect(0,0,cp.w,cp.h);
+    g.fillStyle = C.field; g.fillRect(0,0,cp.w,cp.h);
+    g.strokeStyle = C.grid; g.lineWidth = 1;
+    g.font = '400 10px "IBM Plex Mono", monospace';
+    g.fillStyle = C.ink2;
+    g.beginPath();
+    for(let v=-2; v<=4.001; v+=1){
+      const x = Math.round(cp.X(v))+.5; g.moveTo(x,0); g.lineTo(x,cp.h);
+    }
+    for(let v=0; v<=0.6001; v+=0.2){
+      const y = Math.round(cp.Y(v))+.5; g.moveTo(0,y); g.lineTo(cp.w,y);
+    }
+    g.stroke();
+    g.textAlign = "center"; g.textBaseline = "bottom";
+    for(let v=-2; v<=4.001; v+=1) g.fillText(num(v,0), clamp(cp.X(v), 13, cp.w-13), cp.h-3);
+    g.textAlign = "left"; g.textBaseline = "middle";
+    for(let v=0.2; v<=0.6001; v+=0.2) g.fillText(v.toFixed(1), 4, cp.Y(v));
+    g.textAlign = "right"; g.textBaseline = "top";
+    g.fillText("w₁", cp.w-6, 6);
+  }
+
+  function render(){
+    const w1 = parseFloat(sl.value);
+    ou.textContent = num(w1);
+    formula.textContent = "y = " + (act === "step" ? "step" : "σ") +
+      "( " + num(w1) + "·x₁ + " + num(W2) + "·x₂ " + signed(B) + " )";
+
+    frame();
+    const g = cp.ctx;
+    g.strokeStyle = C.ink; g.lineWidth = 2;
+    g.beginPath();
+    /* sampled densely enough that the step's risers read as vertical */
+    const N = 900;
+    for(let i=0;i<=N;i++){
+      const v = lerp(-2, 4, i/N);
+      const px = cp.X(v), py = cp.Y(err(v));
+      i ? g.lineTo(px,py) : g.moveTo(px,py);
+    }
+    g.stroke();
+
+    const e = err(w1), s = slope(w1);
+    /* the tangent, drawn only where one exists */
+    if(act === "sig"){
+      const d = 0.62;
+      g.strokeStyle = C.alert; g.lineWidth = 2.2;
+      g.beginPath();
+      g.moveTo(cp.X(w1-d), cp.Y(e - s*d));
+      g.lineTo(cp.X(w1+d), cp.Y(e + s*d));
+      g.stroke();
+    } else {
+      const d = 0.62;
+      g.strokeStyle = C.alert; g.lineWidth = 2.2;
+      g.beginPath();
+      g.moveTo(cp.X(w1-d), cp.Y(e)); g.lineTo(cp.X(w1+d), cp.Y(e));
+      g.stroke();
+    }
+    g.fillStyle = C.field; g.strokeStyle = C.ink; g.lineWidth = 2;
+    g.beginPath(); g.arc(cp.X(w1), cp.Y(e), 6, 0, Math.PI*2); g.fill(); g.stroke();
+
+    /* the unit in input space */
+    paintCells(ip, 48, (x,y) => outColour(out(w1*x + W2*y + B)));
+    paintedFrame(ip, "x₁", "x₂");
+    let rows = "";
+    for(let i=0;i<4;i++){
+      const z = w1*PTS[i][0] + W2*PTS[i][1] + B, y = out(z);
+      const wrong = (y >= 0.5 ? 1 : 0) !== AND[i];
+      drawPoint(ip, PTS[i][0], PTS[i][1], AND[i], wrong, NAMES[i]);
+      rows += "<tr class='" + (wrong ? "bad" : "") + "'><td>" + PTS[i][0] + " " + PTS[i][1] +
+              "</td><td>" + AND[i] + "</td><td>" + num(y,3) + "</td><td>" +
+              num(0.5*(y-AND[i])*(y-AND[i]), 3) + "</td></tr>";
+    }
+    tbody.innerHTML = rows;
+
+    errEl.textContent = num(e,3);
+    slopeEl.textContent = "∂E/∂w₁ = " + (act === "step" ? "0.0000  (flat)" : num(s,4));
+    cap.textContent = act === "step"
+      ? "Total error as w₁ varies. Three flat treads and two risers; the bar through the marker is the slope, and it is level everywhere."
+      : "Total error as w₁ varies. A smooth valley; the bar through the marker is the tangent, and it points downhill.";
+    msg.textContent = act === "step"
+      ? "Move the weight anywhere within a tread and the error does not change at all. There is nothing here to descend."
+      : (Math.abs(s) < 0.004
+        ? "The slope has gone to zero: this is the bottom, at w₁ = " + num(w1) + ", and E = " + num(e,3) + " is the least this unit can manage."
+        : "The tangent leans " + (s > 0 ? "up to the right, so the step to take is to the left." : "down to the right, so the step to take is to the right."));
+    msg.classList.toggle("hit", act === "sig");
+  }
+
+  sl.addEventListener("input", render);
+  group.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if(!b) return;
+    act = b.dataset.act;
+    Array.prototype.forEach.call(group.querySelectorAll("button"), x =>
+      x.setAttribute("aria-pressed", String(x.dataset.act === act)));
+    render();
+  });
+
+  redraws.push(() => { cp.fit(); ip.fit(); render(); });
+  render();
+})();
+
+/* ============================ 2. the error surface ============================ */
+
+(function surface(){
+  const cv = document.getElementById("surf-plot");
+  const p  = Plot(cv, [-2,4,-2,4]);
+  const lr = document.getElementById("lr"), lro = document.getElementById("lro");
+  const stepBtn  = document.getElementById("surf-step");
+  const runBtn   = document.getElementById("surf-run");
+  const resetBtn = document.getElementById("surf-reset");
+  const formula  = document.getElementById("surf-formula");
+  const errEl    = document.getElementById("surf-err");
+  const stepsEl  = document.getElementById("surf-steps");
+  const msg      = document.getElementById("surf-msg");
+
+  const B = -1.5, START = [-1.2, 3.4];
+  let w = START.slice(), trail = [START.slice()], steps = 0, recent = [];
+  let running = false, last = 0, drag = false;
+
+  function err(a, c){
+    let e = 0;
+    for(let i=0;i<4;i++){
+      const y = sig(a*PTS[i][0] + c*PTS[i][1] + B);
+      e += 0.5*(y-AND[i])*(y-AND[i]);
+    }
+    return e;
+  }
+  function grad(a, c){
+    let g1 = 0, g2 = 0;
+    for(let i=0;i<4;i++){
+      const y = sig(a*PTS[i][0] + c*PTS[i][1] + B), d = (y-AND[i])*y*(1-y);
+      g1 += d*PTS[i][0]; g2 += d*PTS[i][1];
+    }
+    return [g1, g2];
+  }
+
+  /* the ramp is stretched over the range the surface actually occupies */
+  let lo = Infinity, hi = -Infinity;
+  for(let i=0;i<64;i++) for(let j=0;j<64;j++){
+    const e = err(lerp(-2,4,(i+0.5)/64), lerp(-2,4,(j+0.5)/64));
+    if(e < lo) lo = e; if(e > hi) hi = e;
+  }
+
+  /* banded rather than continuous: the bands are iso-error contours, and a
+     smooth wash of colour turns out to be unreadable as a landscape */
+  const BANDS = 9;
+  function shade(a, c){
+    const t = clamp((err(a,c) - lo)/(hi - lo), 0, 1);
+    const q = Math.round(t*BANDS)/BANDS;
+    return mix(RGB.field, RGB.alert, 0.72*Math.pow(q, 0.8));
+  }
+
+  function render(){
+    paintCells(p, 60, shade);
+    paintedFrame(p, "w₁", "w₂");
+    const g = p.ctx;
+
+    if(trail.length > 1){
+      g.strokeStyle = "rgba(34,38,44,.45)"; g.lineWidth = 1.5;
+      g.beginPath();
+      trail.forEach((q,i) => i ? g.lineTo(p.X(q[0]), p.Y(q[1])) : g.moveTo(p.X(q[0]), p.Y(q[1])));
+      g.stroke();
+      g.fillStyle = "rgba(34,38,44,.45)";
+      trail.forEach(q => { g.beginPath(); g.arc(p.X(q[0]), p.Y(q[1]), 1.6, 0, Math.PI*2); g.fill(); });
+    }
+
+    const gr = grad(w[0], w[1]), mag = Math.hypot(gr[0], gr[1]);
+    if(mag > 1e-6){
+      const len = clamp(mag*9, 0.18, 1.1);
+      drawArrow(p, w[0], w[1], w[0] - gr[0]/mag*len, w[1] - gr[1]/mag*len, C.ink);
+    }
+    g.fillStyle = C.field; g.strokeStyle = C.ink; g.lineWidth = 2.4;
+    g.beginPath(); g.arc(p.X(w[0]), p.Y(w[1]), 7, 0, Math.PI*2); g.fill(); g.stroke();
+
+    const e = err(w[0], w[1]);
+    formula.textContent = "w₁ = " + num(w[0]) + "   w₂ = " + num(w[1]) +
+      "\n∂E/∂w₁ = " + num(gr[0],4) + "   ∂E/∂w₂ = " + num(gr[1],4);
+    errEl.textContent = num(e,3);
+    stepsEl.textContent = plural(steps, "step");
+    lro.textContent = parseFloat(lr.value).toFixed(1);
+  }
+
+  function take(){
+    const before = err(w[0], w[1]);
+    const gr = grad(w[0], w[1]), rate = parseFloat(lr.value);
+    w = [w[0] - rate*gr[0], w[1] - rate*gr[1]];
+    steps++;
+    trail.push(w.slice());
+    if(trail.length > 400) trail.shift();
+    const after = err(w[0], w[1]);
+    recent.push(after > before + 1e-6 ? 1 : 0);
+    if(recent.length > 20) recent.shift();
+    const rises = recent.reduce((a,b) => a+b, 0);
+    if(recent.length === 20 && rises >= 7){
+      msg.textContent = rises + " of the last twenty steps raised the error rather than lowering it. " +
+        "At this rate every crossing overshoots, so the marker circles the valley instead of arriving — bounded, because the sigmoid flattens out and holds it in, but not converging.";
+      msg.classList.add("hit");
+    } else if(after > before + 1e-6){
+      msg.textContent = "That step raised the error, from " + num(before,4) + " to " + num(after,4) +
+        ". The direction was downhill; the distance was too far.";
+      msg.classList.add("hit");
+    } else if(Math.hypot(gr[0], gr[1]) < 2e-4){
+      stop();
+      msg.textContent = "The gradient has gone to nothing at w₁ = " + num(w[0]) + ", w₂ = " + num(w[1]) +
+        ", which is the bottom of this surface. " + plural(steps,"step") + " to get here.";
+      msg.classList.add("hit");
+    } else {
+      msg.textContent = "E fell from " + num(before,4) + " to " + num(after,4) + ".";
+      msg.classList.remove("hit");
+    }
+    render();
+  }
+  function stop(){
+    running = false;
+    runBtn.textContent = "Run";
+  }
+  function tick(ts){
+    if(!running) return;
+    if(ts - last > 55){ last = ts; take(); }
+    if(running) requestAnimationFrame(tick);
+  }
+
+  stepBtn.addEventListener("click", () => { stop(); take(); });
+  runBtn.addEventListener("click", () => {
+    running = !running;
+    runBtn.textContent = running ? "Pause" : "Run";
+    if(running){ last = 0; requestAnimationFrame(tick); }
+  });
+  resetBtn.addEventListener("click", () => {
+    stop(); w = START.slice(); trail = [START.slice()]; steps = 0; recent = [];
+    msg.textContent = ""; msg.classList.remove("hit"); render();
+  });
+  lr.addEventListener("input", render);
+
+  function place(ev){
+    const q = pointerPos(p, ev);
+    w = [clamp(q[0],-2,4), clamp(q[1],-2,4)];
+    trail = [w.slice()]; steps = 0; recent = [];
+    msg.textContent = ""; msg.classList.remove("hit");
+    render();
+  }
+  cv.addEventListener("pointerdown", ev => {
+    stop(); drag = true; cv.setPointerCapture(ev.pointerId); place(ev);
+  });
+  cv.addEventListener("pointermove", ev => { if(drag) place(ev); });
+  cv.addEventListener("pointerup", () => { drag = false; });
+  cv.addEventListener("keydown", ev => {
+    const d = { ArrowLeft:[-0.12,0], ArrowRight:[0.12,0], ArrowUp:[0,0.12], ArrowDown:[0,-0.12] }[ev.key];
+    if(!d) return;
+    ev.preventDefault(); stop();
+    w = [clamp(w[0]+d[0],-2,4), clamp(w[1]+d[1],-2,4)];
+    trail = [w.slice()]; steps = 0; recent = [];
+    render();
+  });
+
+  document.addEventListener("panelshow", e => { if(e.detail !== "surface") stop(); });
+  redraws.push(() => { p.fit(); render(); });
+  render();
+})();
+
+/* ============================ 3. sharing out the blame ============================ */
+
+(function blame(){
+  const p = Plot(document.getElementById("blame-net"), [0,1,0,1]);
+  const group   = document.getElementById("blame-case");
+  const formula = document.getElementById("blame-formula");
+  const outEl   = document.getElementById("blame-out");
+  const tbody   = document.querySelector("#blame-table tbody");
+  const stepBtn = document.getElementById("blame-step");
+  const seedBtn = document.getElementById("blame-seed");
+  const msg     = document.getElementById("blame-msg");
+
+  const NODE = { x0:[0.10,0.76], x1:[0.10,0.24], h0:[0.46,0.80], h1:[0.46,0.20], y:[0.86,0.50] };
+  let net = makeNet(20250906), at = 0;
+
+  function px(k){ return [p.X(NODE[k][0]), p.Y(NODE[k][1])]; }
+
+  function edge(g, from, to, gr, scale){
+    const a = px(from), b = px(to);
+    /* the update is −gradient; an exactly zero partial is neither way */
+    g.strokeStyle = Math.abs(gr) < 1e-9 ? C.rule : (gr < 0 ? C.on : C.off);
+    g.lineWidth = clamp(Math.abs(gr)*scale, 0.9, 9);
+    g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();
+  }
+  function node(g, k, label, val, r){
+    const a = px(k);
+    g.fillStyle = val === null ? C.field : outColour(val);
+    g.strokeStyle = C.ink; g.lineWidth = 1.8;
+    g.beginPath(); g.arc(a[0],a[1],r,0,Math.PI*2); g.fill(); g.stroke();
+    g.fillStyle = C.ink;
+    g.font = '500 12px "IBM Plex Mono", monospace';
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(label, a[0], a[1] - (val === null ? 0 : 7));
+    if(val !== null){
+      g.font = '400 11px "IBM Plex Mono", monospace';
+      g.fillText(val.toFixed(2), a[0], a[1] + 8);
+    }
+  }
+
+  function render(){
+    const x = PTS[at], t = XOR[at];
+    const o = gradOne(net, x, t);
+    const g = p.ctx;
+    g.clearRect(0,0,p.w,p.h);
+    g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+
+    let big = 1e-6;
+    for(let j=0;j<2;j++){
+      big = Math.max(big, Math.abs(o.g.w[j][0]), Math.abs(o.g.w[j][1]), Math.abs(o.g.v[j]));
+    }
+    const scale = 7/big;
+
+    edge(g, "x0", "h0", o.g.w[0][0], scale); edge(g, "x1", "h0", o.g.w[0][1], scale);
+    edge(g, "x0", "h1", o.g.w[1][0], scale); edge(g, "x1", "h1", o.g.w[1][1], scale);
+    edge(g, "h0", "y",  o.g.v[0], scale);    edge(g, "h1", "y",  o.g.v[1], scale);
+
+    node(g, "x0", "x₁", x[0], 17);
+    node(g, "x1", "x₂", x[1], 17);
+    node(g, "h0", "h₁", o.h[0], 21);
+    node(g, "h1", "h₂", o.h[1], 21);
+    node(g, "y",  "y",  o.y, 21);
+
+    g.fillStyle = C.ink2;
+    g.font = '400 11px "IBM Plex Mono", monospace';
+    g.textAlign = "center"; g.textBaseline = "top";
+    g.fillText("target " + t, px("y")[0], px("y")[1] + 28);
+
+    formula.textContent =
+      "δ_y = (y − t)·y(1 − y) = " + num(o.dOut, 4) +
+      "\nδ₁ = δ_y · v₁ · h₁(1 − h₁) = " + num(o.dH[0], 4) +
+      "\nδ₂ = δ_y · v₂ · h₂(1 − h₂) = " + num(o.dH[1], 4);
+    outEl.textContent = "y = " + num(o.y,3) + " · t = " + t + " · E = " + num(o.E,4);
+
+    const rows = [
+      ["w₁₁", net.w[0][0], o.g.w[0][0]], ["w₁₂", net.w[0][1], o.g.w[0][1]], ["b₁", net.bh[0], o.g.bh[0]],
+      ["w₂₁", net.w[1][0], o.g.w[1][0]], ["w₂₂", net.w[1][1], o.g.w[1][1]], ["b₂", net.bh[1], o.g.bh[1]],
+      ["v₁",  net.v[0],    o.g.v[0]],    ["v₂",  net.v[1],    o.g.v[1]],    ["b_y", net.bo, o.g.bo]
+    ];
+    tbody.innerHTML = rows.map(r =>
+      "<tr><td>" + r[0] + "</td><td>" + num(r[1]) + "</td><td class='" +
+      (Math.abs(r[2]) < 1e-9 ? "" : (r[2] < 0 ? "pos" : "neg")) + "'>" + num(r[2],4) + "</td></tr>"
+    ).join("");
+
+    const dead = Math.abs(o.dH[0]) < 0.002 && Math.abs(o.dH[1]) < 0.002;
+    msg.textContent = dead
+      ? "Both hidden deltas are near zero on this case: the units are saturated, so the error reaches them as almost nothing and their weights barely move."
+      : "The thicker the edge, the more this one case wants that weight moved. The output weights carry the most because the blame reaches them first and undiluted.";
+    msg.classList.add("hit");
+  }
+
+  group.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if(!b) return;
+    at = +b.dataset.i;
+    Array.prototype.forEach.call(group.querySelectorAll("button"), x =>
+      x.setAttribute("aria-pressed", String(+x.dataset.i === at)));
+    render();
+  });
+  stepBtn.addEventListener("click", () => {
+    const before = gradOne(net, PTS[at], XOR[at]);
+    descend(net, before.g, LR);
+    const after = gradOne(net, PTS[at], XOR[at]);
+    render();
+    msg.textContent = "One update on this case alone: E went from " + num(before.E,4) +
+      " to " + num(after.E,4) + ". The other three cases were not consulted, and two of them are now slightly worse off.";
+    msg.classList.add("hit");
+  });
+  seedBtn.addEventListener("click", () => {
+    net = makeNet((Math.random()*1e9)|0);
+    render();
+    msg.textContent = "A fresh set of random weights. The pattern of blame is different, and none of it was chosen.";
+    msg.classList.add("hit");
+  });
+
+  redraws.push(() => { p.fit(); render(); });
+  render();
+})();
+
+/* hidden space, shared by the last two panels: where the four cases land once
+   the hidden units have spoken, and the line the output unit draws there */
+function drawHidden(p, net, showLine){
+  field(p, "h₁", "h₂");
+  const hs = PTS.map(x => fwd(net, x).h);
+  if(showLine) drawBoundary(p, net.v[0], net.v[1], net.bo);
+  const drawn = [];
+  for(let i=0;i<4;i++){
+    const twin = drawn.find(d => Math.hypot(d.x-hs[i][0], d.y-hs[i][1]) < 0.04);
+    if(twin){ twin.tags.push(NAMES[i]); twin.mixed = twin.cls !== XOR[i]; continue; }
+    drawn.push({ x:hs[i][0], y:hs[i][1], cls:XOR[i], tags:[NAMES[i]], mixed:false,
+                 ok:(fwd(net, PTS[i]).y >= 0.5 ? 1 : 0) === XOR[i] });
+  }
+  drawn.forEach(d => drawPoint(p, d.x, d.y, d.cls, !d.ok || d.mixed, d.tags.join(" + ")));
+  return hs;
+}
+
+/* ============================ 4. finding the fold ============================ */
+
+(function learn(){
+  const ip = Plot(document.getElementById("learn-in"),  [-0.25,1.25,-0.25,1.25]);
+  const hp = Plot(document.getElementById("learn-hid"), [-0.25,1.25,-0.25,1.25]);
+  const tp = Plot(document.getElementById("learn-trace"), [0,1,0,1]);
+  const runBtn   = document.getElementById("learn-run");
+  const epochBtn = document.getElementById("learn-epoch");
+  const newBtn   = document.getElementById("learn-new");
+  const epochsEl = document.getElementById("learn-epochs");
+  const errEl    = document.getElementById("learn-err");
+  const scoreEl  = document.getElementById("learn-score");
+  const formula  = document.getElementById("learn-formula");
+  const mergeEl  = document.getElementById("learn-merge");
+  const msg      = document.getElementById("learn-msg");
+  const BUDGET   = 4000;
+
+  let net, epochs, trace, stat, running = false, done = false;
+
+  function fresh(){
+    net = makeNet((Math.random()*1e9)|0);
+    epochs = 0; trace = []; done = false;
+    stat = gradAll(net, XOR);
+    running = false; runBtn.textContent = "Train";
+    msg.textContent = "Small random weights, and no instruction about what the hidden units are for.";
+    msg.classList.remove("hit");
+    render();
+  }
+  function advance(k){
+    for(let i=0;i<k;i++){
+      stat = gradAll(net, XOR);
+      trace.push(stat.E);
+      if(solved(stat)){
+        done = true; running = false; runBtn.textContent = "Train";
+        msg.textContent = "Settled after " + plural(epochs,"epoch") + ". Every weight above was found by the two lines in the last panel, applied over and over.";
+        msg.classList.add("hit");
+        return;
+      }
+      if(epochs >= BUDGET){
+        done = true; running = false; runBtn.textContent = "Train";
+        msg.innerHTML = "Stuck at " + stat.right + " of 4 after " + BUDGET +
+          " epochs, with the error flat. Try another start — and see <a href=\"#limits\">the last panel</a> for how often this happens.";
+        msg.classList.add("hit");
+        return;
+      }
+      descend(net, stat.g, LR);
+      epochs++;
+    }
+  }
+
+  function drawTrace(){
+    const g = tp.ctx;
+    g.clearRect(0,0,tp.w,tp.h);
+    g.fillStyle = C.field; g.fillRect(0,0,tp.w,tp.h);
+    const padL = 30, padB = 15, padT = 9;
+    const h = tp.h - padB - padT, wid = tp.w - padL - 8;
+
+    g.strokeStyle = C.grid; g.lineWidth = 1;
+    g.font = '400 10px "IBM Plex Mono", monospace';
+    g.fillStyle = C.ink2; g.textAlign = "right"; g.textBaseline = "middle";
+    for(let v=0; v<=1.0001; v+=0.25){
+      const y = Math.round(padT + h - h*v) + .5;
+      g.beginPath(); g.moveTo(padL, y); g.lineTo(tp.w-8, y); g.stroke();
+      if(v === 0 || v === 0.5 || v === 1) g.fillText(v.toFixed(2), padL-5, y);
+    }
+    if(trace.length < 2){
+      g.textAlign = "left";
+      g.fillText("no epochs yet", padL+6, padT + h/2);
+      return;
+    }
+    g.strokeStyle = C.ink; g.lineWidth = 1.6;
+    g.beginPath();
+    for(let i=0;i<trace.length;i++){
+      const x = padL + wid*i/(trace.length-1);
+      const y = padT + h - h*clamp(trace[i], 0, 1);
+      i ? g.lineTo(x,y) : g.moveTo(x,y);
+    }
+    g.stroke();
+    g.fillStyle = C.ink2; g.textAlign = "right"; g.textBaseline = "top";
+    g.fillText(plural(epochs,"epoch"), tp.w-8, padT + h + 3);
+  }
+
+  function render(){
+    paintCells(ip, 52, (x,y) => outColour(fwd(net, [x,y]).y));
+    paintedFrame(ip, "x₁", "x₂");
+    for(let i=0;i<4;i++){
+      const y = fwd(net, PTS[i]).y;
+      drawPoint(ip, PTS[i][0], PTS[i][1], XOR[i], (y >= 0.5 ? 1 : 0) !== XOR[i], NAMES[i]);
+    }
+    const hs = drawHidden(hp, net, true);
+    drawTrace();
+
+    epochsEl.textContent = epochs;
+    errEl.textContent = num(stat.E,4);
+    scoreEl.textContent = stat.right + " of 4";
+    formula.textContent =
+      "h₁ = σ(" + num(net.w[0][0]) + "·x₁ " + signed(net.w[0][1]) + "·x₂ " + signed(net.bh[0]) + ")\n" +
+      "h₂ = σ(" + num(net.w[1][0]) + "·x₁ " + signed(net.w[1][1]) + "·x₂ " + signed(net.bh[1]) + ")\n" +
+      "y = σ(" + num(net.v[0]) + "·h₁ " + signed(net.v[1]) + "·h₂ " + signed(net.bo) + ")";
+
+    const d = Math.hypot(hs[1][0]-hs[2][0], hs[1][1]-hs[2][1]);
+    const gap = "In hidden space the two awkward cases, (0,1) and (1,0), sit " + num(d,3) +
+      " apart, against the 0.000 of the arrangement built by hand in the last lesson. ";
+    mergeEl.textContent = gap + (epochs === 0
+      ? "Nothing has been trained yet, so that is only where the random weights happen to put them."
+      : (!solved(stat)
+        ? "Still moving."
+        : (d < 0.15
+          ? "This run has found something close to the arrangement you were shown."
+          : "This run has found a different arrangement that computes XOR just as well.")));
+  }
+
+  function tick(){
+    if(!running) return;
+    advance(8);
+    render();
+    if(running) requestAnimationFrame(tick);
+  }
+
+  runBtn.addEventListener("click", () => {
+    if(done) fresh();
+    running = !running;
+    runBtn.textContent = running ? "Pause" : "Train";
+    if(running) requestAnimationFrame(tick);
+  });
+  epochBtn.addEventListener("click", () => {
+    running = false; runBtn.textContent = "Train";
+    if(!done) advance(1);
+    render();
+  });
+  newBtn.addEventListener("click", fresh);
+
+  document.addEventListener("panelshow", e => {
+    if(e.detail !== "learn" && running){ running = false; runBtn.textContent = "Train"; }
+  });
+  redraws.push(() => { ip.fit(); hp.fit(); tp.fit(); if(net) render(); });
+  fresh();
+})();
+
+/* ============================ 5. what descent does not promise ============================ */
+
+(function limits(){
+  const hp = Plot(document.getElementById("lim-hid"), [-0.25,1.25,-0.25,1.25]);
+  const bp = Plot(document.getElementById("lim-hist"), [0,1,0,1]);
+  const runBtn  = document.getElementById("lim-run");
+  const showBtn = document.getElementById("lim-show");
+  const zeroBtn = document.getElementById("lim-zero");
+  const tally   = document.getElementById("lim-tally");
+  const outEl   = document.getElementById("lim-out");
+  const cap     = document.getElementById("lim-cap");
+  const msg     = document.getElementById("lim-msg");
+  const msg2    = document.getElementById("lim-msg2");
+
+  const TRIALS = 200, BUDGET = 2000;
+  const EDGES = [0,150,300,450,600,750,900,1050];
+  let bins = null, failed = 0, med = 0;
+  let shown = makeNet(20250906);
+
+  function runTrials(){
+    bins = new Array(EDGES.length).fill(0);
+    failed = 0;
+    const eps = [];
+    for(let k=0;k<TRIALS;k++){
+      const r = trainTo(makeNet((Math.random()*1e9)|0), BUDGET);
+      if(!r.ok){ failed++; continue; }
+      eps.push(r.epochs);
+      let b = EDGES.length - 1;
+      for(let i=0;i<EDGES.length-1;i++) if(r.epochs < EDGES[i+1]){ b = i; break; }
+      bins[b]++;
+    }
+    eps.sort((a,b) => a-b);
+    med = eps.length ? eps[eps.length >> 1] : 0;
+    const okCount = TRIALS - failed;
+    tally.textContent = okCount + " of " + TRIALS + " learned it";
+    msg.textContent = okCount + " of " + TRIALS + " restarts reached all four cases within " +
+      BUDGET + " epochs, the middling one taking " + med + ". The other " + failed +
+      " never did, and running them for longer does not help: they are not slow, they have stopped.";
+    msg.classList.add("hit");
+    drawHist();
+  }
+
+  function drawHist(){
+    const g = bp.ctx;
+    g.clearRect(0,0,bp.w,bp.h);
+    g.fillStyle = C.field; g.fillRect(0,0,bp.w,bp.h);
+    const padL = 8, padB = 18, padT = 10;
+    const h = bp.h - padB - padT, wid = bp.w - padL - 8;
+    if(!bins){
+      g.fillStyle = C.ink2;
+      g.font = '400 11px "IBM Plex Mono", monospace';
+      g.textAlign = "left"; g.textBaseline = "middle";
+      g.fillText("press the button", padL+4, padT + h/2);
+      return;
+    }
+    const cols = bins.concat([failed]);
+    const top = Math.max(1, Math.max.apply(null, cols));
+    const bw = wid/cols.length;
+    g.font = '400 9.5px "IBM Plex Mono", monospace';
+    g.textAlign = "center";
+    cols.forEach((v,i) => {
+      const x = padL + i*bw, bh = h*v/top;
+      g.fillStyle = i === cols.length-1 ? C.alert : C.off;
+      g.fillRect(x+2, padT + h - bh, Math.max(bw-4,2), Math.max(bh, v ? 1.5 : 0));
+      g.fillStyle = C.ink2; g.textBaseline = "top";
+      g.fillText(i === cols.length-1 ? "never" : String(EDGES[i]), x + bw/2, padT + h + 3);
+    });
+  }
+
+  function showNet(net, caption, note){
+    shown = net;
+    drawHidden(hp, shown, true);
+    cap.textContent = caption;
+    let lines = [];
+    for(let i=0;i<4;i++){
+      lines.push("x " + NAMES[i] + "   y = " + num(fwd(shown, PTS[i]).y, 3) + "   t = " + XOR[i]);
+    }
+    outEl.textContent = lines.join("\n");
+    msg2.textContent = note;
+    msg2.classList.add("hit");
+  }
+
+  showBtn.addEventListener("click", () => {
+    for(let k=0;k<400;k++){
+      const net = makeNet((Math.random()*1e9)|0);
+      const r = trainTo(net, BUDGET);
+      if(!r.ok){
+        showNet(net,
+          "Hidden space for a run that stopped at " + r.right + " of 4.",
+          "Two of the four cases have been folded onto the same point in hidden space, and they are cases that want opposite answers. From there they are one input as far as the output unit is concerned, so it splits the difference and answers near 0.50 to both. Undoing the fold would mean climbing back out.");
+        return;
+      }
+    }
+    msg2.textContent = "Four hundred restarts and every one of them learned it. Press again.";
+    msg2.classList.add("hit");
+  });
+
+  zeroBtn.addEventListener("click", () => {
+    const net = zeroNet();
+    for(let e=0;e<4000;e++) descend(net, gradAll(net, XOR).g, LR);
+    showNet(net,
+      "Hidden space after 4000 epochs from an all-zero start. All four cases are on one point.",
+      "Four thousand epochs, and every weight is still exactly zero. Identical units get identical blame and take identical steps, so nothing ever tells them apart. The gradient is perfectly correct and perfectly useless.");
+  });
+
+  runBtn.addEventListener("click", runTrials);
+
+  redraws.push(() => { hp.fit(); bp.fit(); drawHidden(hp, shown, true); drawHist(); });
+  showNet(shown,
+    "Hidden space for an untrained network, before either button has been pressed.",
+    "Nothing here has been trained yet. The four cases sit where random weights happen to put them. Press either button for a network that has stopped somewhere it should not have.");
+  drawHist();
+})();
+
+initPanels([
+  ["dial","The dial"], ["surface","The error surface"], ["blame","Assigning blame"],
+  ["learn","Finding the fold"], ["limits","No guarantee"]
+]);
+</script>
+</body>
+</html>

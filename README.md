@@ -5,6 +5,7 @@ index.html              landing page and lesson index
 lessons/perceptron.html lesson 1 — one unit, two inputs
 lessons/images.html     lesson 2 — one unit, 144 pixel inputs
 lessons/xor.html        lesson 3 — where one unit runs out
+lessons/backprop.html   lesson 4 — where the weights come from
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting and panel machinery
 ```

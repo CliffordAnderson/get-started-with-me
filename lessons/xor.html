@@ -334,17 +334,30 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
     </div>
     <div>
       <p>The book is more careful than its reputation. Minsky and Papert observed in passing that a universal computer could be assembled out of linear threshold units, so the power of layered machines was never the question. What they doubted, in a short section near the end, was that a learning theory as clean as the perceptron rule would extend to them — <q>our intuitive judgment that the extension is sterile</q>, a judgment they invited their readers to refute.</p>
-      <p>The step function is part of the difficulty: its gradient is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the sigmoid setting above does, restores that signal, and backpropagation (Rumelhart, Hinton and Williams, 1986) uses it to assign credit through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep.</p>
+      <p>The step function is part of the difficulty: its gradient is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the sigmoid setting above does, restores that signal, and backpropagation (Rumelhart, Hinton and Williams, 1986) uses it to assign credit through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep, and the next lesson runs it — the same two hidden units and the same fold, but with every weight found rather than given.</p>
     </div>
   </div>
 </section>
 
-<a class="nextup" href="../index.html">
+<a class="nextup" href="backprop.html">
   <div>
-    <p class="lab">Lesson 3 of 3</p>
-    <span class="ttl">Back to all lessons</span>
-    <p class="say">More lessons are being written. Each one is a working instrument like this.</p>
+    <p class="lab">Next lesson</p>
+    <span class="ttl">A slope to follow</span>
+    <p class="say">Every weight on this page was set by hand. The next lesson throws them away and has the network find them for itself, by measuring how wrong it is and walking downhill.</p>
   </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+    <g fill="none" stroke="#D7D4C7" stroke-width="1">
+      <ellipse cx="94" cy="59" rx="64" ry="46"/>
+      <ellipse cx="94" cy="59" rx="49" ry="35"/>
+      <ellipse cx="94" cy="59" rx="34" ry="24"/>
+      <ellipse cx="94" cy="59" rx="20" ry="14"/>
+      <ellipse cx="94" cy="59" rx="8" ry="6"/>
+    </g>
+    <polyline points="16,14 42,45 68,29 86,55 100,44 88,63 95,57" fill="none"
+      stroke="#22262C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="16" cy="14" r="3.4" fill="#EFEDE5" stroke="#22262C" stroke-width="1.6"/>
+    <rect x="90" y="54" width="9" height="9" rx="2" fill="#8A5206"/>
+  </svg>
 </a>
 
 <footer>
