@@ -22,7 +22,10 @@ canvas.hist{aspect-ratio:auto;height:132px}
 
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
-  <a class="away" href="../index.html">All lessons</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+  </nav>
 </div>
 
 <header class="hero">
@@ -31,7 +34,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
     <div class="hero-intro">
       <p class="kicker">lesson 4 · backpropagation</p>
       <h1>A slope to follow</h1>
-      <p class="lede">The last lesson built a network that computes XOR and then handed you its weights, already set. This one throws them away. Every number here starts as a small random one, and the network finds the fold on its own — by measuring how wrong it is and walking downhill.</p>
+      <p class="lede">The last lesson built a network that computes <a class="term" href="../glossary.html#xor">XOR</a> and then handed you its <a class="term" href="../glossary.html#weight">weights</a>, already set. This one throws them away. Every number here starts as a small random one, and the network finds the fold on its own — by measuring how wrong it is and walking downhill.</p>
     </div>
     <div class="hero-meta">
       <p class="readout"><b id="hero-epoch">0</b> epochs · <span id="hero-score">2 of 4</span></p>
@@ -63,8 +66,8 @@ canvas.hist{aspect-ratio:auto;height:132px}
     <div class="sec-num">1</div>
     <div>
       <h2>A dial instead of a switch</h2>
-      <p>To walk downhill you need a hill. The threshold unit of the first three lessons does not give you one: its answer is 0 or 1 and nothing in between, so the error it makes sits on a flat step and stays there however you nudge the weights, right up to the moment it jumps. Replace the switch with a dial — a sigmoid, which slides smoothly from 0 to 1 — and the same error becomes a surface with a slope you can read off.</p>
-      <p>The unit below has two inputs and is being asked for AND. Its second weight and its bias are held still; you may move the first. Watch the error as you do.</p>
+      <p>To walk downhill you need a hill. The <a class="term" href="../glossary.html#threshold">threshold</a> unit of the first three lessons does not give you one: its answer is 0 or 1 and nothing in between, so the error it makes sits on a flat step and stays there however you nudge the weights, right up to the moment it jumps. Replace the switch with a dial — a <a class="term" href="../glossary.html#sigmoid">sigmoid</a>, which slides smoothly from 0 to 1 — and the same error becomes a surface with a slope you can read off.</p>
+      <p>The unit below has two inputs and is being asked for AND. Its second weight and its <a class="term" href="../glossary.html#bias">bias</a> are held still; you may move the first. Watch the error as you do.</p>
     </div>
   </div>
 
@@ -111,7 +114,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">The staircase is not a poor slope; it is no slope at all. On every tread the derivative is exactly zero, so a rule that asks <em>which way is down</em> is told nothing, and at the two risers it is undefined. The perceptron rule sidesteps this by not asking — it moves the weights by a fixed recipe whenever the answer comes out wrong — but that recipe needs to know which unit was wrong, and in a network with a hidden layer nobody tells the hidden units what they should have said.</p>
+    <p class="note">The staircase is not a poor slope; it is no slope at all. On every tread the derivative is exactly zero, so a rule that asks <em>which way is down</em> is told nothing, and at the two risers it is undefined. The <a class="term" href="../glossary.html#perceptron">perceptron</a> rule sidesteps this by not asking — it moves the weights by a fixed recipe whenever the answer comes out wrong — but that recipe needs to know which unit was wrong, and in a network with a <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> nobody tells the hidden units what they should have said.</p>
     <p class="note">The sigmoid's valley has its lowest point at w₁ = 1.00, which is the middle of the flat tread where the step unit gets all four cases right. The smooth version is not solving a different problem; it is solving the same one in a way that leaves a trail to follow. Note also that its error there is 0.230 rather than zero — a sigmoid never quite reaches 0 or 1, so a correct answer is always a confident approximation and never an exact one.</p>
   </div>
 </section>
@@ -121,7 +124,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
     <div class="sec-num">2</div>
     <div>
       <h2>The error surface</h2>
-      <p>Free the second weight as well and the curve becomes a landscape: one height, the error, over every pair of weights the unit could hold. Learning is now a matter of standing somewhere on it and repeatedly stepping in the direction that goes down fastest. That direction is the gradient, and for a single smooth unit it costs almost nothing to work out.</p>
+      <p>Free the second weight as well and the curve becomes a landscape: one height, the error, over every pair of weights the unit could hold. Learning is now a matter of standing somewhere on it and repeatedly stepping in the direction that goes down fastest. That direction is the <a class="term" href="../glossary.html#gradient">gradient</a>, and for a single smooth unit it costs almost nothing to work out.</p>
       <p>Drag the marker to put the weights anywhere you like, then take the steps by hand or let them run.</p>
     </div>
   </div>
@@ -206,7 +209,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">The second line is the one that does the work, and it is only the chain rule written out. The hidden unit's blame is the output's blame, multiplied by the weight along which its answer travelled, multiplied by how much its own output would have moved had its input moved — which is <em>h</em>(1 − <em>h</em>), and which is nearly zero when the unit is already saturated near 0 or 1. A confident hidden unit is a deaf one. That factor is where the step function's flatness has gone: it has not been abolished, only softened into something that is merely small rather than exactly zero.</p>
+    <p class="note">The second line is the one that does the work, and it is only the <a class="term" href="../glossary.html#chain-rule">chain rule</a> written out. The hidden unit's blame is the output's blame, multiplied by the weight along which its answer travelled, multiplied by how much its own output would have moved had its input moved — which is <em>h</em>(1 − <em>h</em>), and which is nearly zero when the unit is already saturated near 0 or 1. A confident hidden unit is a deaf one. That factor is where the <a class="term" href="../glossary.html#step-function">step function</a>'s flatness has gone: it has not been abolished, only softened into something that is merely small rather than exactly zero.</p>
     <p class="note">Nothing above is specific to two layers. The same two lines applied again reach a third layer, and again a fourth, each one multiplying in one more weight and one more slope. That is the whole method, and also its long-running weakness: a product of many small factors is a very small number, and a hidden unit twenty layers back can be told almost nothing about what it did wrong.</p>
   </div>
 </section>
@@ -257,7 +260,7 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">Watch the trace rather than the epoch counter. A run usually sheds a little error early on, then hangs for a long stretch, moving so slowly that it looks finished, before dropping steeply near the end. It is tempting to say that the flat stretch is the two hidden units sitting identical until the fold appears, but that is not what the weights show — they have already drifted well apart by then, and the stall is something less tidy. Nothing schedules the shape, and no part of the rule knows about it. It falls out of the surface the weights are walking on.</p>
+    <p class="note">Watch the trace rather than the <a class="term" href="../glossary.html#epoch">epoch</a> counter. A run usually sheds a little error early on, then hangs for a long stretch, moving so slowly that it looks finished, before dropping steeply near the end. It is tempting to say that the flat stretch is the two hidden units sitting identical until the fold appears, but that is not what the weights show — they have already drifted well apart by then, and the stall is something less tidy. Nothing schedules the shape, and no part of the rule knows about it. It falls out of the surface the weights are walking on.</p>
     <p class="note">Train it a few times over and the solutions it finds will not all be the same. Sometimes it recovers the neat arrangement from the last lesson, with the two awkward cases landing on the same point; often it finds some other corner of hidden space where a line happens to work, with the four cases spread out and no tidy interpretation available. Both compute XOR. Only one of them was the answer anybody would have written down, and the method has no preference between them.</p>
   </div>
 </section>
@@ -267,7 +270,7 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
     <div class="sec-num">5</div>
     <div>
       <h2>What descent does not promise</h2>
-      <p>Rosenblatt's rule came with a theorem: if a separating line exists, the perceptron will find it, in a finite number of corrections, from any starting weights. Gradient descent through a hidden layer has no such guarantee and cannot have one. The surface is no longer a single valley, and a method that only ever moves downhill stops wherever the ground is level — whether or not that place is any good.</p>
+      <p>Rosenblatt's rule came with a theorem: if a separating line exists, the perceptron will find it, in a finite number of corrections, from any starting weights. <a class="term" href="../glossary.html#gradient-descent">Gradient descent</a> through a hidden layer has no such guarantee and cannot have one. The surface is no longer a single valley, and a method that only ever moves downhill stops wherever the ground is level — whether or not that place is any good.</p>
       <p>The button below trains this same network from two hundred different random starts and counts what happens. The runs are not stored anywhere; they are run when you press it.</p>
     </div>
   </div>
@@ -304,7 +307,7 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
   <div class="split" style="margin-top:2.2rem">
     <div>
       <p>The failures nearly all look alike, which is what makes them interesting. The network does fold the space — but it folds the wrong pair together. Which pair varies from one stuck run to the next; that the two cases disagree about the answer almost never does. Once they sit on the same point in hidden space they are a single input as far as the output unit is concerned, and no weights on it can pull them apart again. So it answers close to 0.50 to both, which is half a mistake each and the best available without unfolding first. Unfolding means going uphill, and the method will not go uphill.</p>
-      <p>The second button is a different failure and a shorter one. Start every weight at zero and the two hidden units are identical; being identical, they receive identical blame; receiving identical blame, they take identical steps and stay identical for ever. The gradient is not wrong, and the network never moves. Random initialisation is not a convenience here, it is what breaks the symmetry.</p>
+      <p>The second button is a different failure and a shorter one. Start every weight at zero and the two hidden units are identical; being identical, they receive identical blame; receiving identical blame, they take identical steps and stay identical for ever. The gradient is not wrong, and the network never moves. Random <a class="term" href="../glossary.html#weight-initialisation">initialisation</a> is not a convenience here, it is what breaks the symmetry.</p>
     </div>
     <div>
       <p>None of this stopped the method from working. It stops it from being a theorem, which is a different complaint and the one Minsky and Papert actually made. What was found in the 1980s was not a proof that layered learning converges — there is none — but that in practice, on problems people cared about, it converged often enough to be worth the trouble, and that the trouble scaled.</p>

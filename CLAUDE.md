@@ -100,6 +100,18 @@ Appending is easy; inserting touches more than you would expect, and the compile
   that name its subject. Those go silently wrong when the order changes. Grep for
   `next lesson` and `last lesson` after any renumbering.
 
+## The glossary
+
+`glossary.html` is a fifth page, not a lesson: one alphabetical entry per technical term, each
+a plain paragraph then an `.exact` one, then the lessons it appears in and a Wikipedia link.
+Lessons link a term on its **first mention only**, `<a class="term" href="../glossary.html#id">`.
+That restraint is deliberate — the prose carries the teaching, and a paragraph strewn with
+links stops reading like prose. Adding a term touches three places: the entry, the
+`.gloss-jump` nav, and the first mention in each lesson that uses it.
+
+Check outbound links resolve before shipping them; a term with no good article says so rather
+than pointing somewhere approximate.
+
 ## Voice
 
 Lessons are written, not templated, and the prose carries as much of the teaching as the

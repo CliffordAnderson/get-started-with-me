@@ -31,7 +31,10 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
-  <a class="away" href="../index.html">All lessons</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+  </nav>
 </div>
 
 <header class="hero">
@@ -40,7 +43,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="hero-intro">
       <p class="kicker">lesson 2 · cats and dogs</p>
       <h1>A line drawn through pictures</h1>
-      <p class="lede">Nothing about the machine from the last lesson changes. It still multiplies each input by a weight, adds a bias, and fires if the total clears zero. The only difference is that there are now a hundred and forty-four inputs instead of two, and each one is the brightness of a single pixel.</p>
+      <p class="lede">Nothing about the machine from the last lesson changes. It still multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires if the total clears zero. The only difference is that there are now a hundred and forty-four inputs instead of two, and each one is the brightness of a single <a class="term" href="../glossary.html#pixel">pixel</a>.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">it says <span class="lamp cat" id="hero-lamp">cat</span></p>
@@ -102,7 +105,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="sec-num">2</div>
     <div>
       <h2>What it learns is a picture too</h2>
-      <p>The learning rule is unchanged from the last lesson. Show it a labelled example; if the answer is right, do nothing. If it answered cat when the answer was dog, add that picture's 144 numbers to the 144 weights. If it answered dog when the answer was cat, subtract them. Because the weights are added and subtracted picture-shaped, they stay picture-shaped — so you can fold the list of 144 weights back into a grid and simply look at it.</p>
+      <p>The learning rule is unchanged from the last lesson. Show it a <a class="term" href="../glossary.html#label">labelled</a> example; if the answer is right, do nothing. If it answered cat when the answer was dog, add that picture's 144 numbers to the 144 weights. If it answered dog when the answer was cat, subtract them. Because the weights are added and subtracted picture-shaped, they stay picture-shaped — so you can fold the list of 144 weights back into a grid and simply look at it.</p>
     </div>
   </div>
 
@@ -152,7 +155,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule arrives somewhere close to that from four corrections, because it stops the instant it gets everything right. It is not looking for the best template. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
+    <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule arrives somewhere close to that from four corrections, because it stops the instant it gets everything right. It is not looking for the best <a class="term" href="../glossary.html#template">template</a>. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
     <p class="note">That is worth noticing before the weight image starts looking like understanding. Both pictures say the same thing — <em>ink up here counts against, ink out on the sides counts for</em> — and that single comparison of two regions is the entire theory of animals this machine will ever hold.</p>
   </div>
 </section>
@@ -197,7 +200,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 
     <div>
       <p class="note">The third panel is where the answer actually lives. Ink that lands on brown adds; ink that lands on blue subtracts; ink on the pale middle does nothing at all, however bright it is. The head and its eyes are the brightest things in the picture and they land almost entirely on the pale middle, so they contribute almost nothing — they are the parts cats and dogs draw identically, and a correction that added them for a dog was cancelled by one that subtracted them for a cat.</p>
-      <p class="note">Notice also that the total's size means nothing to the machine. Only its sign is read. A picture that scores +0.02 and one that scores +2.0 are both simply <em>dog</em>, and the step function throws the difference away. That discarded margin is what later methods go back for.</p>
+      <p class="note">Notice also that the total's size means nothing to the machine. Only its sign is read. A picture that scores +0.02 and one that scores +2.0 are both simply <em>dog</em>, and the <a class="term" href="../glossary.html#step-function">step function</a> throws the difference away. That discarded <a class="term" href="../glossary.html#margin">margin</a> is what later methods go back for.</p>
     </div>
   </div>
 </section>

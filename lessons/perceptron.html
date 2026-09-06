@@ -21,7 +21,10 @@
 
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
-  <a class="away" href="../index.html">All lessons</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+  </nav>
 </div>
 
 <header class="hero">
@@ -30,7 +33,7 @@
     <div class="hero-intro">
       <p class="kicker">lesson 1 · perceptrons</p>
       <h1>A machine that draws one line</h1>
-      <p class="lede">A perceptron takes a few numbers, weighs them up, and answers yes or no. Everything it can ever decide is a straight boundary through the space of its inputs — and it can find that boundary from labelled examples alone, by correcting its own mistakes.</p>
+      <p class="lede">A <a class="term" href="../glossary.html#perceptron">perceptron</a> takes a few numbers, weighs them up, and answers yes or no. Everything it can ever decide is a straight boundary through the space of its inputs — and it can find that boundary from <a class="term" href="../glossary.html#label">labelled</a> examples alone, by correcting its own mistakes.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">learning</p>
@@ -54,7 +57,7 @@
     <div class="sec-num">1</div>
     <div>
       <h2>What it computes</h2>
-      <p>Give the unit a list of numbers. It multiplies each by a weight of its own, adds them together, adds one more number that belongs to no input — the bias — and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts and in which direction; the bias says how much evidence is needed before the unit will fire at all.</p>
+      <p>Give the unit a list of numbers. It multiplies each by a <a class="term" href="../glossary.html#weight">weight</a> of its own, adds them together, adds one more number that belongs to no input — the <a class="term" href="../glossary.html#bias">bias</a> — and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts and in which direction; the bias says how much evidence is needed before the unit will fire at all.</p>
     </div>
   </div>
 
@@ -90,7 +93,7 @@
 
     <div>
       <p class="note">Set w₂ to zero and the second input stops mattering, whatever it is. Make it negative and that input now argues against firing. Nothing else in the unit can express a preference.</p>
-      <p class="note">Notice how little the bias cares about the input. It shifts every total by the same amount, whatever came in, which is why it is the unit's threshold rather than one of its opinions.</p>
+      <p class="note">Notice how little the bias cares about the input. It shifts every total by the same amount, whatever came in, which is why it is the unit's <a class="term" href="../glossary.html#threshold">threshold</a> rather than one of its opinions.</p>
     </div>
   </div>
 </section>
@@ -186,7 +189,7 @@
     <div>
       <p>What the rule does not do is tell you which situation you are in. Run it on classes that no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. There is no signal in the procedure that distinguishes not yet from never. That gap between a model that cannot express something and an optimizer that keeps trying is worth holding onto; it recurs at every scale of this subject.</p>
       <p>The other thing to keep separate is the unit from the machine. What we have been operating is one threshold unit. Rosenblatt's perceptron was a larger arrangement: a grid of input cells, a middle bank of feature detectors wired to them at random and never adjusted, and a final layer of threshold units whose weights were the only things that learned.</p>
-      <p>The next lesson keeps the single unit and points it at something closer to what that machine was built for: a small grid of pixels to be sorted into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after it shrinks that same limit down to a function you could draw on the back of an envelope, where it can be proved rather than demonstrated.</p>
+      <p>The next lesson keeps the single unit and points it at something closer to what that machine was built for: a small grid of <a class="term" href="../glossary.html#pixel">pixels</a> to be sorted into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after it shrinks that same limit down to a function you could draw on the back of an envelope, where it can be proved rather than demonstrated.</p>
     </div>
 
     <div>

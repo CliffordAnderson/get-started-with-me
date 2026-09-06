@@ -19,7 +19,10 @@
 
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
-  <a class="away" href="../index.html">All lessons</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+  </nav>
 </div>
 
 
@@ -29,7 +32,7 @@
     <div class="hero-intro">
       <p class="kicker">exclusive or · x₁ ⊕ x₂</p>
       <h1>One line, four points</h1>
-      <p class="lede">A perceptron sorts the plane with a single straight cut. Everything on one side is a 1, everything on the other is a 0. Three of XOR's four cases will fall into place. The fourth never does.</p>
+      <p class="lede">A <a class="term" href="../glossary.html#perceptron">perceptron</a> sorts the plane with a single straight cut. Everything on one side is a 1, everything on the other is a 0. Three of <a class="term" href="../glossary.html#xor">XOR</a>'s four cases will fall into place. The fourth never does.</p>
     </div>
     <div class="hero-meta">
       <p class="readout"><b id="hero-score">3</b> of 4 correct</p>
@@ -84,8 +87,8 @@
     </div>
 
     <div>
-      <p>Two other readings of the same function are worth carrying forward. XOR reports whether its inputs <em>differ</em>, which makes it a comparator. And it reports their parity — whether an odd number of them are on — which is the reading that survives past two inputs.</p>
-      <p>None of this is exotic. XOR is the sum bit of binary addition, with AND supplying the carry; it is the parity bit that catches a flipped bit in transmission; it is what a one-time pad applies to a message. What makes it awkward for a perceptron is narrow and specific. Of the sixteen functions of two binary inputs, fourteen can be settled by a single weighted threshold. XOR and its negation are the two that cannot.</p>
+      <p>Two other readings of the same function are worth carrying forward. XOR reports whether its inputs <em>differ</em>, which makes it a comparator. And it reports their <a class="term" href="../glossary.html#parity">parity</a> — whether an odd number of them are on — which is the reading that survives past two inputs.</p>
+      <p>None of this is exotic. XOR is the sum bit of binary addition, with AND supplying the carry; it is the parity bit that catches a flipped bit in transmission; it is what a one-time pad applies to a message. What makes it awkward for a perceptron is narrow and specific. Of the sixteen functions of two binary inputs, fourteen can be settled by a single weighted <a class="term" href="../glossary.html#threshold">threshold</a>. XOR and its negation are the two that cannot.</p>
     </div>
   </div>
 </section>
@@ -107,7 +110,7 @@
     <div class="sec-num">3</div>
     <div>
       <h2>What the unit actually does</h2>
-      <p>A perceptron multiplies each input by a weight, adds a bias, and fires when the total clears zero. The weights tilt the boundary, the bias slides it — but the boundary is always a straight line, and that is the whole of what the unit can represent. Choose a target and try to place it.</p>
+      <p>A perceptron multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires when the total clears zero. The weights tilt the boundary, the bias slides it — but the boundary is always a straight line, and that is the whole of what the unit can represent. Choose a target and try to place it.</p>
     </div>
   </div>
 
@@ -200,7 +203,7 @@
     <div class="sec-num">5</div>
     <div>
       <h2>The reason, in four lines</h2>
-      <p>The failure isn't a matter of searching harder. Read each row of the XOR truth table as a demand on the weights and the four demands turn out to contradict each other.</p>
+      <p>The failure isn't a matter of searching harder. Read each row of the XOR <a class="term" href="../glossary.html#truth-table">truth table</a> as a demand on the weights and the four demands turn out to contradict each other.</p>
     </div>
   </div>
 
@@ -330,11 +333,11 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
   <div class="split">
     <div>
       <p>A single-layer perceptron can ask only one question: which side of a line is this point on? Whatever cannot be split that way is outside what the architecture expresses, and no amount of training reaches it. The limit belongs to the model, not to the optimizer.</p>
-      <p>A hidden layer with a nonlinearity between the layers lets the network re-plot its inputs before the final cut. Each hidden unit still contributes a straight boundary, but the region they carve out jointly can be a corner, a stripe, or an island. Enough hidden units and you can approximate any reasonable decision region to whatever tolerance you like.</p>
+      <p>A <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> with a nonlinearity between the layers lets the network re-plot its inputs before the final cut. Each hidden unit still contributes a straight boundary, but the region they carve out jointly can be a corner, a stripe, or an island. Enough hidden units and you can approximate any reasonable decision region to whatever tolerance you like.</p>
     </div>
     <div>
       <p>The book is more careful than its reputation. Minsky and Papert observed in passing that a universal computer could be assembled out of linear threshold units, so the power of layered machines was never the question. What they doubted, in a short section near the end, was that a learning theory as clean as the perceptron rule would extend to them — <q>our intuitive judgment that the extension is sterile</q>, a judgment they invited their readers to refute.</p>
-      <p>The step function is part of the difficulty: its gradient is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the sigmoid setting above does, restores that signal, and backpropagation (Rumelhart, Hinton and Williams, 1986) uses it to assign credit through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep, and the next lesson runs it — the same two hidden units and the same fold, but with every weight found rather than given.</p>
+      <p>The <a class="term" href="../glossary.html#step-function">step function</a> is part of the difficulty: its <a class="term" href="../glossary.html#gradient">gradient</a> is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the <a class="term" href="../glossary.html#sigmoid">sigmoid</a> setting above does, restores that signal, and <a class="term" href="../glossary.html#backpropagation">backpropagation</a> (Rumelhart, Hinton and Williams, 1986) uses it to assign credit through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep, and the next lesson runs it — the same two hidden units and the same fold, but with every weight found rather than given.</p>
     </div>
   </div>
 </section>

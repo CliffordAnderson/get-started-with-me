@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — getstartedwith.me</title>
+<meta name="description" content="Every technical term the lessons use, explained in plain language, with a link to Wikipedia for the long version.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="index.html">All lessons</a>
+  </nav>
+</div>
+
+<header class="masthead">
+  <p class="kicker">getstartedwith.me · glossary</p>
+  <div class="masthead-grid">
+    <h1>Glossary</h1>
+    <p>Every technical word the lessons use. Each entry says what the term means in plain language first, then what it means exactly, and points at Wikipedia for the long version.</p>
+  </div>
+</header>
+
+<nav class="gloss-jump" aria-label="Jump to a term">
+  <a href="#activation-function">activation function</a>
+  <a href="#adaline">ADALINE</a>
+  <a href="#artificial-neuron">artificial neuron</a>
+  <a href="#backpropagation">backpropagation</a>
+  <a href="#bias">bias</a>
+  <a href="#chain-rule">chain rule</a>
+  <a href="#decision-boundary">decision boundary</a>
+  <a href="#delta-rule">delta rule</a>
+  <a href="#epoch">epoch</a>
+  <a href="#error-surface">error surface</a>
+  <a href="#feature">feature</a>
+  <a href="#generalisation">generalisation</a>
+  <a href="#gradient">gradient</a>
+  <a href="#gradient-descent">gradient descent</a>
+  <a href="#half-plane">half-plane</a>
+  <a href="#held-out-set">held-out set</a>
+  <a href="#hidden-layer">hidden layer</a>
+  <a href="#label">label</a>
+  <a href="#learning-rate">learning rate</a>
+  <a href="#linear-classifier">linear classifier</a>
+  <a href="#linearly-separable">linearly separable</a>
+  <a href="#local-minimum">local minimum</a>
+  <a href="#margin">margin</a>
+  <a href="#parity">parity</a>
+  <a href="#perceptron">perceptron</a>
+  <a href="#perceptrons-1969">Perceptrons (1969)</a>
+  <a href="#pixel">pixel</a>
+  <a href="#seeded-generator">seeded generator</a>
+  <a href="#sigmoid">sigmoid</a>
+  <a href="#squared-error">squared error</a>
+  <a href="#step-function">step function</a>
+  <a href="#supervised-learning">supervised learning</a>
+  <a href="#template">template</a>
+  <a href="#threshold">threshold</a>
+  <a href="#translation-invariance">translation invariance</a>
+  <a href="#truth-table">truth table</a>
+  <a href="#universal-approximation">universal approximation</a>
+  <a href="#vanishing-gradient">vanishing gradient</a>
+  <a href="#weight">weight</a>
+  <a href="#weight-initialisation">weight initialisation</a>
+  <a href="#xor">XOR</a>
+</nav>
+
+<div class="gloss-list">
+
+<article class="gloss" id="activation-function">
+  <h2>activation function</h2>
+  <div>
+    <p>The last thing a unit does before it reports an answer. It takes the single number the unit has worked out by adding up its inputs and turns it into the output — squashing it into a yes or no, or into a confidence somewhere between the two.</p>
+    <p class="exact">Formally, the function applied to the weighted sum. Which one you choose decides whether the unit can be trained by gradient methods at all: a <a href="#step-function">step</a> has no usable slope, a <a href="#sigmoid">sigmoid</a> does.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Activation_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="adaline">
+  <h2>ADALINE</h2>
+  <div>
+    <p>A machine built in 1960 that learned in a different way from the perceptron: instead of counting how many answers it got wrong, it measured how far off it was and slid its weights a little way down that measurement.</p>
+    <p class="exact">Widrow and Hoff's adaptive linear element, trained by the <a href="#delta-rule">delta rule</a>. It is the perceptron's exact contemporary and the direct ancestor of <a href="#gradient-descent">gradient descent</a> as it is used today, though it handled only a single unit.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/ADALINE">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="artificial-neuron">
+  <h2>artificial neuron</h2>
+  <div>
+    <p>The smallest working part of a neural network. It takes several numbers in, multiplies each by its own <a href="#weight">weight</a>, adds them all up along with a <a href="#bias">bias</a>, and puts the total through an <a href="#activation-function">activation function</a> to produce one number out.</p>
+    <p class="exact">A mathematical caricature of a nerve cell, first written down by McCulloch and Pitts in 1943. It borrows the idea of summed inputs and a firing threshold and almost nothing else.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="backpropagation">
+  <h2>backpropagation</h2>
+  <div>
+    <p>The method that works out how much each weight in a layered network is to blame for the network's mistake. The output's error is known directly; every weight further back gets its share by passing that error backwards along the same connections that carried the answer forwards.</p>
+    <p class="exact">Repeated application of the <a href="#chain-rule">chain rule</a> to compute the <a href="#gradient">gradient</a> of the error with respect to every parameter. Published for neural networks by Rumelhart, Hinton and Williams in 1986, though the same computation had been described by Linnainmaa in 1970 and by Werbos in 1974.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Backpropagation">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="bias">
+  <h2>bias</h2>
+  <div>
+    <p>A number added to the total regardless of what the inputs are. It sets how eager the unit is to say yes: a large positive bias makes it fire on the slightest encouragement, a large negative one makes it hard to convince.</p>
+    <p class="exact">The constant term in the weighted sum. Geometrically it slides the <a href="#decision-boundary">decision boundary</a> without rotating it; without one, every boundary would be forced through the origin.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="chain-rule">
+  <h2>chain rule</h2>
+  <div>
+    <p>The rule for working out how much a change at the start of a chain of steps affects the end of it. If turning a handle twice as fast makes a wheel spin twice as fast, and that wheel turning twice as fast makes a belt move three times as fast, the handle affects the belt six times over.</p>
+    <p class="exact">The rule of calculus for differentiating a composition of functions: the derivatives of the steps multiply. It is the whole mechanism behind <a href="#backpropagation">backpropagation</a>.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Chain_rule">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="decision-boundary">
+  <h2>decision boundary</h2>
+  <div>
+    <p>The dividing line between the inputs a machine answers yes to and the ones it answers no to. Stand on the boundary itself and the machine is exactly undecided.</p>
+    <p class="exact">The set of points where the output changes class. For a single unit it is a straight line in two dimensions, a plane in three, and a <a href="#half-plane">hyperplane</a> in general; a <a href="#hidden-layer">hidden layer</a> lets it bend.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Decision_boundary">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="delta-rule">
+  <h2>delta rule</h2>
+  <div>
+    <p>A recipe for adjusting a weight: look at how far the answer was from the target, multiply that by the input the weight was attached to, and nudge the weight by a small amount in that direction.</p>
+    <p class="exact">The least-mean-squares rule of Widrow and Hoff, equivalent to <a href="#gradient-descent">gradient descent</a> on the <a href="#squared-error">squared error</a> for a single unit. <a href="#backpropagation">Backpropagation</a> is what it becomes once there is a <a href="#hidden-layer">hidden layer</a> in the way.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Delta_rule">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="epoch">
+  <h2>epoch</h2>
+  <div>
+    <p>One complete pass through all the training examples. Saying a network trained for three hundred epochs means it went through the whole set of examples three hundred times over.</p>
+    <p class="exact">A unit of training time rather than of computation, so the same epoch count means very different amounts of work on different sets. Wikipedia has no article on the term; it is defined in passing in most treatments of training.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><span class="no-out">no Wikipedia article</span></p>
+  </div>
+</article>
+
+<article class="gloss" id="error-surface">
+  <h2>error surface</h2>
+  <div>
+    <p>A landscape you get by imagining every possible setting of the weights spread out on the ground, with the height at each spot being how wrong the machine would be if it used those weights. Learning is walking downhill on it.</p>
+    <p class="exact">The graph of the loss as a function of the parameters. For one unit with a smooth activation it has a single valley; add a <a href="#hidden-layer">hidden layer</a> and it acquires <a href="#local-minimum">local minima</a> and long flat regions.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Loss_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="feature">
+  <h2>feature</h2>
+  <div>
+    <p>One of the individual measurements you hand the machine about a thing. If the thing is a small picture, one feature might be the brightness of a single <a href="#pixel">pixel</a>; if it is a person, it might be their height.</p>
+    <p class="exact">A component of the input vector. Choosing what the features should be was for decades most of the work; what changed with layered networks is that a network can compose its own from raw measurements.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Feature_(machine_learning)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="generalisation">
+  <h2>generalisation</h2>
+  <div>
+    <p>Whether the machine gets things right on examples it has never seen. Getting the training examples right is easy and proves very little; the question that matters is what happens next.</p>
+    <p class="exact">Performance on the underlying distribution rather than on the training sample, estimated with a <a href="#held-out-set">held-out set</a>. The gap between the two is the generalisation error.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Generalization_error">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="gradient">
+  <h2>gradient</h2>
+  <div>
+    <p>Which way is uphill, and how steeply. At any spot on a landscape the gradient is an arrow pointing in the direction that climbs fastest, and its length says how sharp the climb is.</p>
+    <p class="exact">The vector of partial derivatives of a function with respect to each of its variables. On flat ground it is zero, which is why a <a href="#step-function">step function</a> gives a learning rule nothing to work with.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Gradient">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="gradient-descent">
+  <h2>gradient descent</h2>
+  <div>
+    <p>Learning by repeatedly taking a small step downhill. Work out which way is down, move a little way in that direction, and do it again until the ground stops falling away.</p>
+    <p class="exact">Iteratively subtracting a multiple of the <a href="#gradient">gradient</a> from the parameters. The multiple is the <a href="#learning-rate">learning rate</a>; too large and the steps overshoot the valley instead of settling into it.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Gradient_descent">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="half-plane">
+  <h2>half-plane</h2>
+  <div>
+    <p>Everything on one side of a straight line. Draw a line across a page and the ink on the left of it is a half-plane.</p>
+    <p class="exact">The region on one side of a hyperplane. A single unit answers yes on exactly one half-plane of its input space, which is the whole of what it can express and the reason it cannot compute <a href="#xor">XOR</a>.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Hyperplane">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="held-out-set">
+  <h2>held-out set</h2>
+  <div>
+    <p>Examples deliberately kept away from the machine while it learns, so they can be used afterwards as a fair test. If it has already seen the answer, the test tells you nothing.</p>
+    <p class="exact">A test set drawn from the same distribution as the training data but disjoint from it. In lesson 2 the two sets come from disjoint ranges of the <a href="#seeded-generator">generator</a> seed, so the separation is genuine.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="hidden-layer">
+  <h2>hidden layer</h2>
+  <div>
+    <p>A row of units sitting between the inputs and the output, whose answers nobody ever sees or specifies. They exist only to re-describe the input for the units that come after them.</p>
+    <p class="exact">Hidden because it appears in neither the input nor the output, so no training example says what it ought to produce. That is exactly the difficulty <a href="#backpropagation">backpropagation</a> solves.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Multilayer_perceptron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="label">
+  <h2>label</h2>
+  <div>
+    <p>The right answer attached to an example, put there by somebody who already knew it. A picture of a cat carries the label <em>cat</em>.</p>
+    <p class="exact">The target value the machine is asked to reproduce. Having labels is what makes a problem <a href="#supervised-learning">supervised</a>.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="learning-rate">
+  <h2>learning rate</h2>
+  <div>
+    <p>How big a step to take each time you adjust the weights. Small steps are reliable but slow; large ones are quick until they start jumping clean over the thing they were aiming at.</p>
+    <p class="exact">The scalar multiplying the <a href="#gradient">gradient</a> in an update. It is chosen rather than learned, which makes it a hyperparameter.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Learning_rate">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="linear-classifier">
+  <h2>linear classifier</h2>
+  <div>
+    <p>Any machine whose whole decision comes down to which side of a straight divide the input falls on. A <a href="#perceptron">perceptron</a> is one.</p>
+    <p class="exact">A classifier whose <a href="#decision-boundary">decision boundary</a> is a hyperplane, so its output depends on the input only through a weighted sum. Cheap, well understood, and unable to represent anything that is not <a href="#linearly-separable">linearly separable</a>.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Linear_classifier">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="linearly-separable">
+  <h2>linearly separable</h2>
+  <div>
+    <p>Said of a set of examples that can be split correctly by a single straight line, with all the yeses on one side and all the noes on the other. Some sets can be; <a href="#xor">XOR</a>'s four cases cannot.</p>
+    <p class="exact">Two classes are linearly separable when some hyperplane puts them in opposite half-spaces. Rosenblatt's convergence theorem guarantees the perceptron rule finds such a boundary whenever one exists, and says nothing at all when one does not.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Linear_separability">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="local-minimum">
+  <h2>local minimum</h2>
+  <div>
+    <p>A dip in the landscape that is the lowest point nearby, but not the lowest point anywhere. Something that only ever walks downhill will stop there and stay, because every direction out is up.</p>
+    <p class="exact">A point where the <a href="#gradient">gradient</a> vanishes and the surrounding region is higher, without being the global minimum. Their existence is why training a layered network comes with no convergence guarantee.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Local_optimum">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="margin">
+  <h2>margin</h2>
+  <div>
+    <p>How much clear space there is between the dividing line and the nearest example. A line that only just scrapes past the closest point is correct but precarious; one with room on both sides is the same answer held more confidently.</p>
+    <p class="exact">The distance from the <a href="#decision-boundary">decision boundary</a> to the nearest training point. Where several boundaries score equally, preferring the widest margin is a reasonable way to break the tie.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Margin_(machine_learning)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="parity">
+  <h2>parity</h2>
+  <div>
+    <p>Whether the number of switches that are on is odd or even. With two inputs it is the same question as <a href="#xor">XOR</a>; with a hundred inputs it is the same question asked of a hundred switches.</p>
+    <p class="exact">The parity function is the deep case of the limit that XOR illustrates. Minsky and Papert showed its order equals the size of the whole input, so no perceptron whose parts each see only a limited region can compute it however the votes are weighted.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Parity_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="perceptron">
+  <h2>perceptron</h2>
+  <div>
+    <p>The machine these lessons start with. It takes a few numbers, multiplies each by a <a href="#weight">weight</a>, adds a <a href="#bias">bias</a>, and answers yes if the total clears zero — and it can find those weights for itself from labelled examples by correcting its own mistakes.</p>
+    <p class="exact">Rosenblatt's 1958 model, and the learning rule that goes with it. The rule provably converges whenever the examples are <a href="#linearly-separable">linearly separable</a>. Note that Minsky and Papert use the word for a whole class of machines rather than for one unit.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Perceptron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="perceptrons-1969">
+  <h2>Perceptrons (1969)</h2>
+  <div>
+    <p>The book by Marvin Minsky and Seymour Papert that worked out precisely what machines of this kind can and cannot do. It is often blamed for stalling the field, which is rather more than it actually claimed.</p>
+    <p class="exact">Its real subjects are the order of predicates, parity and connectedness rather than XOR. It observes that layered machines are computationally universal, and doubts only that a learning theory as clean as the perceptron rule would extend to them — a judgement it invited its readers to refute.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/images.html">2</a> and <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Perceptrons_(book)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="pixel">
+  <h2>pixel</h2>
+  <div>
+    <p>One square of a picture, holding a single brightness. A picture is a grid of them, and to a machine it arrives as a list of numbers rather than as a picture at all.</p>
+    <p class="exact">The smallest addressable element of a raster image. Lesson 2 uses a twelve by twelve grid, so each picture is a list of 144 numbers and the unit needs 144 weights, one per pixel.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Pixel">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="seeded-generator">
+  <h2>seeded generator</h2>
+  <div>
+    <p>A source of numbers that look random but are worked out from a starting number, so the same starting number always produces the same sequence. It gives you randomness you can reproduce exactly.</p>
+    <p class="exact">A pseudorandom number generator. These lessons generate their examples from one rather than shipping a fixed data file, which is what lets a page draw as many fresh examples as it needs and keep a <a href="#held-out-set">held-out set</a> genuinely held out.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/images.html">2</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Pseudorandom_number_generator">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="sigmoid">
+  <h2>sigmoid</h2>
+  <div>
+    <p>A dial in place of a switch. Instead of jumping from 0 to 1 at a threshold, it slides smoothly between them, so a small change to the inputs makes a small change to the answer rather than none or all of it.</p>
+    <p class="exact">The logistic function, an S-shaped curve running from 0 to 1. It never quite reaches either end, so a correct answer is always a confident approximation. Being smooth, it has a usable slope everywhere — which is what makes <a href="#backpropagation">backpropagation</a> possible.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Sigmoid_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="squared-error">
+  <h2>squared error</h2>
+  <div>
+    <p>A way of scoring how wrong an answer is: take the difference between what was said and what was wanted, and square it. Squaring makes every miss count as a positive amount and makes large misses count disproportionately.</p>
+    <p class="exact">The loss whose surface the <a href="#delta-rule">delta rule</a> and <a href="#backpropagation">backpropagation</a> descend. It is smooth in the parameters, which is precisely what counting mistakes is not.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Mean_squared_error">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="step-function">
+  <h2>step function</h2>
+  <div>
+    <p>A switch. Below a certain point the answer is 0, at or above it the answer is 1, and there is nothing in between.</p>
+    <p class="exact">The Heaviside step. Its derivative is zero everywhere it is defined and undefined at the jump, so it offers a <a href="#gradient-descent">gradient method</a> no information whatsoever — the reason the sigmoid replaced it.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/images.html">2</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Heaviside_step_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="supervised-learning">
+  <h2>supervised learning</h2>
+  <div>
+    <p>Learning from examples that come with their answers attached. Somebody has already gone through and marked each one, and the machine's job is to reproduce those markings and then extend them to cases nobody has marked.</p>
+    <p class="exact">Learning a mapping from inputs to targets given <a href="#label">labelled</a> pairs. Every lesson here is supervised; the labels are known because the examples are generated with their class decided first.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="template">
+  <h2>template</h2>
+  <div>
+    <p>A single stored picture that a machine compares everything against, brightening where it expects one class and darkening where it expects the other. Its verdict is how well the thing in front of it lines up with that one picture.</p>
+    <p class="exact">Folding a linear unit's weights back into the shape of its input. It is the whole of what such a unit knows, and it is why moving a shape a little way across the frame can undo it.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Template_matching">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="threshold">
+  <h2>threshold</h2>
+  <div>
+    <p>The level a unit's total has to reach before it fires. Below it the answer is no, at or above it the answer is yes.</p>
+    <p class="exact">Usually folded into the <a href="#bias">bias</a> and the comparison made against zero, which is the same arrangement written more conveniently.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a>, <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="translation-invariance">
+  <h2>translation invariance</h2>
+  <div>
+    <p>Recognising a thing no matter where in the frame it sits. People do this without noticing; a machine that has learned one fixed <a href="#template">template</a> does not do it at all.</p>
+    <p class="exact">Invariance of the output under a shift of the input. Minsky and Papert's group invariance theorem shows how severely a demand of this kind constrains what weights are available, and so what such a machine can tell apart.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Translational_symmetry">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="truth-table">
+  <h2>truth table</h2>
+  <div>
+    <p>A list of every possible combination of inputs alongside the answer each one should get. With two inputs that are each on or off there are four combinations, so the table has four rows.</p>
+    <p class="exact">The complete specification of a Boolean function. It is small enough for two inputs that a claim of impossibility can be checked exhaustively rather than argued.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="universal-approximation">
+  <h2>universal approximation</h2>
+  <div>
+    <p>The result that a network with one <a href="#hidden-layer">hidden layer</a>, given enough units in it, can imitate essentially any sensible function as closely as you care to ask.</p>
+    <p class="exact">A statement about what such networks can represent. It says nothing about how many units are needed, and nothing whatsoever about whether training will find the arrangement — which is where the practical difficulty actually lives.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Universal_approximation_theorem">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="vanishing-gradient">
+  <h2>vanishing gradient</h2>
+  <div>
+    <p>What happens to the blame as it is passed back through many layers: at each step it is multiplied by something smaller than one, so by the time it reaches the early layers there is almost nothing of it left and they barely learn.</p>
+    <p class="exact">The product of many small factors in the <a href="#chain-rule">chain rule</a> shrinks towards zero. A <a href="#sigmoid">sigmoid</a> unit that has saturated near 0 or 1 contributes a particularly small factor, which is the sense in which a confident unit is a deaf one.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Vanishing_gradient_problem">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="weight">
+  <h2>weight</h2>
+  <div>
+    <p>A number saying how much one input counts towards the answer. Large and positive means that input pushes hard towards yes, large and negative pushes hard towards no, and near zero means the machine is barely listening to it at all.</p>
+    <p class="exact">The coefficient an input is multiplied by before the sum. The weights, together with the <a href="#bias">bias</a>, are the whole of what a unit has learned and the only thing training changes.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="weight-initialisation">
+  <h2>weight initialisation</h2>
+  <div>
+    <p>What the weights are set to before any learning happens. It sounds like a detail and is not: start every weight in a layer at the same value and the units in it stay identical for ever, because identical units receive identical blame and take identical steps.</p>
+    <p class="exact">Small random values are used to break that symmetry. Lesson 4 shows the failure directly — an all-zero start leaves a network that never moves at all, with a gradient that is perfectly correct and perfectly useless.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Weight_initialization">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="xor">
+  <h2>XOR</h2>
+  <div>
+    <p>Exclusive or: the answer is yes when exactly one of two inputs is on, and no when they agree, whether they agree on yes or on no. It is the <em>or</em> of ordinary speech, where tea or coffee offers you one and not both.</p>
+    <p class="exact">The smallest function a single unit cannot compute. Of the sixteen functions of two binary inputs, fourteen are <a href="#linearly-separable">linearly separable</a>; XOR and its negation are the two that are not.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia</a></p>
+  </div>
+</article>
+
+</div>
+
+<footer>
+  <p>Entries link to the English Wikipedia, which is not written to the same brief as these lessons and will usually be a good deal more formal. Where a term has no article of its own, the entry says so rather than pointing somewhere approximate.</p>
+</footer>
+
+</main>
+</body>
+</html>

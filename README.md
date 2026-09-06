@@ -2,6 +2,7 @@
 
 ```
 index.html              landing page and lesson index
+glossary.html           every technical term, explained plainly, linked to Wikipedia
 lessons/perceptron.html lesson 1 — one unit, two inputs
 lessons/images.html     lesson 2 — one unit, 144 pixel inputs
 lessons/xor.html        lesson 3 — where one unit runs out
@@ -30,6 +31,22 @@ assets/lesson.js        shared plotting and panel machinery
    entry, the new lesson's `lesson N ·` kicker, the last lesson's "Lesson N of M" label, and
    the sentences at the end of each lesson that describe what the next one does. Grep for
    `next lesson` and `last lesson` when you are finished.
+
+## The glossary
+
+`glossary.html` holds one entry per technical term: a plain-language paragraph first, a
+shorter `.exact` paragraph for the precise meaning, then a `.gloss-meta` line giving the
+lessons it appears in and a link to Wikipedia. Entries are alphabetical and each carries a
+kebab-case `id`, which is what the lessons link to.
+
+Lessons link a term **on its first mention only**, as
+`<a class="term" href="../glossary.html#weight">weight</a>`. The style is a dotted underline
+in the running text colour, so the prose stays calm; linking every occurrence makes a lesson
+look like a spiderweb. Adding a term means adding the entry, adding it to the `.gloss-jump`
+nav at the top, and linking it in whichever lessons use it.
+
+Where a term has no Wikipedia article of its own — `epoch` is the one so far — the entry says
+so in place of the link rather than pointing at an article that does not discuss it.
 
 ## What `assets/lesson.js` gives you
 
