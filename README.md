@@ -11,7 +11,7 @@ assets/lesson.js        shared plotting and panel machinery
 
 ## Adding a lesson
 
-1. Copy an existing lesson as a starting point. `perceptron.html` is the simpler of the two.
+1. Copy an existing lesson as a starting point. `perceptron.html` is the simplest of the three.
 2. Give each panel a `<section id="…" class="panel" role="tabpanel" aria-labelledby="tab-…">`
    and end the inline script with:
 
@@ -22,8 +22,13 @@ assets/lesson.js        shared plotting and panel machinery
    The rail, the prev/next pager, deep links and the numbering are generated from that list.
 3. Add an entry to `index.html`. Copy an existing `<a class="entry">` block, change the
    number, title, description and thumbnail SVG.
-4. Point the previous lesson's `<a class="nextup">` at the new file, and make the new
-   lesson's `nextup` link back to `../index.html`.
+4. Point the previous lesson's `<a class="nextup">` at the new file, and point the new
+   lesson's `nextup` at whatever follows it — the next lesson, or `../index.html` if it is
+   the last one.
+5. Inserting rather than appending also means renumbering: the `entry-num` on every later
+   entry, the new lesson's `lesson N ·` kicker, the last lesson's "Lesson N of M" label, and
+   the sentences at the end of each lesson that describe what the next one does. Grep for
+   `next lesson` and `last lesson` when you are finished.
 
 ## What `assets/lesson.js` gives you
 
