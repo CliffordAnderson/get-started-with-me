@@ -50,7 +50,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
   <nav>
-    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
     <a class="away" href="../index.html">All lessons</a>
     <a class="away" href="../about.html">About</a>
   </nav>
@@ -62,7 +62,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     <div class="hero-intro">
       <p class="kicker">lesson 5 · expert systems</p>
       <h1>A machine you can argue with</h1>
-      <p class="lede">Everything the last four lessons built keeps its knowledge as numbers, and the numbers are unreadable. This one — an <a class="term" href="../glossary.html#expert-system">expert system</a>, in the language of the 1970s — keeps its knowledge as sentences. You can read every one of them, disagree with any of them, and follow exactly how it reached its answer — and it still fails, for reasons that have nothing to do with a boundary in the wrong place.</p>
+      <p class="lede">The last four lessons represented what was learned as numbers. Some could be interpreted — the second lesson made a weight image you could read — but they were not explicit claims about the world. This one, an <a class="term" href="../glossary.html#expert-system">expert system</a> in the language of the 1970s, keeps its knowledge as sentences. You can read its rules, disagree with them and trace which ones produced an answer. It still fails, for reasons that have nothing to do with a boundary in the wrong place.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">15 rules</p>
@@ -82,6 +82,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
 <div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
 
 <section id="rules" class="panel" role="tabpanel" aria-labelledby="tab-rules">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What would you change if one conclusion relied on a mistaken premise?</p>
   <div class="sec-head">
     <div class="sec-num">1</div>
     <div>
@@ -95,14 +96,16 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <div class="rulebase" id="rb-list"></div>
     </div>
     <div class="stack">
-      <p>Compare it with the first lesson. That perceptron also knew exactly three numbers, and you could print them; but knowing that <span class="nb">w₁ = 0.63</span> tells you nothing you can argue with. Here the knowledge is in a language you already speak. If rule 9 is wrong, you can say so, and say why, and change it — and nothing else in the machine needs retraining, because nothing in the machine was trained.</p>
+      <p>Compare it with the first lesson. That perceptron also knew exactly three numbers, and you could print them; but a weight such as <span class="nb">w₁ = 0.63</span> describes an input’s contribution rather than an explicit factual claim. Here the knowledge is in a language you already speak. If rule 9 is wrong, you can say so, and say why, and change it — and nothing else in the machine needs retraining, because nothing in the machine was trained.</p>
       <p>This is the trade the whole approach is built on. It was called <a class="term" href="../glossary.html#knowledge-engineering">knowledge engineering</a>: sit with an expert, get the rules out of them, write the rules down. What the machine knows is what somebody told it — and the program that applies the rules, the <a class="term" href="../glossary.html#inference-engine">inference engine</a>, knows nothing about medicine whatever.</p>
       <p class="note">These fifteen rules are a teaching reconstruction in the shape of <a class="term" href="../glossary.html#mycin">MYCIN</a>'s, not MYCIN's own. The real system had several hundred, written and revised over years with infectious disease specialists at Stanford. Nothing here is medical advice, and the therapies named are the ones a program of the middle 1970s would have reached for.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> An explicit rule identifies a claim that can be inspected and revised.</p>
 </section>
 
 <section id="chain" class="panel" role="tabpanel" aria-labelledby="tab-chain">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will the system ask every possible question?</p>
   <div class="sec-head">
     <div class="sec-num">2</div>
     <div>
@@ -140,14 +143,16 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <p>Notice how few rules are ever consulted. That is the payoff of working backwards, and it is also the first thing that makes the machine feel intelligent when it is not: it asks a small number of pointed questions, in an order that looks like judgement, and the order is nothing but the shape of the tree above.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Backward chaining asks questions needed to pursue the current goal.</p>
 </section>
 
 <section id="why" class="panel" role="tabpanel" aria-labelledby="tab-why">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Does an explanation establish that its premises are true?</p>
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
       <h2>Why it said that</h2>
-      <p>Ask the second lesson's classifier why it called a picture a dog and the only honest answer is a grid of 144 numbers. Ask this machine and it can hand you the derivation: this, because of that rule, whose premise held because of these two facts, one of which you told it. MYCIN could do this in 1975, and it mattered more than the diagnosis — the doctors would not use a program that could not show its work.</p>
+      <p>Ask the second lesson's classifier why it called a picture a dog and its weights and pixel contributions can show which parts of the picture mattered. Ask this machine and it can hand you the derivation: this, because of that rule, whose premise held because of these two facts, one of which you told it. MYCIN could do this in 1975, and it mattered more than the diagnosis — the doctors would not use a program that could not show its work.</p>
     </div>
   </div>
 
@@ -175,9 +180,11 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <p>The contrast with a trained network is real, but it is narrower than it is usually made to sound. What you gain is not correctness. It is the ability to locate a disagreement in a particular sentence, which is what makes an argument possible at all.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A derivation traces a conclusion; it does not validate the rules or their scope.</p>
 </section>
 
 <section id="certainty" class="panel" role="tabpanel" aria-labelledby="tab-certainty">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will two agreeing rules simply add their certainty factors?</p>
   <div class="sec-head">
     <div class="sec-num">4</div>
     <div>
@@ -205,14 +212,14 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <figure>
         <div class="window"><canvas id="cf-plot" class="wide" role="img"
           aria-label="A curve showing the combined certainty factor as the second rule's certainty is varied, with the first held fixed."></canvas></div>
-        <figcaption>Rule A held where you left it; rule B swept across its range. The combination never leaves the interval, and never quite reaches the ends.</figcaption>
+        <figcaption>Rule A held where you left it; rule B swept across its range. The combination stays within the interval; certainty can reach an endpoint when an input is already at that endpoint.</figcaption>
       </figure>
     </div>
   </div>
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>The rules are sensible enough. Two pieces of evidence pointing the same way reinforce each other with diminishing returns, so belief creeps towards 1 without arriving. Evidence pointing opposite ways partly cancels. A premise is only as strong as its weakest conjunct, so <span class="nb">AND</span> takes the minimum. And a rule whose premise is under 0.2 does not fire at all, which stops the machine from accumulating a strong conclusion out of a heap of faint suggestions.</p>
+      <p>The rules are sensible enough. Two pieces of evidence pointing the same way reinforce each other with diminishing returns, so belief approaches 1 when both inputs are below 1. Evidence pointing opposite ways partly cancels. A premise is only as strong as its weakest conjunct, so <span class="nb">AND</span> takes the minimum. And a rule whose premise is under 0.2 does not fire at all, which stops the machine from accumulating a strong conclusion out of a heap of faint suggestions.</p>
       <p>What the scheme buys is modularity, and that is the whole reason it exists. Each rule carries its own number, elicited from an expert on its own, and the numbers combine without anyone ever having to write down how all the evidence is jointly distributed. Asking a physician for a full <a class="term" href="../glossary.html#joint-distribution">joint distribution</a> over dozens of findings was not a thing that could be done in 1975, or now.</p>
     </div>
     <div>
@@ -220,14 +227,16 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <p class="cite">The model is set out in Edward Shortliffe and Bruce Buchanan, &ldquo;A Model of Inexact Reasoning in Medicine,&rdquo; <em>Mathematical Biosciences</em> 23 (1975). David Heckerman, &ldquo;Probabilistic Interpretations for MYCIN's Certainty Factors&rdquo; (1986), later worked out the conditions under which the scheme agrees with probability theory, and they are restrictive. The authors of MYCIN were explicit from the start that certainty factors were not probabilities.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Certainty factors combine evidence according to a specified rule; they are not probabilities.</p>
 </section>
 
 <section id="edge" class="panel" role="tabpanel" aria-labelledby="tab-edge">
+  <p class="experiment-prompt"><strong>Before you try:</strong> How might the system respond to a case absent from its rule base?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
       <h2>The edge of the rule base</h2>
-      <p>The second lesson broke its classifier by moving two pixels. This machine breaks differently, and worse. Hand it a case its rules were never written for and it does not hesitate, hedge, or report that it is out of its depth. It answers, in the same tone, with the same derivation, at whatever certainty the arithmetic happens to produce.</p>
+      <p>The second lesson broke its classifier by moving two pixels. This machine exposes a different source of failure. Hand it a case its rules were never written for and it does not hesitate, hedge, or report that it is out of its depth. It answers, in the same tone, with the same derivation, at whatever certainty the arithmetic happens to produce.</p>
     </div>
   </div>
 
@@ -246,17 +255,20 @@ canvas.wide{aspect-ratio:auto;height:210px}
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>This is <a class="term" href="../glossary.html#brittleness">brittleness</a>, and it is the characteristic failure of the whole family. A trained network degrades: push it away from what it saw and its confidence usually sags along with its accuracy, which is at least a signal. A rule base has no gradient to sag along. Inside its coverage it is often excellent. One step outside, it is not a worse version of itself; it is a machine confidently applying rules about bacteria to a patient who has a fungus, because no sentence in it says that fungi exist.</p>
-      <p>Nothing in the design can fix this from the inside. The machine cannot know what it has not been told, and it has no representation of the boundary of its own competence — there is no rule that says <em>if none of the above, stop talking</em>, and even if you wrote one, you would have to know in advance what the above failed to cover.</p>
+      <p>This is <a class="term" href="../glossary.html#brittleness">brittleness</a>: rules that work within their intended coverage can produce confident errors outside it. Learned networks can also be confidently wrong on unfamiliar inputs; their confidence is not a dependable warning that they are out of their depth. Here the error is traceable to particular rules about bacteria being applied to a patient who has a fungus, because no sentence in the system says that fungi exist.</p>
+      <p>This rule base contains no check for cases outside its coverage. Scope checks, an explicit “unknown” answer and referral to a person can help, but they must be designed and evaluated too. A readable explanation establishes how an answer followed from the rules; it does not establish that those rules apply to this patient.</p>
     </div>
     <div>
+      <p class="cite">For a demonstration of confident errors in learned networks, see Anh Nguyen, Jason Yosinski and Jeff Clune, <a href="https://arxiv.org/abs/1412.1897">“Deep Neural Networks Are Easily Fooled: High Confidence Predictions for Unrecognizable Images”</a> (CVPR, 2015).</p>
       <p>The usual answer was to write more rules, which works, at a price that grows. Every new case at the margin is another interview, another sentence, another chance for the new sentence to interact with the six hundred already there in a way nobody predicted. The rule base is readable one rule at a time and quite unreadable all at once.</p>
-      <p>That is the honest shape of the trade against a learned model, and it is not a rout in either direction. One of them is legible and cannot generalise. The other generalises and cannot be read. The forty years since have mostly been spent discovering that you would like both.</p>
+      <p>That is the trade worth keeping in view. Explicit rules make it easier to locate and challenge a premise. Learned models can transfer patterns from examples, with varying degrees of interpretability. Neither approach automatically recognises the limits of its competence, and neither guarantees correctness.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A system can apply readable rules confidently outside their intended coverage.</p>
 </section>
 
 <section id="cost" class="panel" role="tabpanel" aria-labelledby="tab-cost">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which part of maintaining an expert system takes continuing work?</p>
   <div class="sec-head">
     <div class="sec-num">6</div>
     <div>
@@ -276,6 +288,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <p class="cite">Edward Shortliffe, <em>Computer-Based Medical Consultations: MYCIN</em> (Elsevier, 1976), is the system itself, written as his Stanford doctoral thesis under Bruce Buchanan and Stanley Cohen. The evaluation is Victor Yu, Lawrence Fagan, Sharon Wraith et&nbsp;al., &ldquo;Antimicrobial Selection by a Computer: A Blinded Evaluation by Infectious Diseases Experts,&rdquo; <em>JAMA</em> 242 (1979) — ten cases, which is a small evaluation, and the authors present it as one. Rule counts differ by source and by year, since the base grew throughout the project; figures of roughly 450 and roughly 600 are both commonly given.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Explicit knowledge still has to be elicited, checked and kept current.</p>
 </section>
 
 <a class="nextup" href="rl.html">
@@ -316,6 +329,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
 </footer>
 
 </main>
+<script src="../assets/glossary-data.js"></script>
 <script src="../assets/lesson.js"></script>
 <script>
 "use strict";
@@ -800,7 +814,7 @@ let LAST = null;   /* the most recent finished consultation, for panel 3 */
       "a = " + num(a,2) + "\nb = " + num(b,2) + "\n" + line + "\ncombined = " + num(c,2);
 
     if(a > 0 && b > 0 && c < a + b)
-      msg.textContent = "Two rules agreeing add up to less than the sum of their parts, and can never reach 1.";
+      msg.textContent = "Two positive certainty factors below 1 reinforce each other with diminishing returns; an input of 1 can make the result 1.";
     else if(a * b < 0)
       msg.textContent = "Disagreement cancels, and the denominator keeps the result inside the interval.";
     else if(a < 0 && b < 0)

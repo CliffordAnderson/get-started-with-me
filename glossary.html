@@ -101,7 +101,7 @@
 <article class="gloss" id="activation-function">
   <h2>activation function</h2>
   <div>
-    <p>The last thing a unit does before it reports an answer. It takes the single number the unit has worked out by adding up its inputs and turns it into the output — squashing it into a yes or no, or into a confidence somewhere between the two.</p>
+    <p>The last thing a unit does before it reports an answer. It takes the single number the unit has worked out by adding up its inputs and turns it into the output — squashing it into a yes or no, or into a smooth value between them. That value is not automatically a measure of confidence.</p>
     <p class="exact">Formally, the function applied to the weighted sum. Which one you choose decides whether the unit can be trained by gradient methods at all: a <a href="#step-function">step</a> has no usable slope, a <a href="#sigmoid">sigmoid</a> does.</p>
     <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Activation_function">Wikipedia</a></p>
   </div>
@@ -165,7 +165,7 @@
   <h2>brittleness</h2>
   <div>
     <p>The habit of working well inside the cases a system was built for and failing without warning just outside them. A brittle system does not grow gradually less reliable as you leave familiar ground; it carries on answering in the same confident tone while being wrong.</p>
-    <p class="exact">The characteristic failure of <a href="#symbolic-ai">symbolic</a> rule-based systems, whose competence stops exactly where their rules stop and which hold no representation of their own boundary. Learned models have a softer version of the same problem, degrading away from the data they were trained on, though usually with some sag in confidence to go with it. Wikipedia’s article on software brittleness describes a different phenomenon, the decay of code under modification.</p>
+    <p class="exact">A failure to handle cases outside the conditions a system was designed or trained for. Explicit rules and learned models can both produce confident errors on unfamiliar cases; neither automatically provides a reliable warning. Wikipedia’s article on software brittleness describes a different phenomenon, the decay of code under modification.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><span class="no-out">no Wikipedia article</span></p>
   </div>
 </article>
@@ -246,7 +246,7 @@
   <h2>error surface</h2>
   <div>
     <p>A landscape you get by imagining every possible setting of the weights spread out on the ground, with the height at each spot being how wrong the machine would be if it used those weights. Learning is walking downhill on it.</p>
-    <p class="exact">The graph of the loss as a function of the parameters. For one unit with a smooth activation it has a single valley; add a <a href="#hidden-layer">hidden layer</a> and it acquires <a href="#local-minimum">local minima</a> and long flat regions.</p>
+    <p class="exact">The graph of the loss as a function of the parameters. Its shape depends on the model, loss and data. A smooth activation alone does not guarantee a single valley; hidden layers can introduce additional flat regions and stationary points.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Loss_function">Wikipedia</a></p>
   </div>
 </article>
@@ -416,8 +416,8 @@
 <article class="gloss" id="local-minimum">
   <h2>local minimum</h2>
   <div>
-    <p>A dip in the landscape that is the lowest point nearby, but not the lowest point anywhere. Something that only ever walks downhill will stop there and stay, because every direction out is up.</p>
-    <p class="exact">A point where the <a href="#gradient">gradient</a> vanishes and the surrounding region is higher, without being the global minimum. Their existence is why training a layered network comes with no convergence guarantee.</p>
+    <p>A point in the landscape with no lower point sufficiently nearby. It may also be the lowest point anywhere; a poor local minimum is one that is not. A finite run that appears stuck does not by itself establish a local minimum.</p>
+    <p class="exact">A parameter setting whose loss is no greater than at any point in some neighbourhood. At a differentiable interior local minimum the <a href="#gradient">gradient</a> is zero, but a zero gradient alone does not prove a minimum. Global optimality requires a separate argument.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Local_optimum">Wikipedia</a></p>
   </div>
 </article>
@@ -543,7 +543,7 @@
   <h2>sigmoid</h2>
   <div>
     <p>A dial in place of a switch. Instead of jumping from 0 to 1 at a threshold, it slides smoothly between them, so a small change to the inputs makes a small change to the answer rather than none or all of it.</p>
-    <p class="exact">The logistic function, an S-shaped curve running from 0 to 1. It never quite reaches either end, so a correct answer is always a confident approximation. Being smooth, it has a usable slope everywhere — which is what makes <a href="#backpropagation">backpropagation</a> possible.</p>
+    <p class="exact">Here, the logistic function σ(z) = 1 / (1 + exp(−z)). Its mathematical values lie strictly between 0 and 1, and its derivative is σ(z)(1−σ(z)). An output in this interval is not automatically a calibrated probability or confidence score; finite-precision calculations may round to an endpoint.</p>
     <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Sigmoid_function">Wikipedia</a></p>
   </div>
 </article>

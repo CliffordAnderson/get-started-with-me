@@ -22,7 +22,7 @@
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
   <nav>
-    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
     <a class="away" href="../index.html">All lessons</a>
     <a class="away" href="../about.html">About</a>
   </nav>
@@ -54,6 +54,7 @@
 <div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
 
 <section id="compute" class="panel" role="tabpanel" aria-labelledby="tab-compute">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What will happen if the second weight is zero?</p>
   <div class="sec-head">
     <div class="sec-num">1</div>
     <div>
@@ -97,9 +98,11 @@
       <p class="note">Notice how little the bias cares about the input. It shifts every total by the same amount, whatever came in, which is why it is the unit's <a class="term" href="../glossary.html#threshold">threshold</a> rather than one of its opinions.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The weighted sum combines the inputs; the threshold keeps only its sign.</p>
 </section>
 
 <section id="boundary" class="panel" role="tabpanel" aria-labelledby="tab-boundary">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will changing only the bias rotate the boundary or shift it?</p>
   <div class="sec-head">
     <div class="sec-num">2</div>
     <div>
@@ -110,7 +113,7 @@
 
   <div class="split wide-left">
     <figure>
-      <div class="window"><canvas id="b-plot" role="img"
+      <div class="window"><canvas id="b-plot" tabindex="0" class="drag-canvas" role="img"
         aria-label="The decision line with the weight vector drawn perpendicular to it, and a draggable test point."></canvas></div>
       <figcaption>Drag the ringed point. Its total changes sign exactly as it crosses the line.</figcaption>
     </figure>
@@ -125,9 +128,11 @@
       <p class="note">Multiply all three numbers by ten and the line does not budge — the same points satisfy the same equation. Only the totals grow. The unit's answer depends on the sign of the total, never on its size, which is exactly why the step at zero throws away information a later lesson will want back.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Weights set the boundary’s direction, while the bias shifts its position.</p>
 </section>
 
 <section id="learning" class="panel" role="tabpanel" aria-labelledby="tab-learning">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which examples should make the weights change?</p>
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
@@ -140,7 +145,7 @@
     <figure>
       <div class="window"><canvas id="learn-plot" role="img"
         aria-label="A scatter of labelled points you can add to, with the boundary moving as the learning rule runs."></canvas></div>
-      <figcaption id="learn-cap">Click the plot to add an example of the selected class.</figcaption>
+      <figcaption id="learn-cap">Click the plot or enter coordinates below to add an example of the selected class.</figcaption>
     </figure>
 
     <div class="stack">
@@ -175,9 +180,11 @@
       <p class="msg" id="learn-msg"></p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The perceptron updates its weights when an example is misclassified.</p>
 </section>
 
 <section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Does a run that keeps making corrections prove no separating line exists?</p>
   <div class="sec-head">
     <div class="sec-num">4</div>
     <div>
@@ -233,6 +240,7 @@
       <p class="cite">Warren McCulloch and Walter Pitts, &ldquo;A Logical Calculus of the Ideas Immanent in Nervous Activity&rdquo; (1943), gave the threshold unit. Frank Rosenblatt, &ldquo;The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain,&rdquo; <em>Psychological Review</em> 65 (1958), added the learning rule.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The convergence theorem applies to separable data; a finite run cannot by itself prove impossibility.</p>
 </section>
 
 <a class="nextup" href="images.html">
@@ -267,6 +275,7 @@
 </footer>
 
 </main>
+<script src="../assets/glossary-data.js"></script>
 <script src="../assets/lesson.js"></script>
 <script>
 "use strict";
@@ -487,6 +496,12 @@ const VIEW = [-0.08,1.08,-0.08,1.08];
       num(z) + "   \u2192   " + (z >= 0 ? 1 : 0);
   }
 
+  cv.addEventListener("keydown", e => {
+    const d={ArrowLeft:[-0.05,0],ArrowRight:[0.05,0],ArrowUp:[0,0.05],ArrowDown:[0,-0.05]}[e.key];
+    if(!d)return;e.preventDefault();
+    test=[clamp(test[0]+d[0],VIEW[0],VIEW[1]),clamp(test[1]+d[1],VIEW[2],VIEW[3])];render();announce(formula.textContent);
+  });
+  cv.setAttribute("aria-label",cv.getAttribute("aria-label")+" Arrow keys move the test point.");
   cv.addEventListener("pointerdown", e => {
     drag = true; cv.setPointerCapture(e.pointerId);
     test = pointerPos(p, e); render(); e.preventDefault();
@@ -625,15 +640,27 @@ const VIEW = [-0.08,1.08,-0.08,1.08];
     requestAnimationFrame(tick);
   }
 
-  cv.addEventListener("pointerdown", e => {
-    const q = pointerPos(p, e);
-    if(q[0] < VIEW[0] || q[0] > VIEW[1] || q[1] < VIEW[2] || q[1] > VIEW[3]) return;
-    data.push([q[0], q[1], cls]);
-    running = false; runBtn.textContent = "Start training";
-    done = false; passes = 0; i = 0; errs = 0; trace = []; flash = -1;
-    msg.textContent = ""; msg.classList.remove("hit");
-    render();
+  function addExample(x,y){
+    data.push([x,y,cls]);
+    running=false;runBtn.textContent="Start training";
+    done=false;passes=0;i=0;errs=0;trace=[];flash=-1;
+    msg.textContent="Added class "+cls+" at ("+num(x)+", "+num(y)+").";
+    msg.classList.remove("hit");render();announce(msg.textContent);
+  }
+  cv.addEventListener("click", e => {
+    const q=pointerPos(p,e);
+    if(q[0]<VIEW[0]||q[0]>VIEW[1]||q[1]<VIEW[2]||q[1]>VIEW[3])return;
+    addExample(q[0],q[1]);
   });
+  const pointForm=document.createElement("form");pointForm.className="row point-entry";
+  const coords=["x₁","x₂"].map((name,k)=>{
+    const label=document.createElement("label");label.textContent=name+" ";
+    const input=Object.assign(document.createElement("input"),{type:"number",value:"0.5",step:"any",min:String(VIEW[k?2:0]),max:String(VIEW[k?3:1]),required:true});
+    label.append(input);pointForm.append(label);return input;
+  });
+  const add=Object.assign(document.createElement("button"),{type:"submit",className:"btn",textContent:"Add example"});pointForm.append(add);
+  cv.closest("figure").append(pointForm);
+  pointForm.addEventListener("submit",e=>{e.preventDefault();if(pointForm.reportValidity())addExample(Number(coords[0].value),Number(coords[1].value));});
 
   group.addEventListener("click", e => {
     const btn = e.target.closest("button");

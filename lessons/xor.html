@@ -20,7 +20,7 @@
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
   <nav>
-    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
     <a class="away" href="../index.html">All lessons</a>
     <a class="away" href="../about.html">About</a>
   </nav>
@@ -46,7 +46,7 @@
     </div>
     <figure class="hero-fig">
       <div class="window">
-        <canvas id="hero-plot" tabindex="0" role="img"
+        <canvas id="hero-plot" class="drag-canvas" tabindex="0" role="img"
           aria-label="Interactive plot: the four XOR cases in the unit square with a draggable decision line. Arrow keys move the line; left and right rotate it."></canvas>
       </div>
       <figcaption>The input space. Each corner is one row of the XOR truth table.</figcaption>
@@ -58,6 +58,7 @@
 <div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
 
 <section id="xor" class="panel" role="tabpanel" aria-labelledby="tab-xor">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What should XOR answer when both inputs are on?</p>
   <div class="sec-head">
     <div class="sec-num">1</div>
     <div>
@@ -92,9 +93,11 @@
       <p>None of this is exotic. XOR is the sum bit of binary addition, with AND supplying the carry; it is the parity bit that catches a flipped bit in transmission; it is what a one-time pad applies to a message. What makes it awkward for a perceptron is narrow and specific. Of the sixteen functions of two binary inputs, fourteen can be settled by a single weighted <a class="term" href="../glossary.html#threshold">threshold</a>. XOR and its negation are the two that cannot.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> XOR accepts exactly one active input.</p>
 </section>
 
 <section id="brief" class="panel brief" role="tabpanel" aria-labelledby="tab-brief">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What would a single unit need to separate?</p>
   <div class="sec-head">
     <div class="sec-num">2</div>
     <div>
@@ -104,9 +107,11 @@
       <p class="cite">Marvin Minsky and Seymour Papert, <em>Perceptrons: An Introduction to Computational Geometry</em> (MIT Press, 1969; expanded edition 1988). The order results run through Part I; parity and connectedness, not XOR, are the book's real subjects.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The question is whether one straight boundary can separate the two pairs.</p>
 </section>
 
 <section id="unit" class="panel" role="tabpanel" aria-labelledby="tab-unit">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Can changing the weights make all four XOR answers correct?</p>
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
@@ -153,9 +158,11 @@
       <p class="msg" id="unit-msg"></p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Trying settings suggests a limit; the proof later establishes it.</p>
 </section>
 
 <section id="train" class="panel" role="tabpanel" aria-labelledby="tab-train">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will more corrections solve XOR with this architecture?</p>
   <div class="sec-head">
     <div class="sec-num">4</div>
     <div>
@@ -197,9 +204,11 @@
       <p class="msg" id="train-msg">AND is separable, so this settles quickly and stops.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A learning rule cannot create a function the unit cannot represent.</p>
 </section>
 
 <section id="proof" class="panel" role="tabpanel" aria-labelledby="tab-proof">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Can both pairs lie on their required sides of one line?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
@@ -249,9 +258,11 @@
       <figcaption>The two 1s sit at opposite corners; so do the two 0s. If a line kept both 1s on one side, it would keep the whole segment between them on that side — crossing point included. The same argument for the 0s puts that crossing point on the other side. One point, two sides.</figcaption>
     </figure>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The incompatible inequalities prove that a single threshold unit cannot compute XOR.</p>
 </section>
 
 <section id="fold" class="panel" role="tabpanel" aria-labelledby="tab-fold">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What changes if the output reads hidden features instead of raw inputs?</p>
   <div class="sec-head">
     <div class="sec-num">6</div>
     <div>
@@ -322,9 +333,11 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
     <p class="note">Both hidden units read the same quantity: how many inputs are on. One of them fires at a count of one or more, the other only at two. Between them they turn a count into a two-bit code — 00, 10, 11 — and in that code the two awkward cases, (0,1) and (1,0), land in exactly the same place. Once they are the same point, no line has to separate them from each other.</p>
     <p class="note">Set the activation to <em>none</em> and the fold disappears. Two linear maps compose into one linear map, so the network collapses back to a single cut and the ceiling returns to three. The layer is not what bought the extra power. The bend inside it did.</p>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A hidden layer can map the cases to a space where a straight boundary works.</p>
 </section>
 
 <section id="close" class="panel" role="tabpanel" aria-labelledby="tab-close">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Does building a working network tell us how to learn its weights?</p>
   <div class="sec-head">
     <div class="sec-num">7</div>
     <div>
@@ -341,6 +354,7 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
       <p>The <a class="term" href="../glossary.html#step-function">step function</a> is part of the difficulty: its <a class="term" href="../glossary.html#gradient">gradient</a> is zero almost everywhere, so nothing tells a hidden unit which way to lean. Replacing it with a smooth function, as the <a class="term" href="../glossary.html#sigmoid">sigmoid</a> setting above does, restores that signal, and <a class="term" href="../glossary.html#backpropagation">backpropagation</a> (Rumelhart, Hinton and Williams, 1986) uses it to assign <a class="term" href="../glossary.html#credit-assignment">credit</a> through the hidden layer. The two-unit XOR network is the smallest case where that machinery earns its keep, and the next lesson runs it — the same two hidden units and the same fold, but with every weight found rather than given.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Representing a function and finding its parameters are separate problems.</p>
 </section>
 
 <a class="nextup" href="backprop.html">
@@ -369,6 +383,7 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
 </footer>
 
 </main>
+<script src="../assets/glossary-data.js"></script>
 <script src="../assets/lesson.js"></script>
 <script>
 "use strict";

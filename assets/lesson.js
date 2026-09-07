@@ -202,6 +202,7 @@ function initPanels(LIST){
   const secs = LIST.map(x => document.getElementById(x[0]));
   const tabs = [];
   let at = 0;
+  const ui = lessonTools(LIST, secs, rail);
 
   /* An about:srcdoc document (an embedded preview, for instance) rejects
      replaceState, so deep links are used only where the URL can carry them. */
@@ -233,18 +234,19 @@ function initPanels(LIST){
     prev.className = next.className = "btn";
     if(i > 0){
       prev.textContent = "\u2039  " + LIST[i-1][1];
-      prev.addEventListener("click", () => show(i-1, true));
+      prev.addEventListener("click", () => show(i-1, true, true));
     } else { prev.style.visibility = "hidden"; prev.textContent = "\u2039"; }
     if(i < LIST.length-1){
       next.textContent = LIST[i+1][1] + "  \u203a";
-      next.addEventListener("click", () => show(i+1, true));
+      next.addEventListener("click", () => show(i+1, true, true));
     } else { next.style.visibility = "hidden"; next.textContent = "\u203a"; }
     nav.appendChild(prev); nav.appendChild(next);
     sec.appendChild(nav);
   });
 
-  function show(i, move){
+  function show(i, move, focusHeading){
     at = i;
+    ui.update(i);
     secs.forEach((n,k) => n.classList.toggle("is-on", k === i));
     tabs.forEach((t,k) => {
       t.setAttribute("aria-selected", String(k === i));
@@ -260,6 +262,10 @@ function initPanels(LIST){
       rail.scrollLeft = Math.max(0, t.offsetLeft - rail.clientWidth/2 + t.offsetWidth/2);
       try { anchor.scrollIntoView({ block:"start", behavior: REDUCE ? "auto" : "smooth" }); }
       catch(err){ anchor.scrollIntoView(true); }
+      if(focusHeading){
+        const heading = secs[i].querySelector("h2");
+        if(heading){ heading.tabIndex = -1; heading.focus({preventScroll:true}); }
+      }
     }
   }
 
@@ -281,7 +287,7 @@ function initPanels(LIST){
     const k = LIST.findIndex(x => "#" + x[0] === a.getAttribute("href"));
     if(k < 0) return;
     e.preventDefault();
-    show(k, true);
+    show(k, true, true);
   });
 
   if(CAN_LINK) window.addEventListener("hashchange", () => {
@@ -303,3 +309,183 @@ window.addEventListener("resize", () => {
 });
 window.addEventListener("load", () => redraws.forEach(f => f()));
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => redraws.forEach(f => f()));
+
+/* Reading tools are shared; lesson-specific mathematics stays in each page. */
+function announce(message){
+  const status = document.getElementById("lesson-status");
+  if(status) status.textContent = message;
+}
+
+function lessonTools(list, sections, rail){
+  const bar = document.createElement("div");
+  bar.className = "lesson-tools";
+  const progress = document.createElement("p");
+  progress.className = "note section-progress";
+  progress.id = "section-progress";
+  const all = Object.assign(document.createElement("button"), {type:"button",className:"btn",textContent:"Show all sections"});
+  all.setAttribute("aria-pressed", "false");
+  const status = document.createElement("p");
+  status.id = "lesson-status"; status.className = "vh";
+  status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite");
+  status.setAttribute("aria-atomic", "true");
+  bar.append(progress, all);
+  rail.before(bar); document.body.append(status);
+  if(/(?:backprop|rl)\.html$/.test(location.pathname)) seedRestartControl();
+  sections.forEach(sec=>{const h=sec.querySelector("h2");if(h)h.tabIndex=-1;});
+  let current = 0;
+  function update(i){
+    current = i;
+    progress.textContent = document.body.classList.contains("read-all")
+      ? "All " + list.length + " sections · continuous reading"
+      : "Section " + (i+1) + " of " + list.length + " · " + list[i][1];
+  }
+  all.addEventListener("click", () => {
+    const on = document.body.classList.toggle("read-all");
+    all.setAttribute("aria-pressed",String(on));
+    all.textContent = on ? "Show one section" : "Show all sections";
+    sections.forEach((sec,i) => {
+      if(on){ sec.removeAttribute("role");sec.removeAttribute("aria-labelledby"); }
+      else {sec.setAttribute("role","tabpanel");sec.setAttribute("aria-labelledby","tab-"+list[i][0]);}
+    });
+    update(current); redraws.forEach(f => f());
+    announce(on ? "All sections are visible." : "One section is visible.");
+  });
+  const skip = Object.assign(document.createElement("a"),{className:"skip-link",href:"#rail-top",textContent:"Skip to lesson sections"});
+  document.body.prepend(skip);
+  skip.addEventListener("click",()=>{const target=document.getElementById("rail-top");if(target){target.tabIndex=-1;target.focus({preventScroll:true});}});
+  window.addEventListener("beforeprint", () => {
+    document.body.classList.add("printing");
+    redraws.forEach(f => f());
+  });
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("printing");
+    redraws.forEach(f => f());
+  });
+  installDefinitions();
+  // Announce settled results after an interaction, never every animation frame.
+  let pending, interestedUntil = 0;
+  document.addEventListener("click", e => {
+    if(e.target.closest(".panel button")) interestedUntil = Date.now()+30000;
+  },true);
+  document.addEventListener("change", e => {
+    if(e.target.closest(".panel")) interestedUntil = Date.now()+30000;
+  },true);
+  const observer = new MutationObserver(records => {
+    if(Date.now()>interestedUntil) return;
+    const record = records.find(r => r.target.parentElement?.closest(".panel.is-on, body.read-all .panel"));
+    if(!record) return;
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+      const section = record.target.parentElement?.closest(".panel");
+      if(!section || (!section.classList.contains("is-on") && !document.body.classList.contains("read-all"))) return;
+      const text = Array.from(section.querySelectorAll(".readout,.msg")).map(x=>x.textContent.trim()).filter(Boolean).join(" ");
+      if(text) announce(text.slice(0,650));
+    },700);
+  });
+  document.querySelectorAll(".panel .msg,.panel .readout").forEach(node=>observer.observe(node,{subtree:true,childList:true,characterData:true}));
+  return {update};
+}
+
+function installDefinitions(){
+  if(typeof GLOSSARY === "undefined") return;
+  const dialog = document.createElement("dialog");
+  dialog.className = "definition-dialog";
+  dialog.setAttribute("aria-labelledby","definition-title");
+  const close = Object.assign(document.createElement("button"),{type:"button",className:"btn",textContent:"Close definition"});
+  const title = Object.assign(document.createElement("h2"),{id:"definition-title"});
+  const plain = document.createElement("p"), exact = document.createElement("p");
+  exact.className = "note";
+  const full = Object.assign(document.createElement("a"),{textContent:"Full glossary entry ↗",target:"_blank",rel:"noopener"});
+  dialog.append(close,title,plain,exact,full);document.body.append(dialog);
+  let opener;
+  close.addEventListener("click",()=>dialog.close());
+  dialog.addEventListener("close",()=>opener?.focus({preventScroll:true}));
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("a.term");
+    if(!a || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button!==0 || typeof dialog.showModal!=="function") return;
+    const id=a.hash.slice(1), entry=GLOSSARY[id];
+    if(!entry) return;
+    e.preventDefault();opener=a;
+    title.textContent=entry.title;plain.textContent=entry.plain;exact.textContent=entry.exact;
+    full.href=a.href;dialog.showModal();close.focus();
+  });
+}
+
+/* Copy data, not canvas pixels, into an accessible table beside a figure. */
+function figureTable(canvasId, caption, headings, rows){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  let details=document.getElementById(canvasId+"-data");
+  if(!details){
+    details=document.createElement("details");details.id=canvasId+"-data";details.className="figure-data";
+    const summary=document.createElement("summary");summary.textContent="View chart values as text";
+    const wrap=document.createElement("div");wrap.className="table-scroll";
+    details.append(summary,wrap);(canvas.closest("figure")||canvas.parentElement).append(details);
+    canvas.setAttribute("aria-describedby",details.id);
+  }
+  const table=document.createElement("table"), cap=document.createElement("caption");
+  cap.textContent=caption;table.append(cap);
+  const head=document.createElement("thead"), tr=document.createElement("tr");
+  headings.forEach(h=>{const th=document.createElement("th");th.scope="col";th.textContent=h;tr.append(th);});head.append(tr);table.append(head);
+  const body=document.createElement("tbody");
+  rows.forEach(row=>{const tr=document.createElement("tr");row.forEach(v=>{const td=document.createElement("td");td.textContent=String(v);tr.append(td);});body.append(tr);});
+  table.append(body);details.lastElementChild.replaceChildren(table);
+}
+
+/* Fixed seeds are visible and editable; running again repeats the same batch. */
+function batchControls(panelId, defaultSeed){
+  const section=document.getElementById(panelId);
+  const form=document.createElement("div");form.className="batch-controls row";
+  const id=panelId+"-seed", label=document.createElement("label");label.htmlFor=id;label.textContent="Experiment seed";
+  const input=Object.assign(document.createElement("input"),{id,type:"number",required:true,min:"1",max:"1000000000",step:"1",value:String(defaultSeed)});
+  const next=Object.assign(document.createElement("button"),{type:"button",className:"btn",textContent:"New seed"});
+  const hint=document.createElement("p");hint.className="note";hint.textContent="Run again with the same seed and settings to repeat this batch.";
+  next.addEventListener("click",()=>{input.value=String((Number(input.value)||defaultSeed)%1000000000+1);announce("New experiment seed "+input.value+". Run the batch to use it.");});
+  form.append(label,input,next,hint);
+  section.querySelector(".sec-head").after(form);
+  return {get(){if(!input.reportValidity()) return null;return Number(input.value);}};
+}
+
+/* Yield between small batches so navigation and assistive feedback stay responsive. */
+async function runChunks(section, count, each, report){
+  if(section.dataset.busy==="true") return false;
+  section.dataset.busy="true";section.setAttribute("aria-busy","true");
+  const controls=Array.from(section.querySelectorAll("button,input,select"));
+  const disabled=controls.map(c=>c.disabled);controls.forEach(c=>c.disabled=true);
+  const meter=document.createElement("progress");meter.max=count;meter.value=0;
+  meter.setAttribute("aria-label","Experiment progress");meter.className="batch-progress";
+  section.querySelector(".sec-head").after(meter);
+  try{
+    for(let i=0;i<count;){
+      const start=performance.now();
+      do{each(i++);}while(i<count && performance.now()-start<12);
+      meter.value=i;if(report)report(i,count);
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    return true;
+  }finally{
+    controls.forEach((c,i)=>c.disabled=disabled[i]);meter.remove();
+    section.removeAttribute("aria-busy");delete section.dataset.busy;
+  }
+}
+
+const experimentSeed = (function(){
+  const n=Number(new URLSearchParams(location.search).get("seed"));
+  return Number.isInteger(n)&&n>=1&&n<=1000000000?n:1;
+})();
+let experimentState=experimentSeed;
+function experimentRandom(){
+  experimentState^=experimentState<<13;experimentState^=experimentState>>>17;experimentState^=experimentState<<5;
+  return (experimentState>>>0)/4294967296;
+}
+function seedRestartControl(){
+  const bar=document.querySelector(".lesson-tools");if(!bar)return;
+  const details=document.createElement("details");details.className="seed-restart";
+  const summary=document.createElement("summary");summary.textContent="Repeat lesson starting conditions";
+  const label=document.createElement("label");label.htmlFor="lesson-seed";label.textContent="Starting seed ";
+  const input=Object.assign(document.createElement("input"),{id:"lesson-seed",type:"number",required:true,min:"1",max:"1000000000",step:"1",value:String(experimentSeed)});
+  const button=Object.assign(document.createElement("button"),{type:"button",className:"btn",textContent:"Restart lesson"});
+  const note=document.createElement("p");note.className="note";note.textContent="Restarts the lesson and clears its experiments. Follow the same controls to repeat a run; batch seeds can also be set separately.";
+  button.addEventListener("click",()=>{if(!input.reportValidity())return;const url=new URL(location.href);url.searchParams.set("seed",input.value);location.href=url.href;});
+  details.append(summary,label,input,button,note);bar.append(details);
+}

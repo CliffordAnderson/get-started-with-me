@@ -32,7 +32,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
   <nav>
-    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
     <a class="away" href="../index.html">All lessons</a>
     <a class="away" href="../about.html">About</a>
   </nav>
@@ -64,6 +64,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 <div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
 
 <section id="numbers" class="panel" role="tabpanel" aria-labelledby="tab-numbers">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which pixels seem most useful for telling these drawings apart?</p>
   <div class="sec-head">
     <div class="sec-num">1</div>
     <div>
@@ -74,7 +75,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 
   <div class="split wide-left">
     <figure>
-      <div class="window"><canvas id="n-img" role="img"
+      <div class="window"><canvas id="n-img" class="drag-canvas" tabindex="0" role="img"
         aria-label="A twelve by twelve grid of gray squares forming a simple animal drawing. Clicking a square reports its brightness."></canvas></div>
       <figcaption id="n-cap">Click any pixel to read its brightness.</figcaption>
     </figure>
@@ -99,9 +100,11 @@ canvas.bar2{aspect-ratio:auto;height:52px}
       <p class="note">These are drawings generated in your browser, not photographs: an ellipse for a head, a pair of eyes, and then either two triangles on top or two lobes at the sides, with the position, size, ear shape and exposure varied at random for each one. Head and eyes are drawn the same way for both classes, so the ears are the only thing that carries any information — remember that when you see what the weights look like. Real photographs are a far harder problem, and the closing panel is about why.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The machine receives pixel values in fixed positions, not named features.</p>
 </section>
 
 <section id="learn" class="panel" role="tabpanel" aria-labelledby="tab-learn">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Where do you expect the strongest positive and negative weights?</p>
   <div class="sec-head">
     <div class="sec-num">2</div>
     <div>
@@ -159,9 +162,11 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule arrives somewhere close to that from four corrections, because it stops the instant it gets everything right. It is not looking for the best <a class="term" href="../glossary.html#template">template</a>. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
     <p class="note">That is worth noticing before the weight image starts looking like understanding. Both pictures say the same thing — <em>ink up here counts against, ink out on the sides counts for</em> — and that single comparison of two regions is the entire theory of animals this machine will ever hold.</p>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The learned template records how pixels contribute to the classification.</p>
 </section>
 
 <section id="verdict" class="panel" role="tabpanel" aria-labelledby="tab-verdict">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Can a bright pixel contribute almost nothing to the verdict?</p>
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
@@ -204,9 +209,11 @@ canvas.bar2{aspect-ratio:auto;height:52px}
       <p class="note">Notice also that the total's size means nothing to the machine. Only its sign is read. A picture that scores +0.02 and one that scores +2.0 are both simply <em>dog</em>, and the <a class="term" href="../glossary.html#step-function">step function</a> throws the difference away. That discarded <a class="term" href="../glossary.html#margin">margin</a> is what later methods go back for.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A pixel contributes its value multiplied by its weight; brightness alone does not decide.</p>
 </section>
 
 <section id="test" class="panel" role="tabpanel" aria-labelledby="tab-test">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will success on the training pictures transfer to fresh drawings?</p>
   <div class="sec-head">
     <div class="sec-num">4</div>
     <div>
@@ -232,9 +239,11 @@ canvas.bar2{aspect-ratio:auto;height:52px}
       <p class="note">Before reading too much into a high score: these drawings differ between the classes in exactly one respect, and that respect sits in a fixed place in the frame. The task was built to be a straight line's kind of problem. That it is solved by a straight line is not evidence about photographs of animals.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Held-out examples check transfer within this generator, not to real photographs.</p>
 </section>
 
 <section id="break" class="panel" role="tabpanel" aria-labelledby="tab-break">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which transformation should change the score most?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
@@ -288,6 +297,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
       <p class="cite">Minsky and Papert's group invariance theorem, in <em>Perceptrons</em> (1969), makes the translation argument exactly: if the machine's predicates are unchanged as a group by shifting the image, its weights must be constant across each orbit of that group — which is a severe constraint on what can be told apart. Rosenblatt had met the practical version at the Mark I, whose 400 photocells looked at a fixed retina and whose performance depended on where in that retina you put the shape.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A template tied to pixel positions can fail when the same shape moves.</p>
 </section>
 
 <a class="nextup" href="xor.html">
@@ -314,6 +324,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 </footer>
 
 </main>
+<script src="../assets/glossary-data.js"></script>
 <script src="../assets/lesson.js"></script>
 <script>
 "use strict";
@@ -665,6 +676,12 @@ function setLamp(el, cls){
     cap.textContent = "Brightness runs from 0 (paper) to 1 (full ink).";
     render();
   }
+  p.cv.addEventListener("keydown",e=>{
+    const change={ArrowLeft:-1,ArrowRight:1,ArrowUp:-N,ArrowDown:N}[e.key];
+    if(change===undefined)return;e.preventDefault();at=clamp((at<0?0:at)+change,0,NP-1);render();
+    announce("Pixel "+(at+1)+", row "+(Math.floor(at/N)+1)+", column "+(at%N+1)+", brightness "+px[at].toFixed(2));
+  });
+  p.cv.setAttribute("aria-label",p.cv.getAttribute("aria-label")+" Arrow keys select a pixel.");
   p.cv.addEventListener("pointerdown", hit);
   p.cv.addEventListener("pointermove", e => { if(e.buttons) hit(e); });
 

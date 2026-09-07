@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A static site of short interactive lessons on artificial intelligence. No build step, no dependencies,
-no framework, no tests: hand-written HTML, one shared stylesheet, one shared script. Every
+no framework: hand-written HTML, one shared stylesheet, shared browser machinery and generated glossary data. Every
 page opens directly from the filesystem.
 
 `README.md` documents the drawing API in `assets/lesson.js` function by function. This file
@@ -15,11 +15,12 @@ covers the things that need more than one file to see.
 
 ```
 open index.html                 preview (file:// works; no server needed)
-node --check assets/lesson.js   the only syntax check available
+python3 scripts/check-site.py   links, structure, glossary data and JS syntax
+node scripts/test-math.cjs      numerical regression checks
 npx wrangler deploy             wrangler.jsonc serves the repo root as static assets
 ```
 
-There is no linter, no test runner and no package.json. `npx wrangler` is the only tooling,
+There is no linter or package.json. The optional checks use Python 3 and Node without packages. `npx wrangler` is the only tooling,
 and it is not installed locally. A deploy publishes the live site, so run it only when asked.
 
 ## Verifying a change
@@ -171,9 +172,7 @@ specific as it is — the general admission is cheap and worth little, and what 
 the named example of a measurement overturning a drafted claim, which is the practice the
 rest of this file is about.
 
-The landing page states no lesson count, on purpose. `every lesson fifteen minutes or less` in
-the masthead is a claim about the entry metas below it, so it has to stay true of the slowest
-lesson.
+The landing page states no lesson count, on purpose. Its timing is an approximate reading estimate; experimentation takes additional time. Keep that distinction in the entry metas.
 
 ## Voice
 
@@ -195,3 +194,18 @@ The register is that of an honest instrument, and it is worth protecting:
 - Every canvas needs `role="img"` and an `aria-label` saying what it shows; every figure gets
   a `figcaption`. `prefers-reduced-motion` sends page-load animations straight to their end
   state via the `REDUCE` flag.
+
+## Review corrections and shared tools
+
+Keep numerical and rhetorical claims aligned. A failed training budget is not a proof of a local
+minimum, permanent failure, or an uphill escape path. The restart panel retains unfinished networks
+and continues them; the numerical check contains concrete late-success counterexamples. A smooth
+activation does not guarantee a single valley. Zero Q-value does not imply an unvisited action.
+Neither a rule base nor a learned model automatically warns reliably about unfamiliar inputs.
+Explicit rules and learned parameters differ in how they can be interpreted, not in whether one is
+universally readable and the other universally opaque.
+
+Preserve the optional prediction/takeaway prompts and mathematical help. `lessonTools` provides
+continuous reading, print redraws, focus management and a definition dialog; `batchControls` and
+`runChunks` provide seeded, responsive batches. `figureTable` exposes selected plotted numbers as
+text. See the README for usage and verification limits. Regenerate glossary data after editing it.

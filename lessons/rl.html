@@ -41,7 +41,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
 <div class="topbar">
   <a class="wordmark" href="../index.html">getstartedwith.me</a>
   <nav>
-    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
     <a class="away" href="../index.html">All lessons</a>
     <a class="away" href="../about.html">About</a>
   </nav>
@@ -73,6 +73,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
 <div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
 
 <section id="world" class="panel" role="tabpanel" aria-labelledby="tab-world">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which moves deserve credit for a reward that arrives only at the end?</p>
   <div class="sec-head">
     <div class="sec-num">1</div>
     <div>
@@ -106,12 +107,14 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <div class="row"><button class="btn" id="w-reset" type="button">Put it back</button></div>
       <p>The shortest way out is eight moves, and the pit is only five away, so an aimless walker meets the wrong end of the world first. That is the arrangement, and the agent knows none of it.</p>
       <p>Notice what you were not told while you walked. Not one of your moves was called right or wrong at the time it was made. A number came at the end, and by then it belonged to the whole journey. Working out which of the eight moves deserved the <a class="term" href="../glossary.html#credit-assignment">credit</a> is the problem this lesson is about; Minsky named it in 1961, and it is the reason learning from a reward is a different thing from learning from a label.</p>
-      <p class="cite">Marvin Minsky, &ldquo;Steps Toward Artificial Intelligence,&rdquo; <em>Proceedings of the IRE</em> 49 (1961), sets out what he calls the basic credit-assignment problem for a machine learning from success and failure rather than from instruction. The same Minsky wrote the book, seven years later, that closed the first lesson's argument.</p>
+      <p class="cite">Marvin Minsky, &ldquo;Steps Toward Artificial Intelligence,&rdquo; <em>Proceedings of the IRE</em> 49 (1961), sets out what he calls the basic credit-assignment problem for a machine learning from success and failure rather than from instruction. The same Minsky co-authored the book, eight years later, that closed the first lesson's argument.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Delayed feedback makes credit assignment part of the learning problem.</p>
 </section>
 
 <section id="random" class="panel" role="tabpanel" aria-labelledby="tab-random">
+  <p class="experiment-prompt"><strong>Before you try:</strong> How often might random moves reach the goal instead of the pit?</p>
   <div class="sec-head">
     <div class="sec-num">2</div>
     <div>
@@ -145,9 +148,11 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="note">Every figure in this panel comes from the batch you just ran, in this browser, a moment ago. Run it twice and the numbers will move a little; that is what measuring a random process looks like.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A measured baseline helps show whether learning improves on chance.</p>
 </section>
 
 <section id="learn" class="panel" role="tabpanel" aria-labelledby="tab-learn">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Can a tried move still have estimated value zero?</p>
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
@@ -161,12 +166,12 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <figure>
         <div class="window"><canvas id="l-grid" role="img"
           aria-label="The gridworld with each cell divided into four triangles, one per direction, shaded brown in proportion to what that move is estimated to be worth and blue where it is worth less than nothing. An arrow in each cell marks the best move known so far."></canvas></div>
-        <figcaption>One wedge per direction. Brown is worth something, blue is worth less than nothing, grey is never yet tried. The arrow is the move the agent would make if it stopped exploring now.</figcaption>
+        <figcaption>One wedge per direction. Brown is worth something, blue is worth less than nothing, grey has estimated value zero, whether tried or not. The arrow is the move the agent would make if it stopped exploring now.</figcaption>
       </figure>
       <div class="legend">
         <span><span class="swatch one"></span> worth something</span>
         <span><span class="swatch zero"></span> worth less than nothing</span>
-        <span><span class="swatch unk"></span> never tried</span>
+        <span><span class="swatch unk"></span> estimated value zero</span>
       </div>
     </div>
     <div class="stack">
@@ -182,17 +187,19 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="msg" id="l-msg">Every estimate is zero. With nothing to prefer, it wanders.</p>
       <p>Watch the brown arrive from the goal and spread backwards. It has to: the only cell whose value can be known outright is the one next to the reward, and every other cell has to wait for its neighbour to be worth something before it can be worth anything itself. This is what learning from a delayed reward looks like — a wave travelling backwards, one cell per visit, from the end of the journey to the beginning.</p>
       <p>Let it settle and the numbers are exactly what the discount says they should be. The cell beside the goal is worth <span class="nb">1</span>; the next one back <span class="nb">0.9</span>; the one before that <span class="nb">0.81</span>. The start, eight moves out, settles at <span class="nb">0.478</span>, which is <span class="nb">0.9</span> multiplied by itself seven times. You can check the readout against the arithmetic.</p>
-      <p class="note">The rule above has no <a class="term" href="../glossary.html#learning-rate">learning rate</a> in it, because this world is deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
+      <p class="note">The rule above uses a <a class="term" href="../glossary.html#learning-rate">learning rate</a> of 1, so it is omitted from the displayed equation. This works here because the transitions and rewards are deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Reward information propagates through updates; zero does not mean an action was never tried.</p>
 </section>
 
 <section id="explore" class="panel" role="tabpanel" aria-labelledby="tab-explore">
+  <p class="experiment-prompt"><strong>Before you try:</strong> What might extra exploration cost after a good route is learned?</p>
   <div class="sec-head">
     <div class="sec-num">4</div>
     <div>
       <h2>What exploring costs</h2>
-      <p>An agent that always takes the move it currently rates best will never <a class="term" href="../glossary.html#exploration">explore</a>, and the usual remedy is to make it flip a weighted coin: with probability <span class="nb">ε</span> ignore the table and move at random. Set <span class="nb">ε</span> and measure what it buys.</p>
+      <p>An agent that always takes the move it currently rates best does not deliberately <a class="term" href="../glossary.html#exploration">explore</a> a lower-valued alternative, and the usual remedy is to make it flip a weighted coin: with probability <span class="nb">ε</span> ignore the table and move at random. Set <span class="nb">ε</span> and measure what it buys.</p>
     </div>
   </div>
 
@@ -200,7 +207,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div>
       <figure>
         <div class="window"><canvas id="e-chart" class="chart" role="img"
-          aria-label="A chart of average reward per episode against the exploration rate epsilon. The measured points fall steadily as epsilon rises."></canvas></div>
+          aria-label="A chart of average reward per episode against the exploration rate epsilon. The values are measured for each selected epsilon; a text table accompanies the chart."></canvas></div>
         <figcaption>Reward per episode once the route has been learned, against how often the agent throws its table away and moves at random. Each point is a batch you ran.</figcaption>
       </figure>
       <div class="ctl">
@@ -215,15 +222,17 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="msg" id="e-msg">Each measurement trains 120 agents from scratch and reports what they earn once they have settled.</p>
     </div>
     <div class="stack">
-      <p>Set <span class="nb">ε</span> to zero and the agent still learns the route, every time, which is not what the argument for exploring would lead you to expect. The reason is worth stating plainly: a table of zeros has no best move, so an agent following its best move is choosing at random. Measured over two thousand runs, a purely greedy agent's first episode takes about sixty-five steps; the random walker in the last panel took about sixty-six. Until it knows something, greed and chance are the same <a class="term" href="../glossary.html#policy">policy</a>.</p>
-      <p>After that the coin only costs. Every point on this chart is below the one at <span class="nb">ε = 0</span>, and the reason is the pit: the learned route passes directly over it, so a random move at the wrong moment does not merely waste a step but throws away the whole episode. At <span class="nb">ε = 0.1</span> the agent falls in about one episode in a hundred; at <span class="nb">ε = 0.5</span>, one in fifteen.</p>
+      <p>Set <span class="nb">ε</span> to zero and the agent learned an optimal route in the measured batches, which is not what the argument for exploring would lead you to expect. The reason is worth stating plainly: a table of zeros has no best move, so an agent following its best move is choosing at random. Measured over two thousand runs, a purely greedy agent's first episode takes about sixty-five steps; the random walker in the last panel took about sixty-six. Until it knows something, greed and chance are the same <a class="term" href="../glossary.html#policy">policy</a>.</p>
+      <p>After that the coin only costs. The measured averages tend to fall below the result at <span class="nb">ε = 0</span>, and the reason is the pit: the learned route passes directly over it, so a random move at the wrong moment does not merely waste a step but throws away the whole episode. At <span class="nb">ε = 0.1</span> the agent falls in about one episode in a hundred; at <span class="nb">ε = 0.5</span>, one in fifteen.</p>
       <p>So exploring is a tax, and in a small world you can see all of, it is a tax with no return. That conclusion is correct here and badly wrong in general, and the next panel is where it breaks.</p>
-      <p class="note">This lesson keeps <span class="nb">ε</span> fixed. Anything used in earnest lowers it as the agent learns, so that it explores while ignorant and exploits once it is not — which is the same instinct that makes the tax look worth paying in the panel after this one.</p>
+      <p class="note">This lesson keeps <span class="nb">ε</span> fixed. One common strategy lowers it as the agent learns, so that it explores while ignorant and exploits once it is not — which is the same instinct that makes the tax look worth paying in the panel after this one.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Random exploration has a cost in this world; its benefit depends on what remains undiscovered.</p>
 </section>
 
 <section id="change" class="panel" role="tabpanel" aria-labelledby="tab-change">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Will a better prize matter if the agent never visits it?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
@@ -237,7 +246,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <figure>
         <div class="window"><canvas id="c-grid" role="img" tabindex="0"
           aria-label="The gridworld with the learned eight-move route drawn across it, and a second goal worth plus two that can be placed in any open cell."></canvas></div>
-        <figcaption>The route it settled on, and a second goal worth <span class="nb">+2</span>. Click any open cell to move it.</figcaption>
+        <figcaption>The route it settled on, and a second goal worth <span class="nb">+2</span>. Click an open cell or choose its row and column below to move it.</figcaption>
       </figure>
       <div class="row" style="margin-top:.9rem">
         <button class="btn" id="c-near" type="button">Beside the start</button>
@@ -265,7 +274,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
         <li><span>still take the old route</span><span class="v">—</span></li>
       </ul>
       <p class="msg" id="c-msg">Each agent trains for 200 episodes, then runs 500 more with the prize in place.</p>
-      <p>Put it one step to the right of the start and a greedy agent never finds it — not once in two hundred, not ever, however long you leave it running. It is standing beside the thing the whole time. Its estimate for stepping right is zero and its estimate for stepping up is <span class="nb">0.478</span>, so it steps up, and nothing in the rule will ever make it do otherwise. Set <span class="nb">ε</span> to <span class="nb">0.1</span> and every single agent finds it, and switches.</p>
+      <p>Put it one step to the right of the start and a greedy agent never finds it — not once in two hundred, not ever, however long you leave it running. It is standing beside the thing the whole time. Its estimate for stepping right is zero and its estimate for stepping up is <span class="nb">0.478</span>, so it steps up, and nothing in the rule will ever make it do otherwise. With <span class="nb">ε = 0.1</span>, the measured batches typically find it much more often. The tally reports what happened within 500 further episodes, not a promise for every finite run.</p>
       <p>Put it on the route instead and a greedy agent finds it at once — in about three runs out of five. The rest never see it, and the reason is a small piece of honesty about the last panel: there are two eight-move routes to the goal, one across the top and one through the middle, and they are worth exactly the same. Which one an agent settles on is decided by the coin flips of its first few wandering episodes, and the method has no preference between them. A prize on the top route is invisible to an agent that happened to learn the middle one.</p>
       <p>Put it in the far corner and exploring stops helping much. Even at <span class="nb">ε = 0.3</span>, where a third of all moves are thrown away, only about a quarter of the agents ever stumble across it. Random moves are a poor way to travel: they undo each other, and four cells is already far when your only means of getting anywhere new is to flip a coin against yourself.</p>
     </div>
@@ -277,10 +286,11 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p>The other half of the warning is the reward itself. The agent has no opinion about what is worth doing; it has your number, and it will pursue exactly what you wrote down rather than what you meant. Everything this lesson's machine knows about the point of its existence is <span class="nb">+1</span> in one corner and <span class="nb">−1</span> in another, and it is faithful to that specification in a way that is easy to mistake for understanding.</p>
     </div>
     <div>
-      <p>And the table has to fit. This world has nineteen open cells and four moves, so the whole of what the agent can know is seventy-six numbers, and it can afford to visit every one. A board game, or a room with a camera pointed at it, has more distinguishable situations than there are seconds in the history of the universe, and no table will hold them. What is done instead is to replace the table with a function that guesses the value of a situation it has never seen — and the machinery for learning such a function from examples is the subject of the four lessons before this one.</p>
+      <p>And the table has to fit. This world has nineteen open cells and four moves, so the whole of what the agent can know is seventy-six numbers, and it can afford to visit every one. A board game, or a room with a camera pointed at it, has more distinguishable situations than there are seconds in the history of the universe, and no table will hold them. What is done instead is to replace the table with a function that guesses the value of a situation it has never seen — and the machinery for learning such a function from examples is introduced in lessons 1–4.</p>
       <p class="cite">Arthur Samuel's checkers player, &ldquo;Some Studies in Machine Learning Using the Game of Checkers,&rdquo; <em>IBM Journal of Research and Development</em> 3 (1959), learned by adjusting its estimates towards its own later ones, and is the ancestor of everything here. The idea was made general and given its analysis by Richard Sutton, &ldquo;Learning to Predict by the Methods of Temporal Differences,&rdquo; <em>Machine Learning</em> 3 (1988). The particular rule in panel 3 is Q-learning, from Christopher Watkins's Cambridge thesis <em>Learning from Delayed Rewards</em> (1989); Watkins and Peter Dayan proved in 1992 that it converges on the best route, given that every move is tried in every cell infinitely often — a condition this panel is about.</p>
     </div>
   </div>
+  <p class="takeaway"><strong>Takeaway:</strong> An agent can learn only from the situations it encounters; discovery depends on its policy.</p>
 </section>
 
 <a class="nextup" href="../index.html">
@@ -296,6 +306,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
 </footer>
 
 </main>
+<script src="../assets/glossary-data.js"></script>
 <script src="../assets/lesson.js"></script>
 <script>
 "use strict";
@@ -707,7 +718,7 @@ function drawGrid(p, o){
   const p = Plot(document.getElementById("r-hist"), [0,1,0,1]);
   const tally = document.getElementById("r-tally").querySelectorAll(".v");
   const BIN = 10, BINS = 30;   /* 0 to 300, which is the whole range an episode can take */
-  let bins, n, goal, pit, steps, ret, seed = 5000;
+  let bins, n, goal, pit, steps, ret;
 
   function render(){
     const g = p.ctx, m = 22, w = p.w - m - 8, h = p.h - 20;
@@ -742,6 +753,7 @@ function drawGrid(p, o){
     bins = new Array(BINS).fill(0);
     n = goal = pit = steps = ret = 0;
     show();
+    figureTable("r-hist","No episodes run",["Steps","Episodes"],[]);
   }
 
   function show(){
@@ -757,15 +769,21 @@ function drawGrid(p, o){
     render();
   }
 
-  function run(){
-    const r = rng(seed += 977);
-    for(let i=0;i<2000;i++){
-      const e = episode(WORLD, blankQ(), r, 1, false);
-      bins[Math.min(BINS-1, (e.steps/BIN)|0)]++;
-      if(e.end === GOAL) goal++; else if(e.end === PIT) pit++;
-      steps += e.steps; ret += e.got; n++;
-    }
+  const seeds = batchControls("random", 6000);
+  async function run(){
+    const section=document.getElementById("random");
+    if(section.dataset.busy==="true")return;
+    const seed=seeds.get();if(seed===null)return;
+    clear();const r=rng(seed);
+    await runChunks(section,2000,i=>{
+      const e=episode(WORLD,blankQ(),r,1,false);
+      bins[Math.min(BINS-1,(e.steps/BIN)|0)]++;
+      if(e.end===GOAL)goal++;else if(e.end===PIT)pit++;
+      steps+=e.steps;ret+=e.got;n++;
+    });
     show();
+    figureTable("r-hist","Random walk episode lengths",["Steps","Episodes"],bins.map((v,i)=>[i===BINS-1 ? (i*BIN)+" or more" : (i*BIN)+"–"+((i+1)*BIN-1),v]));
+    announce(n+" episodes complete. "+goal+" reached the goal and "+pit+" fell in the pit.");
   }
 
   document.getElementById("r-run").addEventListener("click", run);
@@ -781,10 +799,11 @@ function drawGrid(p, o){
   const read = document.getElementById("l-read");
   const msg  = document.getElementById("l-msg");
   const EPS = 0.1;
-  let Q, r, ep, left = 0, timer = null, seed = 4242;
+  let Q, r, ep, left = 0, timer = null, seed = 4242 + experimentSeed - 1;
 
   function render(){
     drawGrid(p, { Q:Q, arrows:true });
+    figureTable("l-grid","Action values; zero does not indicate visit history",["Cell","Up","Right","Down","Left"],Q.flatMap((q,i)=>wall(i)||i in WORLD?[]:[["r"+(Math.floor(i/W)+1)+" c"+(i%W+1),...Array.from(q,v=>num(v,4))]]));
     const g = greedyRun(WORLD, Q);
     read.innerHTML = "episode <b>" + ep + "</b>" + (ep
       ? "  &nbsp;route " + (g.end === GOAL ? g.steps + " moves" : "nowhere yet") +
@@ -842,7 +861,7 @@ function drawGrid(p, o){
   const msg  = document.getElementById("e-msg");
   const pts = [];
   const LO = 0.8, HI = 1.03;
-  let seed = 8000;
+  const seeds = batchControls("explore", 8000);
 
   const px = v => 44 + v/0.5 * (p.w - 68);   /* room at the right so ε = 0.5 is not on the edge */
   const py = v => 14 + (HI - v)/(HI - LO) * (p.h - 44);
@@ -882,6 +901,7 @@ function drawGrid(p, o){
     g.fillText("ε", p.w - 12, py(LO) - 6);
 
     const sorted = pts.slice().sort((a,b) => a.eps - b.eps);
+    figureTable("e-chart","Measured exploration outcomes",["ε","Seed","Mean reward","Mean steps","Pit rate"],sorted.map(q=>[q.eps,q.seed,num(q.rew,4),num(q.steps,2),num(q.pit,4)]));
     if(sorted.length > 1){
       g.strokeStyle = "rgba(34,38,44,.35)"; g.lineWidth = 1.6;
       g.beginPath();
@@ -898,12 +918,15 @@ function drawGrid(p, o){
     });
   }
 
-  function measure(){
+  async function measure(){
+    const section=document.getElementById("explore");
+    if(section.dataset.busy==="true")return;
+    const seed=seeds.get();if(seed===null)return;
     const eps = +slider.value;
     const AGENTS = 120, RUNS = 200, TAIL = 100;
     let rew = 0, st = 0, pits = 0, n = 0;
-    for(let a=0;a<AGENTS;a++){
-      const Q = blankQ(), r = rng(seed += 131);
+    await runChunks(section,AGENTS,a=>{
+      const Q = blankQ(), r = rng(seed+(a+1)*131);
       for(let k=0;k<RUNS;k++){
         const e = episode(WORLD, Q, r, eps, true);
         if(k >= RUNS - TAIL){
@@ -912,15 +935,15 @@ function drawGrid(p, o){
           n++;
         }
       }
-    }
-    const q = { eps:eps, rew:rew/n, steps:st/n, pit:pits/n };
+    },n=>{msg.textContent=n+" of "+AGENTS+" agents measured";});
+    const q = { eps:eps, seed:seed, rew:rew/n, steps:st/n, pit:pits/n };
     const was = pts.findIndex(z => Math.abs(z.eps - eps) < 1e-9);
     if(was >= 0) pts[was] = q; else pts.push(q);
     msg.textContent = "ε = " + eps.toFixed(2) + ": " + num(q.rew, 3) +
       " per episode over " + AGENTS + " agents, " + q.steps.toFixed(1) + " steps each, and " +
       (q.pit === 0 ? "not one fall into the pit."
                    : "a fall into the pit every " + Math.round(1/q.pit) + " episodes.");
-    render();
+    render();announce(msg.textContent);
   }
 
   slider.addEventListener("input", () => { out.textContent = (+slider.value).toFixed(2); });
@@ -946,7 +969,8 @@ function drawGrid(p, o){
   const ONTOP = 0;          /* the top-left corner, on the upper of the two routes */
   const FAR  = N - 1;       /* the far corner, four moves along the bottom */
   const TRAIN = 200, AFTER = 500, AGENTS = 200;
-  let bonus = NEAR, eps = 0, seed = 31000;
+  let bonus = NEAR, eps = 0;
+  const seeds = batchControls("change", 31000);
 
   function worldWith(b){
     const w = baseWorld();
@@ -963,8 +987,10 @@ function drawGrid(p, o){
   }
 
   function place(b){
+    if(document.getElementById("change").dataset.busy==="true")return;
     if(b < 0 || wall(b) || b === START || b === GOAL || b === PIT) return;
     bonus = b;
+    const chooser=document.getElementById("bonus-cell");if(chooser)chooser.value=String(b);
     clear();
     preview();
   }
@@ -977,28 +1003,27 @@ function drawGrid(p, o){
     msg.classList.remove("hit");
   }
 
-  function run(){
+  async function run(){
+    const section=document.getElementById("change");
+    if(section.dataset.busy==="true")return;
+    const seed=seeds.get();if(seed===null)return;
     const w2 = worldWith(bonus);
     let found = 0, switched = 0, old = 0;
-    for(let a=0;a<AGENTS;a++){
-      const Q = blankQ(), r = rng(seed += 11);
+    await runChunks(section,AGENTS,a=>{
+      const Q = blankQ(), r = rng(seed+(a+1)*11);
       for(let k=0;k<TRAIN;k++) episode(WORLD, Q, r, eps, true);
       let hit = false;
       for(let k=0;k<AFTER;k++) if(episode(w2, Q, r, eps, true).end === bonus) hit = true;
       if(hit) found++;
       const g = greedyRun(w2, Q);
       if(g.end === bonus) switched++; else if(g.end === GOAL) old++;
-    }
+    },n=>{msg.textContent=n+" of "+AGENTS+" agents checked";});
     tally[0].textContent = AGENTS;
     tally[1].textContent = found + " of " + AGENTS;
     tally[2].textContent = switched + " of " + AGENTS;
     tally[3].textContent = old + " of " + AGENTS;
-    msg.textContent = found === 0
-      ? "Not one of them ever set foot on it. At ε = 0 there is nothing in the rule " +
-        "that would ever make them look."
-      : found === AGENTS
-        ? "Every one of them found it."
-        : found + " of " + AGENTS + " found it; the rest went on taking the old route.";
+    msg.textContent=found+" of "+AGENTS+" agents found the new prize within "+AFTER+" further episodes; "+switched+" then chose it in the greedy check. This is a finite-batch result.";
+    announce(msg.textContent);
     msg.classList.add("hit");
     preview();
   }
@@ -1011,6 +1036,13 @@ function drawGrid(p, o){
     return r*W + c;
   }
 
+  const chooser=document.createElement("select");chooser.id="bonus-cell";
+  const label=document.createElement("label");label.htmlFor=chooser.id;label.textContent="Prize position ";
+  for(let i=0;i<N;i++)if(!wall(i)&&i!==START&&i!==GOAL&&i!==PIT){
+    const opt=document.createElement("option");opt.value=String(i);opt.textContent="Row "+(Math.floor(i/W)+1)+", column "+(i%W+1);chooser.append(opt);
+  }
+  chooser.value=String(bonus);chooser.addEventListener("change",()=>place(Number(chooser.value)));
+  label.append(chooser);p.cv.closest("figure").append(label);
   p.cv.addEventListener("click", ev => place(cellAt(ev)));
   p.cv.addEventListener("keydown", ev => {
     const k = "123".indexOf(ev.key);
