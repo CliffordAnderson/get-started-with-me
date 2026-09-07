@@ -17,3 +17,11 @@ syntax checks; 64 generated definitions matched the glossary. Numerical regressi
 including late successes at epochs 3,624 and 3,412. Browser and screen-reader testing was not performed.
 
 The site remains a static site that opens directly from `index.html`. No deployment was performed.
+
+## RL rendering correction
+
+Hidden grids were measured as one pixel. Subtracting the drawing margins produced a negative
+cell size and a negative agent-circle radius, which aborted the shared redraw loop. Grid geometry
+now clamps the inner size to zero and skips drawing until there is room for cells. The visible
+panel can then be resized and painted normally. Added a regression check for hidden/undersized
+grids followed by a visible-grid redraw. The numerical learning rule is unchanged.

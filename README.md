@@ -154,7 +154,8 @@ The first checks local references, anchors, panel order, learning prompts, gener
 and JavaScript syntax. The second runs the shipped mathematical engines: all nine gradient
 components against numerical derivatives, late training successes, zero-weight symmetry,
 seed reproducibility, the eight-move route, its discounted value and the distinction between
-an untried action and a tried action still valued at zero.
+an untried action and a tried action still valued at zero. It also checks that hidden-grid geometry
+never supplies a negative canvas radius or prevents the following visible-grid redraw.
 
 The supplied update passed these checks. Browser rendering and assistive-technology behavior
 have not been manually verified. Before publishing, check the dialog, focus changes, reading

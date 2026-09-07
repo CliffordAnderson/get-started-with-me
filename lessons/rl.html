@@ -443,7 +443,7 @@ const BEST = distances(WORLD)[GOAL];
 /* ==================== painting the grid ==================== */
 
 function geom(p){
-  const m = 8, s = Math.min(p.w, p.h) - 2*m;
+  const m = 8, s = Math.max(0, Math.min(p.w, p.h) - 2*m);
   return { x0:(p.w - s)/2, y0:(p.h - s)/2, cs:s/W };
 }
 const cellX = (G,s) => G.x0 + (s % W) * G.cs + G.cs/2;
@@ -493,6 +493,10 @@ function drawGrid(p, o){
   o = o || {};
   const g = p.ctx, G = geom(p), world = o.world || WORLD;
   const scale = o.scale || 1;
+  // Hidden panels measure zero and Plot.fit() uses a one-pixel backing store.
+  // Do not draw until the plot has room for cells; a negative radius would
+  // abort the shared redraw loop before the newly visible plot can be resized.
+  if(G.cs <= 0) return;
   g.clearRect(0, 0, p.w, p.h);
   g.fillStyle = C.field; g.fillRect(0, 0, p.w, p.h);
 

@@ -44,3 +44,38 @@ assert.ok(!(next in world));
 blank[rl.START][0]=0+rl.GAMMA*rl.maxQ(blank,next);assert.equal(blank[rl.START][0],0);
 console.log('PASS: all 9 gradient components, seed repeatability, zero symmetry, 8-move route, discounted value, and tried-zero distinction.');
 console.log(JSON.stringify({initialFailures,recovered}));
+
+// Canvas geometry must remain valid while another section is hidden.
+// Enforce the browser canvas contract: arc() rejects a negative radius.
+const paintContext=vm.createContext({Math});
+const palette=readFileSync(path.join(root,'assets/lesson.js'),'utf8').split('const REDUCE')[0];
+const paintSource=readFileSync(path.join(root,'lessons/rl.html'),'utf8').split('"use strict";')[1].split('/* ============================ hero')[0];
+vm.runInContext(palette+paintSource+'\nglobalThis.paint={drawGrid,geom,START};',paintContext);
+const calls=[];
+const drawing=new Proxy({}, {
+  get(target,key){
+    if(key in target)return target[key];
+    return (...args)=>{
+      for(const arg of args)if(typeof arg==='number')assert.ok(Number.isFinite(arg),'non-finite canvas coordinate');
+      if(key==='arc')assert.ok(args[2]>=0,'negative canvas arc radius');
+      calls.push(key);
+    };
+  },
+  set(target,key,value){target[key]=value;return true;}
+});
+for(const size of [0,1,8,16]){
+  calls.length=0;
+  const p={ctx:drawing,w:size,h:size};
+  assert.ok(paintContext.paint.geom(p).cs>=0);
+  paintContext.paint.drawGrid(p,{agent:paintContext.paint.START});
+  assert.equal(calls.length,0,'hidden or undersized grids must skip drawing');
+}
+// The hidden grid must not stop the following visible-grid redraw.
+let visibleDrawn=false;
+[
+ ()=>paintContext.paint.drawGrid({ctx:drawing,w:1,h:1},{agent:paintContext.paint.START}),
+ ()=>{paintContext.paint.drawGrid({ctx:drawing,w:400,h:400},{Q:q,arrows:true,agent:paintContext.paint.START});visibleDrawn=true;}
+].forEach(draw=>draw());
+assert.ok(visibleDrawn);
+assert.ok(calls.includes('fillRect') && calls.includes('arc'),'visible grid must draw its cells and agent');
+console.log('PASS: hidden-grid geometry and subsequent visible-grid rendering.');
