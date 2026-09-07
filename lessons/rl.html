@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reinforcement learning — getstartedwith.me</title>
+<meta name="description" content="A machine with no labelled examples and no rules, learning a route from a number that arrives at the end. Q-learning in a five-by-five gridworld, computed live in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+/* the four-triangle cell is the signature figure: one wedge per action,
+   brown where the move is worth something, blue where it is not */
+canvas.chart{aspect-ratio:auto;height:230px}
+.pad{display:grid;grid-template-columns:repeat(3,2.6rem);grid-template-rows:repeat(2,2.6rem);
+  gap:.35rem;justify-content:start}
+.pad button{font:inherit;font-size:1.1rem;border:1px solid var(--ink);border-radius:3px;
+  background:transparent;color:var(--ink);cursor:pointer;line-height:1}
+.pad button:hover{background:rgba(34,38,44,.07)}
+.pad button:focus-visible{outline:2px solid var(--off);outline-offset:2px}
+.pad .u{grid-column:2;grid-row:1}
+.pad .l{grid-column:1;grid-row:2}
+.pad .d{grid-column:2;grid-row:2}
+.pad .r{grid-column:3;grid-row:2}
+.tally{font-family:var(--mono);font-size:.86rem;line-height:1.75;margin:.5rem 0 0;
+  list-style:none;padding:0;max-width:22rem}
+.tally li{display:flex;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.tally .v{color:var(--ink)}
+.tally .v.pos{color:var(--on)}
+.tally .v.neg{color:var(--off)}
+.swatch.pit{background:var(--off);border-radius:2px}
+.swatch.goal{background:var(--on);border-radius:2px}
+.swatch.unk{background:rgba(34,38,44,.09);border-radius:2px}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="../glossary.html">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+    <a class="away" href="../about.html">About</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 6 · reinforcement learning</p>
+      <h1>A number that arrives late</h1>
+      <p class="lede">Every machine in the first five lessons was told the answer. Lessons one to four were handed a <a class="term" href="../glossary.html#label">label</a> for each example, which is what makes them <a class="term" href="../glossary.html#supervised-learning">supervised</a>; the fifth was handed rules by somebody who already knew. This one is handed neither. It is put down in a corner of a small world, and the only thing that ever reaches it is a number — a <a class="term" href="../glossary.html#reward">reward</a> arriving at the end, saying nothing about which of the moves before it was the good one. Learning anything at all from that is <a class="term" href="../glossary.html#reinforcement-learning">reinforcement learning</a>.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout" id="hero-read">episode <b>0</b></p>
+      <p class="msg" id="hero-msg">Wandering. It has been told nothing about where the goal is.</p>
+      <div class="row"><button class="btn" id="hero-again" type="button">Run it again</button></div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window"><canvas id="hero-grid" role="img"
+        aria-label="A five-by-five gridworld. An agent wanders from the bottom-left corner; over successive episodes the cells fill with brown shading showing what each move is worth, and its route shortens to a direct eight-move path to the goal."></canvas></div>
+      <figcaption>Each cell holds four numbers, one per direction. They all start at nothing, and the only thing that ever changes them is a reward arriving at the end of a journey.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<section id="world" class="panel" role="tabpanel" aria-labelledby="tab-world">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>Nobody says which move was the good one</h2>
+      <p>Walk it yourself. Four buttons, one step each, and a world you can see all of because you are not the one learning it. The <a class="term" href="../glossary.html#agent">agent</a> sees only which cell it is standing in and what number arrived when it moved — which is nothing at all, until the very end.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <figure>
+        <div class="window"><canvas id="w-grid" role="img" tabindex="0"
+          aria-label="The gridworld: a start cell at the bottom left, a goal worth plus one at the top right, a pit worth minus one on the right-hand side, and walls dividing the grid into three horizontal corridors."></canvas></div>
+        <figcaption>The goal pays <span class="nb">+1</span>, the pit pays <span class="nb">−1</span>, and every other move pays nothing whatever. Walls and edges do not move you; the step still counts.</figcaption>
+      </figure>
+      <div class="legend">
+        <span><span class="swatch goal"></span> goal, +1</span>
+        <span><span class="swatch pit"></span> pit, −1</span>
+        <span><span class="swatch unk"></span> wall</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="pad">
+        <button class="u" id="w-up" type="button" aria-label="move up">↑</button>
+        <button class="l" id="w-left" type="button" aria-label="move left">←</button>
+        <button class="d" id="w-down" type="button" aria-label="move down">↓</button>
+        <button class="r" id="w-right" type="button" aria-label="move right">→</button>
+      </div>
+      <p class="readout" id="w-read">moves <b>0</b></p>
+      <p class="msg" id="w-msg">Use the buttons, or the arrow keys once the grid has focus.</p>
+      <div class="row"><button class="btn" id="w-reset" type="button">Put it back</button></div>
+      <p>The shortest way out is eight moves, and the pit is only five away, so an aimless walker meets the wrong end of the world first. That is the arrangement, and the agent knows none of it.</p>
+      <p>Notice what you were not told while you walked. Not one of your moves was called right or wrong at the time it was made. A number came at the end, and by then it belonged to the whole journey. Working out which of the eight moves deserved the <a class="term" href="../glossary.html#credit-assignment">credit</a> is the problem this lesson is about; Minsky named it in 1961, and it is the reason learning from a reward is a different thing from learning from a label.</p>
+      <p class="cite">Marvin Minsky, &ldquo;Steps Toward Artificial Intelligence,&rdquo; <em>Proceedings of the IRE</em> 49 (1961), sets out what he calls the basic credit-assignment problem for a machine learning from success and failure rather than from instruction. The same Minsky wrote the book, seven years later, that closed the first lesson's argument.</p>
+    </div>
+  </div>
+</section>
+
+<section id="random" class="panel" role="tabpanel" aria-labelledby="tab-random">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>How far chance gets you</h2>
+      <p>Before asking whether a method learns anything, it is worth measuring what costs nothing: an agent that ignores everything and picks one of the four directions at random, every step, for ever. One run from the start cell to either end of the world is an <a class="term" href="../glossary.html#episode">episode</a>. Run a few thousand and watch the two ends fill up.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <figure>
+        <div class="window"><canvas id="r-hist" class="trace" role="img"
+          aria-label="A histogram of how many steps a random walker takes before it reaches either end of the world. The bars pile up at the short end and trail off to the right."></canvas></div>
+        <figcaption>How long each episode lasted, over the batch just run. The eight-move optimum is marked.</figcaption>
+      </figure>
+      <div class="row" style="margin-top:.9rem">
+        <button class="btn" id="r-run" type="button">Run 2000 episodes</button>
+        <button class="btn" id="r-clear" type="button">Clear</button>
+      </div>
+    </div>
+    <div class="stack">
+      <ul class="tally" id="r-tally">
+        <li><span>episodes</span><span class="v">0</span></li>
+        <li><span>reached the goal</span><span class="v pos">—</span></li>
+        <li><span>fell in the pit</span><span class="v neg">—</span></li>
+        <li><span>mean steps</span><span class="v">—</span></li>
+        <li><span>mean reward</span><span class="v">—</span></li>
+      </ul>
+      <p>Chance does reach the goal about a third of the time, which is a good deal better than never, and it is worth being clear why: the world is small and it has two exits, so a walker that lives long enough falls out of one of them. It falls out of the wrong one twice as often, because the pit is nearer.</p>
+      <p>The mean reward is the number to hold on to. It is negative. An agent that has learned nothing does not merely fail to be good — in this world it is actively worse than useless, and any method worth the name has to climb from below zero to <span class="nb">+1</span> while taking eight steps instead of sixty-odd.</p>
+      <p class="note">Every figure in this panel comes from the batch you just ran, in this browser, a moment ago. Run it twice and the numbers will move a little; that is what measuring a random process looks like.</p>
+    </div>
+  </div>
+</section>
+
+<section id="learn" class="panel" role="tabpanel" aria-labelledby="tab-learn">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>The value of standing somewhere</h2>
+      <p>Give every cell four numbers, one for each direction: an estimate of what that move is ultimately worth — its <a class="term" href="../glossary.html#value-function">value</a>. They all begin at zero, which is to say the agent begins with no opinion about anything. One rule changes them, and it is short enough to read in a breath.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <figure>
+        <div class="window"><canvas id="l-grid" role="img"
+          aria-label="The gridworld with each cell divided into four triangles, one per direction, shaded brown in proportion to what that move is estimated to be worth and blue where it is worth less than nothing. An arrow in each cell marks the best move known so far."></canvas></div>
+        <figcaption>One wedge per direction. Brown is worth something, blue is worth less than nothing, grey is never yet tried. The arrow is the move the agent would make if it stopped exploring now.</figcaption>
+      </figure>
+      <div class="legend">
+        <span><span class="swatch one"></span> worth something</span>
+        <span><span class="swatch zero"></span> worth less than nothing</span>
+        <span><span class="swatch unk"></span> never tried</span>
+      </div>
+    </div>
+    <div class="stack">
+      <p class="formula">Q(s, a)  ←  r  +  γ · max Q(s′, a′)
+γ = 0.9</p>
+      <p>After moving in direction <span class="nb">a</span> from cell <span class="nb">s</span> and landing in <span class="nb">s′</span>, the agent sets its estimate for that move to whatever arrived, <span class="nb">r</span>, plus the best estimate it currently holds anywhere in the cell it landed in — discounted by <span class="nb">γ</span>, the <a class="term" href="../glossary.html#discount-factor">discount factor</a>, which makes a reward worth slightly less for every step you are away from it. That fraction is the entire reason it prefers a short route. Nothing in the rule mentions distance. The rule is called <a class="term" href="../glossary.html#q-learning">Q-learning</a>, after the letter conventionally given to the estimate.</p>
+      <div class="row">
+        <button class="btn" id="l-one" type="button">One episode</button>
+        <button class="btn" id="l-run" type="button">Run 50</button>
+        <button class="btn" id="l-reset" type="button">Forget everything</button>
+      </div>
+      <p class="readout" id="l-read">episode <b>0</b></p>
+      <p class="msg" id="l-msg">Every estimate is zero. With nothing to prefer, it wanders.</p>
+      <p>Watch the brown arrive from the goal and spread backwards. It has to: the only cell whose value can be known outright is the one next to the reward, and every other cell has to wait for its neighbour to be worth something before it can be worth anything itself. This is what learning from a delayed reward looks like — a wave travelling backwards, one cell per visit, from the end of the journey to the beginning.</p>
+      <p>Let it settle and the numbers are exactly what the discount says they should be. The cell beside the goal is worth <span class="nb">1</span>; the next one back <span class="nb">0.9</span>; the one before that <span class="nb">0.81</span>. The start, eight moves out, settles at <span class="nb">0.478</span>, which is <span class="nb">0.9</span> multiplied by itself seven times. You can check the readout against the arithmetic.</p>
+      <p class="note">The rule above has no <a class="term" href="../glossary.html#learning-rate">learning rate</a> in it, because this world is deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
+    </div>
+  </div>
+</section>
+
+<section id="explore" class="panel" role="tabpanel" aria-labelledby="tab-explore">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>What exploring costs</h2>
+      <p>An agent that always takes the move it currently rates best will never <a class="term" href="../glossary.html#exploration">explore</a>, and the usual remedy is to make it flip a weighted coin: with probability <span class="nb">ε</span> ignore the table and move at random. Set <span class="nb">ε</span> and measure what it buys.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <figure>
+        <div class="window"><canvas id="e-chart" class="chart" role="img"
+          aria-label="A chart of average reward per episode against the exploration rate epsilon. The measured points fall steadily as epsilon rises."></canvas></div>
+        <figcaption>Reward per episode once the route has been learned, against how often the agent throws its table away and moves at random. Each point is a batch you ran.</figcaption>
+      </figure>
+      <div class="ctl">
+        <label for="e-eps">ε</label>
+        <input type="range" id="e-eps" min="0" max="0.5" step="0.05" value="0.1">
+        <output id="e-eps-out">0.10</output>
+      </div>
+      <div class="row">
+        <button class="btn" id="e-run" type="button">Measure this ε</button>
+        <button class="btn" id="e-clear" type="button">Clear the chart</button>
+      </div>
+      <p class="msg" id="e-msg">Each measurement trains 120 agents from scratch and reports what they earn once they have settled.</p>
+    </div>
+    <div class="stack">
+      <p>Set <span class="nb">ε</span> to zero and the agent still learns the route, every time, which is not what the argument for exploring would lead you to expect. The reason is worth stating plainly: a table of zeros has no best move, so an agent following its best move is choosing at random. Measured over two thousand runs, a purely greedy agent's first episode takes about sixty-five steps; the random walker in the last panel took about sixty-six. Until it knows something, greed and chance are the same <a class="term" href="../glossary.html#policy">policy</a>.</p>
+      <p>After that the coin only costs. Every point on this chart is below the one at <span class="nb">ε = 0</span>, and the reason is the pit: the learned route passes directly over it, so a random move at the wrong moment does not merely waste a step but throws away the whole episode. At <span class="nb">ε = 0.1</span> the agent falls in about one episode in a hundred; at <span class="nb">ε = 0.5</span>, one in fifteen.</p>
+      <p>So exploring is a tax, and in a small world you can see all of, it is a tax with no return. That conclusion is correct here and badly wrong in general, and the next panel is where it breaks.</p>
+      <p class="note">This lesson keeps <span class="nb">ε</span> fixed. Anything used in earnest lowers it as the agent learns, so that it explores while ignorant and exploits once it is not — which is the same instinct that makes the tax look worth paying in the panel after this one.</p>
+    </div>
+  </div>
+</section>
+
+<section id="change" class="panel" role="tabpanel" aria-labelledby="tab-change">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>The better thing it never sees</h2>
+      <p>Let it learn the route. Then, without telling it, put something worth twice as much somewhere else in the world. Whether it ever finds out has almost nothing to do with how good the new thing is, and almost everything to do with where you put it.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <figure>
+        <div class="window"><canvas id="c-grid" role="img" tabindex="0"
+          aria-label="The gridworld with the learned eight-move route drawn across it, and a second goal worth plus two that can be placed in any open cell."></canvas></div>
+        <figcaption>The route it settled on, and a second goal worth <span class="nb">+2</span>. Click any open cell to move it.</figcaption>
+      </figure>
+      <div class="row" style="margin-top:.9rem">
+        <button class="btn" id="c-near" type="button">Beside the start</button>
+        <button class="btn" id="c-route" type="button">On the route</button>
+        <button class="btn" id="c-far" type="button">The far corner</button>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="ctl">
+        <label for="c-eps">ε</label>
+        <div class="segmented" id="c-epsw" role="group" aria-label="exploration rate">
+          <button type="button" data-e="0" aria-pressed="true">0</button>
+          <button type="button" data-e="0.1" aria-pressed="false">0.1</button>
+          <button type="button" data-e="0.3" aria-pressed="false">0.3</button>
+        </div>
+        <output id="c-eps-out"></output>
+      </div>
+      <div class="row">
+        <button class="btn" id="c-run" type="button">Train 200 agents, then move the prize</button>
+      </div>
+      <ul class="tally" id="c-tally">
+        <li><span>agents</span><span class="v">0</span></li>
+        <li><span>ever stumbled on it</span><span class="v pos">—</span></li>
+        <li><span>now go there instead</span><span class="v pos">—</span></li>
+        <li><span>still take the old route</span><span class="v">—</span></li>
+      </ul>
+      <p class="msg" id="c-msg">Each agent trains for 200 episodes, then runs 500 more with the prize in place.</p>
+      <p>Put it one step to the right of the start and a greedy agent never finds it — not once in two hundred, not ever, however long you leave it running. It is standing beside the thing the whole time. Its estimate for stepping right is zero and its estimate for stepping up is <span class="nb">0.478</span>, so it steps up, and nothing in the rule will ever make it do otherwise. Set <span class="nb">ε</span> to <span class="nb">0.1</span> and every single agent finds it, and switches.</p>
+      <p>Put it on the route instead and a greedy agent finds it at once — in about three runs out of five. The rest never see it, and the reason is a small piece of honesty about the last panel: there are two eight-move routes to the goal, one across the top and one through the middle, and they are worth exactly the same. Which one an agent settles on is decided by the coin flips of its first few wandering episodes, and the method has no preference between them. A prize on the top route is invisible to an agent that happened to learn the middle one.</p>
+      <p>Put it in the far corner and exploring stops helping much. Even at <span class="nb">ε = 0.3</span>, where a third of all moves are thrown away, only about a quarter of the agents ever stumble across it. Random moves are a poor way to travel: they undo each other, and four cells is already far when your only means of getting anywhere new is to flip a coin against yourself.</p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div>
+      <p>This is the shape of the thing. An agent learning from reward can only ever be told about the parts of the world it walks into, and what it walks into is decided by what it already believes. It is not wrong about the route: eight moves to <span class="nb">+1</span> is a true and hard-won fact, and it will defend that fact for ever by never checking. Nothing in the arithmetic distinguishes a world it has understood from a world it has merely stopped looking at.</p>
+      <p>The other half of the warning is the reward itself. The agent has no opinion about what is worth doing; it has your number, and it will pursue exactly what you wrote down rather than what you meant. Everything this lesson's machine knows about the point of its existence is <span class="nb">+1</span> in one corner and <span class="nb">−1</span> in another, and it is faithful to that specification in a way that is easy to mistake for understanding.</p>
+    </div>
+    <div>
+      <p>And the table has to fit. This world has nineteen open cells and four moves, so the whole of what the agent can know is seventy-six numbers, and it can afford to visit every one. A board game, or a room with a camera pointed at it, has more distinguishable situations than there are seconds in the history of the universe, and no table will hold them. What is done instead is to replace the table with a function that guesses the value of a situation it has never seen — and the machinery for learning such a function from examples is the subject of the four lessons before this one.</p>
+      <p class="cite">Arthur Samuel's checkers player, &ldquo;Some Studies in Machine Learning Using the Game of Checkers,&rdquo; <em>IBM Journal of Research and Development</em> 3 (1959), learned by adjusting its estimates towards its own later ones, and is the ancestor of everything here. The idea was made general and given its analysis by Richard Sutton, &ldquo;Learning to Predict by the Methods of Temporal Differences,&rdquo; <em>Machine Learning</em> 3 (1988). The particular rule in panel 3 is Q-learning, from Christopher Watkins's Cambridge thesis <em>Learning from Delayed Rewards</em> (1989); Watkins and Peter Dayan proved in 1992 that it converges on the best route, given that every move is tried in every cell infinitely often — a condition this panel is about.</p>
+    </div>
+  </div>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 6 of 6</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">Six machines, three ideas about where knowledge comes from: a labelled example, an expert with a rule, and a number that arrives late. More are being written.</p>
+  </div>
+</a>
+
+<footer>
+  <p>Every number on this page was computed in your browser while you read it. The random walk really walked, the value table is the one the update rule left behind, and the batches in panels 4 and 5 train a few hundred agents from scratch each time you press the button.</p>
+</footer>
+
+</main>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+/* ============================================================
+   The world. Five by five: two vertical corridors joined by three
+   horizontal ones. A goal worth +1, a pit worth −1, and walls that
+   leave the pit nearer than the goal. The agent is told none of it.
+   It sees which cell it is in, and what number arrived when it moved.
+   ============================================================ */
+
+const ROWS = [
+  "....G",
+  ".###.",
+  ".....",
+  ".###P",
+  "S...."
+];
+const W = ROWS[0].length, H = ROWS.length, N = W * H;
+const CELL = ROWS.join("");
+
+const wall  = i => CELL[i] === "#";
+const GOAL  = CELL.indexOf("G");
+const PIT   = CELL.indexOf("P");
+const START = CELL.indexOf("S");
+
+/* A world is nothing but its terminal cells and what each one pays.
+   Panel 5 adds one, and that is the whole of the change it makes. */
+function baseWorld(){
+  const w = {};
+  w[GOAL] = 1;
+  w[PIT] = -1;
+  return w;
+}
+const WORLD = baseWorld();
+
+/* up, right, down, left — the order the four wedges are drawn in */
+const ACT = [[0,-1],[1,0],[0,1],[-1,0]];
+
+/* A move into a wall or off the edge leaves the agent where it is.
+   The step still counts, and still teaches it nothing. */
+function move(s, a){
+  const c = s % W, r = (s / W) | 0;
+  const nc = c + ACT[a][0], nr = r + ACT[a][1];
+  if(nc < 0 || nc >= W || nr < 0 || nr >= H) return s;
+  const t = nr * W + nc;
+  return wall(t) ? s : t;
+}
+
+const GAMMA = 0.9;
+const CAP   = 300;   /* steps before an episode is abandoned */
+
+const blankQ = () => Array.from({ length:N }, () => [0,0,0,0]);
+const maxQ = (Q, s) => Math.max(Q[s][0], Q[s][1], Q[s][2], Q[s][3]);
+
+/* Ties are broken at random, so a table that knows nothing wanders
+   instead of marching into the same wall for ever. Panel 4 is about
+   what that turns out to be worth. */
+function greedyA(Q, s, rnd){
+  let best = -Infinity;
+  for(let a=0;a<4;a++) if(Q[s][a] > best) best = Q[s][a];
+  const ties = [];
+  for(let a=0;a<4;a++) if(Q[s][a] === best) ties.push(a);
+  return ties[(rnd() * ties.length) | 0];
+}
+
+/* One episode from the start cell. Keeps the trajectory so a panel can
+   replay it, and reports what the episode earned on the way. There is no
+   learning rate: the world is deterministic, so a new estimate replaces
+   the old one outright. */
+function episode(world, Q, rnd, eps, learn){
+  let s = START, steps = 0, got = 0;
+  const path = [s];
+  while(steps < CAP){
+    const a = rnd() < eps ? (rnd()*4)|0 : greedyA(Q, s, rnd);
+    const s2 = move(s, a);
+    const done = s2 in world, r = done ? world[s2] : 0;
+    if(learn !== false)
+      Q[s][a] = done ? r : r + GAMMA * maxQ(Q, s2);
+    path.push(s2);
+    got += r; steps++; s = s2;
+    if(done) break;
+  }
+  return { path:path, steps:steps, got:got, end: (s in world) ? s : -1 };
+}
+
+/* What the table would do if it stopped exploring: the best action from
+   every cell, ties broken by the order up, right, down, left. */
+function greedyRun(world, Q){
+  let s = START;
+  const path = [s];
+  for(let k=0;k<CAP;k++){
+    let a = 0, best = -Infinity;
+    for(let i=0;i<4;i++) if(Q[s][i] > best){ best = Q[s][i]; a = i; }
+    const s2 = move(s, a);
+    path.push(s2);
+    if(s2 in world) return { path:path, steps:k+1, end:s2 };
+    s = s2;
+  }
+  return { path:path, steps:CAP, end:-1 };
+}
+
+/* Fewest moves from the start to each cell, by breadth-first search. The
+   agent never gets this; it is here so a readout can say how far from best
+   a learned route is. */
+function distances(world){
+  const d = new Array(N).fill(-1);
+  d[START] = 0;
+  const q = [START];
+  for(let i=0;i<q.length;i++){
+    const s = q[i];
+    if(s in world) continue;
+    for(let a=0;a<4;a++){
+      const t = move(s, a);
+      if(t !== s && d[t] < 0){ d[t] = d[s] + 1; q.push(t); }
+    }
+  }
+  return d;
+}
+
+/* xorshift, so a run is reproducible from its seed */
+function rng(seed){
+  let x = (seed * 2654435761) >>> 0 || 1;
+  return function(){
+    x ^= x << 13; x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;  x >>>= 0;
+    return x / 4294967296;
+  };
+}
+
+const BEST = distances(WORLD)[GOAL];
+
+/* ==================== painting the grid ==================== */
+
+function geom(p){
+  const m = 8, s = Math.min(p.w, p.h) - 2*m;
+  return { x0:(p.w - s)/2, y0:(p.h - s)/2, cs:s/W };
+}
+const cellX = (G,s) => G.x0 + (s % W) * G.cs + G.cs/2;
+const cellY = (G,s) => G.y0 + ((s / W)|0) * G.cs + G.cs/2;
+
+/* brown for an estimate worth something, blue for one worth less than
+   nothing — the same reading as the diverging weight image in lesson 2 */
+function tint(v, scale){
+  const a = Math.min(1, Math.abs(v)/scale) * 0.82;
+  if(a < 0.012) return null;
+  return (v > 0 ? "rgba(138,82,6," : "rgba(39,75,143,") + a.toFixed(3) + ")";
+}
+
+/* one wedge of a cell: the triangle from two corners to the centre */
+const CORNER = [[-1,-1],[1,-1],[1,1],[-1,1]];
+const PAIR   = [[0,1],[1,2],[2,3],[3,0]];   /* up, right, down, left */
+function wedge(g, cx, cy, h, a, fill){
+  const i = PAIR[a][0], j = PAIR[a][1];
+  g.fillStyle = fill;
+  g.beginPath();
+  g.moveTo(cx + CORNER[i][0]*h, cy + CORNER[i][1]*h);
+  g.lineTo(cx + CORNER[j][0]*h, cy + CORNER[j][1]*h);
+  g.lineTo(cx, cy);
+  g.closePath();
+  g.fill();
+}
+
+function policyArrow(g, cx, cy, h, a){
+  const d = ACT[a], L = h*0.5;
+  const ex = cx + d[0]*L, ey = cy + d[1]*L;
+  g.strokeStyle = C.ink; g.lineWidth = 1.6; g.lineCap = "round";
+  g.beginPath();
+  g.moveTo(cx - d[0]*L*0.4, cy - d[1]*L*0.4);
+  g.lineTo(ex - d[0]*h*0.2, ey - d[1]*h*0.2);
+  g.stroke();
+  const ang = Math.atan2(d[1], d[0]), hh = h*0.26;
+  g.fillStyle = C.ink;
+  g.beginPath();
+  g.moveTo(ex, ey);
+  g.lineTo(ex - Math.cos(ang-0.45)*hh, ey - Math.sin(ang-0.45)*hh);
+  g.lineTo(ex - Math.cos(ang+0.45)*hh, ey - Math.sin(ang+0.45)*hh);
+  g.closePath();
+  g.fill();
+}
+
+function drawGrid(p, o){
+  o = o || {};
+  const g = p.ctx, G = geom(p), world = o.world || WORLD;
+  const scale = o.scale || 1;
+  g.clearRect(0, 0, p.w, p.h);
+  g.fillStyle = C.field; g.fillRect(0, 0, p.w, p.h);
+
+  for(let s=0;s<N;s++){
+    const x = G.x0 + (s % W)*G.cs, y = G.y0 + ((s / W)|0)*G.cs;
+    const cx = x + G.cs/2, cy = y + G.cs/2;
+
+    if(wall(s)){
+      g.fillStyle = "rgba(34,38,44,.10)";
+      g.fillRect(x, y, G.cs, G.cs);
+      continue;
+    }
+    if(s in world){
+      const r = world[s];
+      g.fillStyle = r > 0 ? C.on : C.off;
+      g.fillRect(x+1, y+1, G.cs-2, G.cs-2);
+      g.fillStyle = C.field;
+      g.font = '500 ' + Math.round(G.cs*0.3) + 'px "IBM Plex Mono", monospace';
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText((r > 0 ? "+" : "−") + Math.abs(r), cx, cy);
+      continue;
+    }
+    if(o.Q){
+      for(let a=0;a<4;a++){
+        const t = tint(o.Q[s][a], scale);
+        if(t) wedge(g, cx, cy, G.cs/2, a, t);
+      }
+    }
+  }
+
+  g.strokeStyle = C.rule; g.lineWidth = 1;
+  g.beginPath();
+  for(let i=0;i<=W;i++){
+    const x = Math.round(G.x0 + i*G.cs) + .5;
+    g.moveTo(x, G.y0); g.lineTo(x, G.y0 + H*G.cs);
+  }
+  for(let i=0;i<=H;i++){
+    const y = Math.round(G.y0 + i*G.cs) + .5;
+    g.moveTo(G.x0, y); g.lineTo(G.x0 + W*G.cs, y);
+  }
+  g.stroke();
+
+  /* the start cell, so the reader can see where a journey begins */
+  g.strokeStyle = C.ink2; g.lineWidth = 1.4;
+  g.setLineDash([3,3]);
+  g.strokeRect(G.x0 + (START % W)*G.cs + 2.5, G.y0 + ((START / W)|0)*G.cs + 2.5,
+    G.cs - 5, G.cs - 5);
+  g.setLineDash([]);
+
+  if(o.arrows && o.Q){
+    for(let s=0;s<N;s++){
+      if(wall(s) || (s in world) || maxQ(o.Q, s) <= 0) continue;
+      let a = 0, best = -Infinity;
+      for(let i=0;i<4;i++) if(o.Q[s][i] > best){ best = o.Q[s][i]; a = i; }
+      policyArrow(g, cellX(G,s), cellY(G,s), G.cs/2, a);
+    }
+  }
+
+  if(o.path && o.path.length > 1){
+    g.strokeStyle = o.pathColor || "rgba(34,38,44,.55)";
+    g.lineWidth = 2.4; g.lineJoin = "round"; g.lineCap = "round";
+    g.beginPath();
+    o.path.forEach((s,i) => i ? g.lineTo(cellX(G,s), cellY(G,s))
+                              : g.moveTo(cellX(G,s), cellY(G,s)));
+    g.stroke();
+  }
+
+  if(typeof o.agent === "number"){
+    const cx = cellX(G, o.agent), cy = cellY(G, o.agent);
+    g.fillStyle = C.ink;
+    g.beginPath(); g.arc(cx, cy, G.cs*0.17, 0, Math.PI*2); g.fill();
+    if(o.hurt){
+      g.strokeStyle = C.alert; g.lineWidth = 2;
+      g.beginPath(); g.arc(cx, cy, G.cs*0.3, 0, Math.PI*2); g.stroke();
+    }
+  }
+}
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const p = Plot(document.getElementById("hero-grid"), [0,1,0,1]);
+  const read = document.getElementById("hero-read");
+  const msg  = document.getElementById("hero-msg");
+  const again = document.getElementById("hero-again");
+  const EPS = 0.1, RUN = 70, SEEN = 46;
+
+  const empty = blankQ();
+  let Q, r, walk, at, ep, timer = null;
+
+  function paint(){
+    drawGrid(p, {
+      Q: at >= 0 ? empty : Q,
+      arrows: at < 0 && ep > 1,
+      path: at >= 0 ? walk.path.slice(0, at+1)
+                    : (ep >= RUN ? greedyRun(WORLD, Q).path : null),
+      agent: at >= 0 ? walk.path[at] : undefined,
+      hurt: at >= 0 && at === walk.path.length-1 && walk.end === PIT
+    });
+  }
+
+  function walkTick(){
+    at++;
+    if(at >= Math.min(walk.path.length, SEEN)){
+      at = -1; ep = 1;
+      read.innerHTML = "episode <b>1</b>";
+      msg.textContent = "It reached an end by accident, after " +
+        plural(walk.steps, "step") + ". One number arrived, and exactly one estimate changed.";
+      paint();
+      timer = setTimeout(learnTick, 900);
+      return;
+    }
+    paint();
+    timer = setTimeout(walkTick, 45);
+  }
+
+  function learnTick(){
+    for(let k=0;k<3 && ep<RUN;k++){ episode(WORLD, Q, r, EPS, true); ep++; }
+    read.innerHTML = "episode <b>" + ep + "</b>";
+    paint();
+    if(ep >= RUN){
+      const g = greedyRun(WORLD, Q);
+      msg.textContent = g.steps === BEST
+        ? "Settled: " + plural(BEST, "move") + " to the goal, and the start is now worth " +
+          num(maxQ(Q, START), 3) + " — which is 0.9 multiplied by itself seven times."
+        : "Settled on a route of " + plural(g.steps, "move") + ".";
+      return;
+    }
+    timer = setTimeout(learnTick, 60);
+  }
+
+  function start(){
+    clearTimeout(timer);
+    Q = blankQ(); r = rng(11); ep = 0; at = 0;
+    walk = episode(WORLD, Q, r, EPS, true);
+    read.innerHTML = "episode <b>0</b>";
+    msg.textContent = "Wandering. It has been told nothing about where the goal is.";
+    if(REDUCE){
+      at = -1; ep = 1;
+      while(ep < RUN){ episode(WORLD, Q, r, EPS, true); ep++; }
+      const g = greedyRun(WORLD, Q);
+      read.innerHTML = "episode <b>" + ep + "</b>";
+      msg.textContent = "Settled: " + plural(g.steps, "move") + " to the goal, and the start is now worth " +
+        num(maxQ(Q, START), 3) + ".";
+      paint();
+      return;
+    }
+    paint();
+    timer = setTimeout(walkTick, 500);
+  }
+
+  /* The hero sits above the rail and is never hidden, so it has nothing to
+     pause for — and initPanels fires panelshow once on load, which would
+     otherwise cancel this animation before it started. */
+  again.addEventListener("click", start);
+  redraws.push(() => { p.fit(); if(Q) paint(); });
+  start();
+})();
+
+/* ======================= 1. walking it yourself ======================= */
+
+(function worldPanel(){
+  const p = Plot(document.getElementById("w-grid"), [0,1,0,1]);
+  const read = document.getElementById("w-read");
+  const msg  = document.getElementById("w-msg");
+  let s, steps, trail, done;
+
+  function render(){
+    drawGrid(p, { path:trail, agent:s, hurt:done && WORLD[s] < 0 });
+    read.innerHTML = "moves <b>" + steps + "</b>" +
+      (done ? "  &nbsp;reward " + signed(WORLD[s], 0) : "  &nbsp;reward 0.00");
+  }
+
+  function go(a){
+    if(done) return;
+    const t = move(s, a);
+    steps++;
+    if(t === s){
+      msg.textContent = "A wall. The move counts, and nothing else happens.";
+    } else {
+      s = t;
+      trail.push(s);
+      if(s in WORLD){
+        done = true;
+        msg.textContent = WORLD[s] > 0
+          ? "There it is: +1, after " + plural(steps, "move") +
+            ". Now say which of those moves earned it."
+          : "The pit: −1, after " + plural(steps, "move") +
+            ". Same question, and no more help than before.";
+        msg.classList.add("hit");
+      } else {
+        msg.textContent = "Nothing arrived. Nothing ever arrives until the end.";
+      }
+    }
+    render();
+  }
+
+  function reset(){
+    s = START; steps = 0; trail = [START]; done = false;
+    msg.classList.remove("hit");
+    msg.textContent = "Use the buttons, or the arrow keys once the grid has focus.";
+    render();
+  }
+
+  const KEYS = { ArrowUp:0, ArrowRight:1, ArrowDown:2, ArrowLeft:3 };
+  [["w-up",0],["w-right",1],["w-down",2],["w-left",3]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => go(b[1]));
+  });
+  p.cv.addEventListener("keydown", e => {
+    if(!(e.key in KEYS)) return;
+    e.preventDefault();
+    go(KEYS[e.key]);
+  });
+  document.getElementById("w-reset").addEventListener("click", reset);
+
+  redraws.push(() => { p.fit(); render(); });
+  reset();
+})();
+
+/* ======================= 2. the random walk ======================= */
+
+(function randomPanel(){
+  const p = Plot(document.getElementById("r-hist"), [0,1,0,1]);
+  const tally = document.getElementById("r-tally").querySelectorAll(".v");
+  const BIN = 10, BINS = 30;   /* 0 to 300, which is the whole range an episode can take */
+  let bins, n, goal, pit, steps, ret, seed = 5000;
+
+  function render(){
+    const g = p.ctx, m = 22, w = p.w - m - 8, h = p.h - 20;
+    g.clearRect(0,0,p.w,p.h);
+    g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+    const top = Math.max(1, Math.max.apply(null, bins));
+    const bw = w / BINS;
+    for(let i=0;i<BINS;i++){
+      if(!bins[i]) continue;
+      const bh = bins[i]/top * (h - 6);
+      g.fillStyle = "rgba(138,82,6,.6)";
+      g.fillRect(m + i*bw + .5, h - bh, bw - 1, bh);
+    }
+    /* where the shortest route would land */
+    const bx = m + (BEST/BIN) * bw;
+    g.strokeStyle = C.ink; g.lineWidth = 1.4;
+    g.setLineDash([3,3]);
+    g.beginPath(); g.moveTo(bx, 2); g.lineTo(bx, h); g.stroke();
+    g.setLineDash([]);
+    g.strokeStyle = C.rule; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(m, h + .5); g.lineTo(p.w - 8, h + .5); g.stroke();
+    g.fillStyle = C.ink2;
+    g.font = '400 11px "IBM Plex Mono", monospace';
+    g.textBaseline = "top"; g.textAlign = "left";
+    g.fillText("8", bx + 3, 2);
+    g.fillText("steps", m, h + 4);
+    g.textAlign = "right";
+    g.fillText(String(BIN*BINS), p.w - 8, h + 4);
+  }
+
+  function clear(){
+    bins = new Array(BINS).fill(0);
+    n = goal = pit = steps = ret = 0;
+    show();
+  }
+
+  function show(){
+    tally[0].textContent = n;
+    if(!n){
+      for(let i=1;i<tally.length;i++) tally[i].textContent = "—";
+    } else {
+      tally[1].textContent = (100*goal/n).toFixed(1) + "%";
+      tally[2].textContent = (100*pit/n).toFixed(1) + "%";
+      tally[3].textContent = (steps/n).toFixed(1);
+      tally[4].textContent = num(ret/n, 3);
+    }
+    render();
+  }
+
+  function run(){
+    const r = rng(seed += 977);
+    for(let i=0;i<2000;i++){
+      const e = episode(WORLD, blankQ(), r, 1, false);
+      bins[Math.min(BINS-1, (e.steps/BIN)|0)]++;
+      if(e.end === GOAL) goal++; else if(e.end === PIT) pit++;
+      steps += e.steps; ret += e.got; n++;
+    }
+    show();
+  }
+
+  document.getElementById("r-run").addEventListener("click", run);
+  document.getElementById("r-clear").addEventListener("click", clear);
+  redraws.push(() => { p.fit(); render(); });
+  clear();
+})();
+
+/* ==================== 3. the table fills in ==================== */
+
+(function learnPanel(){
+  const p = Plot(document.getElementById("l-grid"), [0,1,0,1]);
+  const read = document.getElementById("l-read");
+  const msg  = document.getElementById("l-msg");
+  const EPS = 0.1;
+  let Q, r, ep, left = 0, timer = null, seed = 4242;
+
+  function render(){
+    drawGrid(p, { Q:Q, arrows:true });
+    const g = greedyRun(WORLD, Q);
+    read.innerHTML = "episode <b>" + ep + "</b>" + (ep
+      ? "  &nbsp;route " + (g.end === GOAL ? g.steps + " moves" : "nowhere yet") +
+        "  &nbsp;start " + num(maxQ(Q, START), 3)
+      : "");
+    if(ep === 0){
+      msg.textContent = "Every estimate is zero. With nothing to prefer, it wanders.";
+    } else if(g.end === GOAL && g.steps === BEST){
+      msg.textContent = "The shortest route there is. Each cell on it is worth 0.9 " +
+        "times the one after it, all the way back to " + num(maxQ(Q, START), 3) + " at the start.";
+    } else if(g.end === GOAL){
+      msg.textContent = "It has a route, of " + plural(g.steps, "move") +
+        ". The wave has not reached everywhere it needs to yet.";
+    } else {
+      msg.textContent = "The reward has been found, but the estimates have not " +
+        "yet joined up into a route from the start.";
+    }
+  }
+
+  function stop(){ clearTimeout(timer); timer = null; left = 0; }
+
+  function tick(){
+    episode(WORLD, Q, r, EPS, true);
+    ep++; left--;
+    render();
+    timer = left > 0 ? setTimeout(tick, 45) : null;
+  }
+
+  function run(n){
+    stop();
+    left = n;
+    tick();
+  }
+
+  function reset(){
+    stop();
+    Q = blankQ(); r = rng(seed += 17); ep = 0;
+    render();
+  }
+
+  document.getElementById("l-one").addEventListener("click", () => run(1));
+  document.getElementById("l-run").addEventListener("click", () => run(50));
+  document.getElementById("l-reset").addEventListener("click", reset);
+  document.addEventListener("panelshow", e => { if(e.detail !== "learn") stop(); });
+  redraws.push(() => { p.fit(); if(Q) render(); });
+  reset();
+})();
+
+/* ==================== 4. what exploring costs ==================== */
+
+(function explorePanel(){
+  const p = Plot(document.getElementById("e-chart"), [0,1,0,1]);
+  const slider = document.getElementById("e-eps");
+  const out = document.getElementById("e-eps-out");
+  const msg  = document.getElementById("e-msg");
+  const pts = [];
+  const LO = 0.8, HI = 1.03;
+  let seed = 8000;
+
+  const px = v => 44 + v/0.5 * (p.w - 68);   /* room at the right so ε = 0.5 is not on the edge */
+  const py = v => 14 + (HI - v)/(HI - LO) * (p.h - 44);
+
+  function render(){
+    const g = p.ctx;
+    g.clearRect(0,0,p.w,p.h);
+    g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+
+    g.strokeStyle = C.grid; g.lineWidth = 1;
+    g.beginPath();
+    for(let v=0.85; v<1.001; v+=0.05){
+      const y = Math.round(py(v)) + .5;
+      g.moveTo(44, y); g.lineTo(p.w - 12, y);
+    }
+    for(let v=0; v<0.501; v+=0.1){
+      const x = Math.round(px(v)) + .5;
+      g.moveTo(x, 14); g.lineTo(x, py(LO));
+    }
+    g.stroke();
+
+    g.strokeStyle = C.rule; g.lineWidth = 1.4;
+    g.beginPath();
+    g.moveTo(44.5, 14); g.lineTo(44.5, Math.round(py(LO)) + .5);
+    g.lineTo(p.w - 12, Math.round(py(LO)) + .5);
+    g.stroke();
+
+    g.fillStyle = C.ink2;
+    g.font = '400 11px "IBM Plex Mono", monospace';
+    g.textAlign = "right"; g.textBaseline = "middle";
+    for(let v=0.85; v<1.001; v+=0.05) g.fillText(v.toFixed(2), 38, py(v));
+    g.textAlign = "center"; g.textBaseline = "top";
+    for(let v=0; v<0.501; v+=0.1) g.fillText(v.toFixed(1), px(v), py(LO) + 5);
+    g.textAlign = "left";
+    g.fillText("reward per episode", 44, 0);
+    g.textAlign = "right"; g.textBaseline = "bottom";
+    g.fillText("ε", p.w - 12, py(LO) - 6);
+
+    const sorted = pts.slice().sort((a,b) => a.eps - b.eps);
+    if(sorted.length > 1){
+      g.strokeStyle = "rgba(34,38,44,.35)"; g.lineWidth = 1.6;
+      g.beginPath();
+      sorted.forEach((q,i) => i ? g.lineTo(px(q.eps), py(clamp(q.rew, LO, HI)))
+                                : g.moveTo(px(q.eps), py(clamp(q.rew, LO, HI))));
+      g.stroke();
+    }
+    sorted.forEach(q => {
+      const x = px(q.eps), y = py(clamp(q.rew, LO, HI));
+      g.fillStyle = C.on;
+      g.beginPath();
+      if(g.roundRect) g.roundRect(x-5, y-5, 10, 10, 2.5); else g.rect(x-5, y-5, 10, 10);
+      g.fill();
+    });
+  }
+
+  function measure(){
+    const eps = +slider.value;
+    const AGENTS = 120, RUNS = 200, TAIL = 100;
+    let rew = 0, st = 0, pits = 0, n = 0;
+    for(let a=0;a<AGENTS;a++){
+      const Q = blankQ(), r = rng(seed += 131);
+      for(let k=0;k<RUNS;k++){
+        const e = episode(WORLD, Q, r, eps, true);
+        if(k >= RUNS - TAIL){
+          rew += e.got; st += e.steps;
+          if(e.end === PIT) pits++;
+          n++;
+        }
+      }
+    }
+    const q = { eps:eps, rew:rew/n, steps:st/n, pit:pits/n };
+    const was = pts.findIndex(z => Math.abs(z.eps - eps) < 1e-9);
+    if(was >= 0) pts[was] = q; else pts.push(q);
+    msg.textContent = "ε = " + eps.toFixed(2) + ": " + num(q.rew, 3) +
+      " per episode over " + AGENTS + " agents, " + q.steps.toFixed(1) + " steps each, and " +
+      (q.pit === 0 ? "not one fall into the pit."
+                   : "a fall into the pit every " + Math.round(1/q.pit) + " episodes.");
+    render();
+  }
+
+  slider.addEventListener("input", () => { out.textContent = (+slider.value).toFixed(2); });
+  document.getElementById("e-run").addEventListener("click", measure);
+  document.getElementById("e-clear").addEventListener("click", () => {
+    pts.length = 0;
+    msg.textContent = "Each measurement trains 120 agents from scratch and reports " +
+      "what they earn once they have settled.";
+    render();
+  });
+  out.textContent = (+slider.value).toFixed(2);
+  redraws.push(() => { p.fit(); render(); });
+})();
+
+/* ============= 5. the better thing it never sees ============= */
+
+(function changePanel(){
+  const p = Plot(document.getElementById("c-grid"), [0,1,0,1]);
+  const tally = document.getElementById("c-tally").querySelectorAll(".v");
+  const msg  = document.getElementById("c-msg");
+  const out  = document.getElementById("c-eps-out");
+  const NEAR = START + 1;   /* one step to the right of the start */
+  const ONTOP = 0;          /* the top-left corner, on the upper of the two routes */
+  const FAR  = N - 1;       /* the far corner, four moves along the bottom */
+  const TRAIN = 200, AFTER = 500, AGENTS = 200;
+  let bonus = NEAR, eps = 0, seed = 31000;
+
+  function worldWith(b){
+    const w = baseWorld();
+    w[b] = 2;
+    return w;
+  }
+
+  /* one representative agent, so the picture shows a route that was
+     actually learned rather than one drawn by hand */
+  function preview(){
+    const Q = blankQ(), r = rng(4242);
+    for(let k=0;k<TRAIN;k++) episode(WORLD, Q, r, eps, true);
+    drawGrid(p, { world: worldWith(bonus), path: greedyRun(WORLD, Q).path });
+  }
+
+  function place(b){
+    if(b < 0 || wall(b) || b === START || b === GOAL || b === PIT) return;
+    bonus = b;
+    clear();
+    preview();
+  }
+
+  function clear(){
+    tally[0].textContent = "0";
+    for(let i=1;i<tally.length;i++) tally[i].textContent = "—";
+    msg.textContent = "Each agent trains for " + TRAIN + " episodes, then runs " +
+      AFTER + " more with the prize in place.";
+    msg.classList.remove("hit");
+  }
+
+  function run(){
+    const w2 = worldWith(bonus);
+    let found = 0, switched = 0, old = 0;
+    for(let a=0;a<AGENTS;a++){
+      const Q = blankQ(), r = rng(seed += 11);
+      for(let k=0;k<TRAIN;k++) episode(WORLD, Q, r, eps, true);
+      let hit = false;
+      for(let k=0;k<AFTER;k++) if(episode(w2, Q, r, eps, true).end === bonus) hit = true;
+      if(hit) found++;
+      const g = greedyRun(w2, Q);
+      if(g.end === bonus) switched++; else if(g.end === GOAL) old++;
+    }
+    tally[0].textContent = AGENTS;
+    tally[1].textContent = found + " of " + AGENTS;
+    tally[2].textContent = switched + " of " + AGENTS;
+    tally[3].textContent = old + " of " + AGENTS;
+    msg.textContent = found === 0
+      ? "Not one of them ever set foot on it. At ε = 0 there is nothing in the rule " +
+        "that would ever make them look."
+      : found === AGENTS
+        ? "Every one of them found it."
+        : found + " of " + AGENTS + " found it; the rest went on taking the old route.";
+    msg.classList.add("hit");
+    preview();
+  }
+
+  function cellAt(ev){
+    const G = geom(p), box = p.cv.getBoundingClientRect();
+    const c = Math.floor((ev.clientX - box.left - G.x0) / G.cs);
+    const r = Math.floor((ev.clientY - box.top - G.y0) / G.cs);
+    if(c < 0 || c >= W || r < 0 || r >= H) return -1;
+    return r*W + c;
+  }
+
+  p.cv.addEventListener("click", ev => place(cellAt(ev)));
+  p.cv.addEventListener("keydown", ev => {
+    const k = "123".indexOf(ev.key);
+    if(k >= 0){ ev.preventDefault(); place([NEAR, ONTOP, FAR][k]); }
+  });
+  document.getElementById("c-near").addEventListener("click", () => place(NEAR));
+  document.getElementById("c-route").addEventListener("click", () => place(ONTOP));
+  document.getElementById("c-far").addEventListener("click", () => place(FAR));
+  document.getElementById("c-run").addEventListener("click", run);
+
+  document.getElementById("c-epsw").querySelectorAll("button").forEach(b => {
+    b.addEventListener("click", () => {
+      eps = +b.dataset.e;
+      document.getElementById("c-epsw").querySelectorAll("button").forEach(o =>
+        o.setAttribute("aria-pressed", String(o === b)));
+      out.textContent = eps === 0 ? "never explores" : "explores " +
+        Math.round(eps*100) + " moves in 100";
+      clear();
+      preview();
+    });
+  });
+
+  out.textContent = "never explores";
+  redraws.push(() => { p.fit(); preview(); });
+  clear();
+  preview();
+})();
+
+initPanels([
+  ["world","Walking it yourself"], ["random","A random walk"],
+  ["learn","The table fills in"], ["explore","What exploring costs"],
+  ["change","What it never sees"]
+]);
+</script>
+</body>
+</html>

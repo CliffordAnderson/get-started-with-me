@@ -32,6 +32,7 @@
 <nav class="gloss-jump" aria-label="Jump to a term">
   <a href="#activation-function">activation function</a>
   <a href="#adaline">ADALINE</a>
+  <a href="#agent">agent</a>
   <a href="#artificial-neuron">artificial neuron</a>
   <a href="#backpropagation">backpropagation</a>
   <a href="#backward-chaining">backward chaining</a>
@@ -39,11 +40,15 @@
   <a href="#brittleness">brittleness</a>
   <a href="#certainty-factor">certainty factor</a>
   <a href="#chain-rule">chain rule</a>
+  <a href="#credit-assignment">credit assignment</a>
   <a href="#decision-boundary">decision boundary</a>
   <a href="#delta-rule">delta rule</a>
+  <a href="#discount-factor">discount factor</a>
+  <a href="#episode">episode</a>
   <a href="#epoch">epoch</a>
   <a href="#error-surface">error surface</a>
   <a href="#expert-system">expert system</a>
+  <a href="#exploration">exploration and exploitation</a>
   <a href="#feature">feature</a>
   <a href="#forward-chaining">forward chaining</a>
   <a href="#generalisation">generalisation</a>
@@ -67,7 +72,11 @@
   <a href="#perceptron">perceptron</a>
   <a href="#perceptrons-1969">Perceptrons (1969)</a>
   <a href="#pixel">pixel</a>
+  <a href="#policy">policy</a>
   <a href="#production-rule">production rule</a>
+  <a href="#q-learning">Q-learning</a>
+  <a href="#reinforcement-learning">reinforcement learning</a>
+  <a href="#reward">reward</a>
   <a href="#rule-base">rule base</a>
   <a href="#seeded-generator">seeded generator</a>
   <a href="#sigmoid">sigmoid</a>
@@ -80,6 +89,7 @@
   <a href="#translation-invariance">translation invariance</a>
   <a href="#truth-table">truth table</a>
   <a href="#universal-approximation">universal approximation</a>
+  <a href="#value-function">value function</a>
   <a href="#vanishing-gradient">vanishing gradient</a>
   <a href="#weight">weight</a>
   <a href="#weight-initialisation">weight initialisation</a>
@@ -103,6 +113,15 @@
     <p>A machine built in 1960 that learned in a different way from the perceptron: instead of counting how many answers it got wrong, it measured how far off it was and slid its weights a little way down that measurement.</p>
     <p class="exact">Widrow and Hoff's adaptive linear element, trained by the <a href="#delta-rule">delta rule</a>. It is the perceptron's exact contemporary and the direct ancestor of <a href="#gradient-descent">gradient descent</a> as it is used today, though it handled only a single unit.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/ADALINE">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="agent">
+  <h2>agent</h2>
+  <div>
+    <p>The thing that acts. In these lessons it is a marker moving about a grid, but the word is deliberately thin: an agent is anything that observes some part of a world, chooses among actions, and is affected by what follows. It is not a claim about intelligence, and it carries no suggestion that the thing wants anything.</p>
+    <p class="exact">In <a href="#reinforcement-learning">reinforcement learning</a>, the decision-maker, as distinguished from the environment it acts on. The boundary between them is drawn wherever the agent's control stops rather than at anything physical: an arm the agent cannot command reliably belongs to the environment, and so does its own body.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Intelligent_agent">Wikipedia</a></p>
   </div>
 </article>
 
@@ -169,6 +188,15 @@
   </div>
 </article>
 
+<article class="gloss" id="credit-assignment">
+  <h2>credit assignment</h2>
+  <div>
+    <p>The problem of working out which of many earlier decisions is responsible for how things turned out. A journey of forty moves ends in a reward; the reward says nothing about which of the moves deserved it, and something has to apportion the praise before any of them can be improved.</p>
+    <p class="exact">Named by Marvin Minsky in 1961 as the central obstacle for a machine learning from success and failure rather than from instruction. It appears in two forms: across time, where <a href="#q-learning">Q-learning</a> solves it by passing value backwards one step per visit, and across structure, where <a href="#backpropagation">backpropagation</a> solves it by passing error backwards through a layer. The two are the same difficulty in different directions.</p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/rl.html">6</a></span><span class="no-out">no article of its own</span></p>
+  </div>
+</article>
+
 <article class="gloss" id="decision-boundary">
   <h2>decision boundary</h2>
   <div>
@@ -184,6 +212,24 @@
     <p>A recipe for adjusting a weight: look at how far the answer was from the target, multiply that by the input the weight was attached to, and nudge the weight by a small amount in that direction.</p>
     <p class="exact">The least-mean-squares rule of Widrow and Hoff, equivalent to <a href="#gradient-descent">gradient descent</a> on the <a href="#squared-error">squared error</a> for a single unit. <a href="#backpropagation">Backpropagation</a> is what it becomes once there is a <a href="#hidden-layer">hidden layer</a> in the way.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Delta_rule">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="discount-factor">
+  <h2>discount factor</h2>
+  <div>
+    <p>A fraction, usually written &#947;, that makes a reward count for slightly less the further off it is. At 0.9, something worth 1 next step is worth 0.9 from two steps away and 0.81 from three. It is the whole of what makes an agent prefer a short route to a long one, since nothing else in the arithmetic mentions distance at all.</p>
+    <p class="exact">The per-step weight on future reward in the discounted return. Values near zero produce an agent that attends only to what happens next; values near one produce one that weighs the distant future almost equally and, in a task without a guaranteed end, may have no finite answer to compare. It is a choice about what the agent should care about rather than an estimate of anything in the world.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Markov_decision_process">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="episode">
+  <h2>episode</h2>
+  <div>
+    <p>One run from the start to an end: the agent sets off, moves until it reaches something that finishes the attempt, and is put back to begin again. Learning is counted in episodes the way the earlier lessons count it in passes over a training set.</p>
+    <p class="exact">A trajectory from an initial state to a terminal one. Tasks that divide this way are called episodic, as against continuing tasks that never reset; the distinction matters because a return summed over an episode is finite without needing a <a href="#discount-factor">discount</a> to make it so. Compare <a href="#epoch">epoch</a>, which counts passes over fixed data rather than attempts at a task.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><span class="no-out">no article of its own</span></p>
   </div>
 </article>
 
@@ -211,6 +257,15 @@
     <p>A program that reaches conclusions in one narrow professional domain by applying a body of rules gathered from human specialists. What it knows is held as sentences rather than as numbers, applied by a general-purpose interpreter, and it can usually show which sentences produced a given answer.</p>
     <p class="exact">The dominant applied form of <a href="#symbolic-ai">symbolic AI</a> from the middle 1970s into the 1980s, conventionally divided into a <a href="#rule-base">rule base</a> and an <a href="#inference-engine">inference engine</a> so that what the system knows can be replaced without touching the machinery that reasons. <a href="#mycin">MYCIN</a> is the canonical example.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Expert_system">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="exploration">
+  <h2>exploration and exploitation</h2>
+  <div>
+    <p>The standing tension in learning by trying things. Exploiting means taking the best option you currently know of; exploring means taking something else in the hope of finding better. Every step spent exploring is a step not spent earning, and an agent that never explores can only ever be as good as what it happened to find first.</p>
+    <p class="exact">Usually managed by &#949;-greedy action selection: with probability &#949; ignore the estimates and act at random, otherwise take the best known action. Simple, and weak in a particular way &mdash; independent random moves tend to undo one another, so dithering explores the neighbourhood of the current <a href="#policy">policy</a> and reaches nothing far from it. Lesson 6 measures both the cost of exploring and the cost of not.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Exploration%E2%80%93exploitation_dilemma">Wikipedia</a></p>
   </div>
 </article>
 
@@ -327,7 +382,7 @@
   <div>
     <p>The right answer attached to an example, put there by somebody who already knew it. A picture of a cat carries the label <em>cat</em>.</p>
     <p class="exact">The target value the machine is asked to reproduce. Having labels is what makes a problem <a href="#supervised-learning">supervised</a>.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a>, <a href="lessons/images.html">2</a> and <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
   </div>
 </article>
 
@@ -336,7 +391,7 @@
   <div>
     <p>How big a step to take each time you adjust the weights. Small steps are reliable but slow; large ones are quick until they start jumping clean over the thing they were aiming at.</p>
     <p class="exact">The scalar multiplying the <a href="#gradient">gradient</a> in an update. It is chosen rather than learned, which makes it a hyperparameter.</p>
-    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Learning_rate">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/backprop.html">4</a> and <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Learning_rate">Wikipedia</a></p>
   </div>
 </article>
 
@@ -421,12 +476,48 @@
   </div>
 </article>
 
+<article class="gloss" id="policy">
+  <h2>policy</h2>
+  <div>
+    <p>The agent's rule for what to do: given where it is, which action it takes. Everything an agent has learned shows up here, and the policy is the thing you would actually deploy &mdash; the estimates behind it are working notes.</p>
+    <p class="exact">A mapping from states to actions, or to a distribution over them. It may be held explicitly, or read off a <a href="#value-function">value function</a> by taking the best-valued action in each state, which is what lesson 6 does. A greedy policy always takes the best known action; an &#949;-greedy one departs from it at random a fixed fraction of the time.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Markov_decision_process">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="production-rule">
   <h2>production rule</h2>
   <div>
     <p>An IF/THEN sentence: a premise about the world, and something to conclude when the premise holds. A rule says nothing about when it ought to be applied or what else is true — that is the interpreter’s business — which is what allows rules to be added and removed one at a time.</p>
     <p class="exact">The unit of knowledge in a production system. Modularity is the point and also the catch: rules are independent by construction, so nobody need hold the whole base in mind to write one, and nobody can easily foresee how a new rule will interact with the several hundred already there.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/mycin.html">5</a></span><a class="out" href="https://en.wikipedia.org/wiki/Production_system_(computer_science)">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="q-learning">
+  <h2>Q-learning</h2>
+  <div>
+    <p>The rule in lesson 6. After each move, the agent sets its estimate for that move to the reward that arrived plus the <a href="#discount-factor">discounted</a> value of the best move available where it landed. Applied over and over, this carries value backwards from the reward, one cell per visit, until every position knows what it is worth.</p>
+    <p class="exact">An off-policy temporal-difference control method, published by Christopher Watkins in 1989. Off-policy means it learns the value of acting best while behaving otherwise, so the exploring it does to gather experience does not corrupt what it concludes. Watkins and Peter Dayan proved in 1992 that it converges on the optimal action-values provided every action is tried in every state infinitely often &mdash; a condition that is easy to state and, as lesson 6 shows, easy to violate.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Q-learning">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="reinforcement-learning">
+  <h2>reinforcement learning</h2>
+  <div>
+    <p>Learning what to do from the consequences of doing it, rather than from being told. There are no labelled examples and no rules: the machine acts, a number arrives, and it has to work out for itself which of its actions made the number what it was.</p>
+    <p class="exact">The third of the traditions in these lessons, alongside <a href="#supervised-learning">supervised learning</a> and <a href="#symbolic-ai">symbolic AI</a>, and distinguished from both by where its information comes from. The training signal is evaluative rather than instructive &mdash; it says how good the outcome was, not what should have been done &mdash; and it is delayed, which is what makes <a href="#credit-assignment">credit assignment</a> the central problem.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Reinforcement_learning">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="reward">
+  <h2>reward</h2>
+  <div>
+    <p>The number the world hands back. It is the only thing an agent is ever told about whether it is doing well, and it is a specification rather than a discovery: somebody wrote it down, and the agent will pursue exactly what was written rather than what was meant.</p>
+    <p class="exact">A scalar arriving on each transition, which the agent maximises in expectation over the long run rather than at any single step. Its sparseness is the difficulty &mdash; a reward that arrives only at the end of a long sequence carries very little information about the sequence &mdash; and its specification is the hazard, since an agent optimising a badly stated reward is not malfunctioning.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Reinforcement_learning">Wikipedia</a></p>
   </div>
 </article>
 
@@ -480,7 +571,7 @@
   <div>
     <p>Learning from examples that come with their answers attached. Somebody has already gone through and marked each one, and the machine's job is to reproduce those markings and then extend them to cases nobody has marked.</p>
     <p class="exact">Learning a mapping from inputs to targets given <a href="#label">labelled</a> pairs. Every lesson here is supervised; the labels are known because the examples are generated with their class decided first.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> and <a href="lessons/images.html">2</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a>, <a href="lessons/images.html">2</a> and <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Supervised_learning">Wikipedia</a></p>
   </div>
 </article>
 
@@ -535,6 +626,15 @@
     <p>The result that a network with one <a href="#hidden-layer">hidden layer</a>, given enough units in it, can imitate essentially any sensible function as closely as you care to ask.</p>
     <p class="exact">A statement about what such networks can represent. It says nothing about how many units are needed, and nothing whatsoever about whether training will find the arrangement — which is where the practical difficulty actually lives.</p>
     <p class="gloss-meta"><span>Used in lesson <a href="lessons/xor.html">3</a></span><a class="out" href="https://en.wikipedia.org/wiki/Universal_approximation_theorem">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="value-function">
+  <h2>value function</h2>
+  <div>
+    <p>An estimate of what a position is worth: not what you get for standing there, which is usually nothing, but everything you can expect to collect from there onwards if you go on acting well. It is what lets a machine prefer a move that pays nothing now over one that pays nothing now and leads nowhere.</p>
+    <p class="exact">The expected <a href="#discount-factor">discounted</a> return from a state, or from a state-action pair, under a given <a href="#policy">policy</a>. Lesson 6 keeps one as a table with a row per cell and a column per direction, which is possible only because the world has nineteen cells; where states cannot be enumerated the table is replaced by a learned function that estimates the value of positions it has never seen.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/rl.html">6</a></span><a class="out" href="https://en.wikipedia.org/wiki/Value_function">Wikipedia</a></p>
   </div>
 </article>
 
