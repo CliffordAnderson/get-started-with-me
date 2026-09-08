@@ -89,7 +89,7 @@
     </div>
 
     <div>
-      <p>Two other readings of the same function are worth carrying forward. XOR reports whether its inputs <em>differ</em>, which makes it a comparator. And it reports their <a class="term" href="../glossary.html#parity">parity</a> — whether an odd number of them are on — which is the reading that survives past two inputs.</p>
+      <p>Two other readings are worth carrying forward. XOR reports whether its inputs <em>differ</em>, which makes it a comparator. And it reports their <a class="term" href="../glossary.html#parity">parity</a> — whether an odd number of them are on — the reading that survives past two inputs.</p>
       <p>None of this is exotic. XOR is the sum bit of binary addition, with AND supplying the carry; it is the parity bit that catches a flipped bit in transmission; it is what a one-time pad applies to a message. What makes it awkward for a perceptron is narrow and specific. Of the sixteen functions of two binary inputs, fourteen can be settled by a single weighted <a class="term" href="../glossary.html#threshold">threshold</a>. XOR and its negation are the two that cannot.</p>
     </div>
   </div>
@@ -102,8 +102,8 @@
     <div class="sec-num">2</div>
     <div>
       <h2>The problem, as Minsky and Papert posed it</h2>
-      <p>A perceptron in their sense is not a single unit but a small machine: an array of input points, a layer of predicates that each see only some limited part of it, and one threshold unit that takes a weighted vote of what those predicates report. Their question was how much of the input a single predicate must see before that vote can come out right. They called that number the <em>order</em> of the function.</p>
-      <p>AND, OR and majority have order 1 — one point apiece is enough. XOR does not, and it is the light case of a heavy result: parity, whether an odd number of inputs are on, has an order equal to the entire input. No quantity of local evidence, however it is weighted, settles it. XOR is the version you can draw.</p>
+      <p>A perceptron in their sense is not a single unit but a small machine: an array of input points, a layer of predicates that each see only part of it, and one threshold unit taking a weighted vote of what the predicates report. Their question: how much of the input must a single predicate see before that vote can come out right? They called that number the <em>order</em> of the function.</p>
+      <p>AND, OR and majority have order 1 — one point apiece is enough. XOR does not, and it is the small case of a heavy result: parity has order equal to the entire input. No amount of local evidence, however weighted, settles it. XOR is the version you can draw.</p>
       <p class="cite">Marvin Minsky and Seymour Papert, <em>Perceptrons: An Introduction to Computational Geometry</em> (MIT Press, 1969; expanded edition 1988). The order results run through Part I; parity and connectedness, not XOR, are the book's real subjects.</p>
     </div>
   </div>
@@ -116,7 +116,7 @@
     <div class="sec-num">3</div>
     <div>
       <h2>What the unit actually does</h2>
-      <p>A perceptron multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires when the total clears zero. The weights tilt the boundary, the bias slides it — but the boundary is always a straight line, and that is the whole of what the unit can represent. Choose a target and try to place it.</p>
+      <p>A perceptron multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires when the total clears zero. The weights tilt the boundary, the bias slides it — but the boundary is always a straight line, and that is all the unit can represent. Choose a target and try to place it.</p>
     </div>
   </div>
 
@@ -232,7 +232,7 @@
         <button class="btn" id="proof-next" type="button">Combine the lines</button>
         <button class="btn" id="proof-reset" type="button">Start over</button>
       </div>
-      <p class="note">The same argument works for any threshold, any sign convention, any scaling of the weights. Nothing about the unit is under-powered; the demands are simply inconsistent.</p>
+      <p class="note">The same argument works for any threshold, any sign convention, any scaling of the weights. No tuning is at fault; the four demands are inconsistent.</p>
     </div>
 
     <figure>
@@ -330,7 +330,7 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">Both hidden units read the same quantity: how many inputs are on. One of them fires at a count of one or more, the other only at two. Between them they turn a count into a two-bit code — 00, 10, 11 — and in that code the two awkward cases, (0,1) and (1,0), land in exactly the same place. Once they are the same point, no line has to separate them from each other.</p>
+    <p class="note">Both hidden units read the same quantity: how many inputs are on. One fires at a count of one or more, the other only at two. Between them they turn the count into a two-bit code — 00, 10, 11 — and in that code the two awkward cases, (0,1) and (1,0), land in exactly the same place. Once they are the same point, no line needs to separate them.</p>
     <p class="note">Set the activation to <em>none</em> and the fold disappears. Two linear maps compose into one linear map, so the network collapses back to a single cut and the ceiling returns to three. The layer is not what bought the extra power. The bend inside it did.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> A hidden layer can map the cases to a space where a straight boundary works.</p>
@@ -346,8 +346,8 @@ h₂ = step(x₁ + x₂ − 1.5)</p>
   </div>
   <div class="split">
     <div>
-      <p>A single-layer perceptron can ask only one question: which side of a line is this point on? Whatever cannot be split that way is outside what the architecture expresses, and no amount of training reaches it. The limit belongs to the model, not to the optimizer.</p>
-      <p>A <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> with a nonlinearity between the layers lets the network re-plot its inputs before the final cut. Each hidden unit still contributes a straight boundary, but the region they carve out jointly can be a corner, a stripe, or an island. Enough hidden units and you can approximate any reasonable decision region to whatever tolerance you like.</p>
+      <p>A single-layer perceptron can ask only one question: which side of a line is this point on? Whatever cannot be split that way lies beyond what the architecture can express, and no amount of training reaches it. The limit belongs to the model, not to the optimizer.</p>
+      <p>A <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> with a nonlinearity lets the network re-plot its inputs before the final cut. Each hidden unit still contributes a straight boundary, but together they can carve out a corner, a stripe, or an island. Enough hidden units and you can approximate any reasonable decision region to whatever tolerance you like.</p>
     </div>
     <div>
       <p>The book is more careful than its reputation. Minsky and Papert observed in passing that a universal computer could be assembled out of linear threshold units, so the power of layered machines was never the question. What they doubted, in a short section near the end, was that a learning theory as clean as the perceptron rule would extend to them — <q>our intuitive judgment that the extension is sterile</q>, a judgment they invited their readers to refute.</p>

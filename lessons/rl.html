@@ -53,7 +53,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="hero-intro">
       <p class="kicker">lesson 6 · reinforcement learning</p>
       <h1>A number that arrives late</h1>
-      <p class="lede">Every machine in the first five lessons was told the answer. Lessons one to four were handed a <a class="term" href="../glossary.html#label">label</a> for each example, which is what makes them <a class="term" href="../glossary.html#supervised-learning">supervised</a>; the fifth was handed rules by somebody who already knew. This one is handed neither. It is put down in a corner of a small world, and the only thing that ever reaches it is a number — a <a class="term" href="../glossary.html#reward">reward</a> arriving at the end, saying nothing about which of the moves before it was the good one. Learning anything at all from that is <a class="term" href="../glossary.html#reinforcement-learning">reinforcement learning</a>.</p>
+      <p class="lede">Every machine so far was told the answer. Lessons one to four got a <a class="term" href="../glossary.html#label">label</a> for each example — that is what makes them <a class="term" href="../glossary.html#supervised-learning">supervised</a>. The fifth got its rules from somebody who already knew. This one gets neither. It is put down in the corner of a small world, and the only thing that ever reaches it is a number — a <a class="term" href="../glossary.html#reward">reward</a> arriving at the end, saying nothing about which move earned it. Learning anything from that is <a class="term" href="../glossary.html#reinforcement-learning">reinforcement learning</a>.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">episode <b>0</b></p>
@@ -106,7 +106,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="msg" id="w-msg">Use the buttons, or the arrow keys once the grid has focus.</p>
       <div class="row"><button class="btn" id="w-reset" type="button">Put it back</button></div>
       <p>The shortest way out is eight moves, and the pit is only five away, so an aimless walker meets the wrong end of the world first. That is the arrangement, and the agent knows none of it.</p>
-      <p>Notice what you were not told while you walked. Not one of your moves was called right or wrong at the time it was made. A number came at the end, and by then it belonged to the whole journey. Working out which of the eight moves deserved the <a class="term" href="../glossary.html#credit-assignment">credit</a> is the problem this lesson is about; Minsky named it in 1961, and it is the reason learning from a reward is a different thing from learning from a label.</p>
+      <p>Notice what you were not told while you walked. No move was called right or wrong when you made it. A number came at the end, and by then it belonged to the whole journey. Working out which moves deserved the <a class="term" href="../glossary.html#credit-assignment">credit</a> is the problem this lesson is about. Minsky named it in 1961, and it is why learning from a reward differs from learning from a label.</p>
       <p class="cite">Marvin Minsky, &ldquo;Steps Toward Artificial Intelligence,&rdquo; <em>Proceedings of the IRE</em> 49 (1961), sets out what he calls the basic credit-assignment problem for a machine learning from success and failure rather than from instruction. The same Minsky co-authored the book, eight years later, that closed the first lesson's argument.</p>
     </div>
   </div>
@@ -119,7 +119,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="sec-num">2</div>
     <div>
       <h2>How far chance gets you</h2>
-      <p>Before asking whether a method learns anything, it is worth measuring what costs nothing: an agent that ignores everything and picks one of the four directions at random, every step, for ever. One run from the start cell to either end of the world is an <a class="term" href="../glossary.html#episode">episode</a>. Run a few thousand and watch the two ends fill up.</p>
+      <p>Before asking whether a method learns anything, measure what costs nothing: an agent that ignores everything and picks one of the four directions at random, every step, for ever. One run from the start cell to either end of the world is an <a class="term" href="../glossary.html#episode">episode</a>. Run a few thousand and watch the two ends fill up.</p>
     </div>
   </div>
 
@@ -143,8 +143,8 @@ canvas.chart{aspect-ratio:auto;height:230px}
         <li><span>mean steps</span><span class="v">—</span></li>
         <li><span>mean reward</span><span class="v">—</span></li>
       </ul>
-      <p>Chance does reach the goal about a third of the time, which is a good deal better than never, and it is worth being clear why: the world is small and it has two exits, so a walker that lives long enough falls out of one of them. It falls out of the wrong one twice as often, because the pit is nearer.</p>
-      <p>The mean reward is the number to hold on to. It is negative. An agent that has learned nothing does not merely fail to be good — in this world it is actively worse than useless, and any method worth the name has to climb from below zero to <span class="nb">+1</span> while taking eight steps instead of sixty-odd.</p>
+      <p>Chance reaches the goal about a third of the time — much better than never, and worth being clear about why: the world is small and has two exits, so a walker that lives long enough falls out of one of them. It falls out of the wrong one twice as often, because the pit is nearer.</p>
+      <p>The mean reward is the number to hold on to. It is negative. In this world, an agent that has learned nothing is worse than useless, and any method worth the name has to climb from below zero to <span class="nb">+1</span> while cutting sixty-odd steps to eight.</p>
       <p class="note">Every figure in this panel comes from the batch you just ran, in this browser, a moment ago. Run it twice and the numbers will move a little; that is what measuring a random process looks like.</p>
     </div>
   </div>
@@ -157,7 +157,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="sec-num">3</div>
     <div>
       <h2>The value of standing somewhere</h2>
-      <p>Give every cell four numbers, one for each direction: an estimate of what that move is ultimately worth — its <a class="term" href="../glossary.html#value-function">value</a>. They all begin at zero, which is to say the agent begins with no opinion about anything. One rule changes them, and it is short enough to read in a breath.</p>
+      <p>Give every cell four numbers, one per direction: an estimate of what that move is ultimately worth — its <a class="term" href="../glossary.html#value-function">value</a>. All begin at zero: the agent starts with no opinion about anything. One rule changes them, and it is short enough to read in a breath.</p>
     </div>
   </div>
 
@@ -177,7 +177,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="stack">
       <p class="formula">Q(s, a)  ←  r  +  γ · max Q(s′, a′)
 γ = 0.9</p>
-      <p>After moving in direction <span class="nb">a</span> from cell <span class="nb">s</span> and landing in <span class="nb">s′</span>, the agent sets its estimate for that move to whatever arrived, <span class="nb">r</span>, plus the best estimate it currently holds anywhere in the cell it landed in — discounted by <span class="nb">γ</span>, the <a class="term" href="../glossary.html#discount-factor">discount factor</a>, which makes a reward worth slightly less for every step you are away from it. That fraction is the entire reason it prefers a short route. Nothing in the rule mentions distance. The rule is called <a class="term" href="../glossary.html#q-learning">Q-learning</a>, after the letter conventionally given to the estimate.</p>
+      <p>After moving in direction <span class="nb">a</span> from cell <span class="nb">s</span> and landing in <span class="nb">s′</span>, the agent sets its estimate for that move to whatever arrived, <span class="nb">r</span>, plus the best estimate it holds in the cell it landed in — discounted by <span class="nb">γ</span>, the <a class="term" href="../glossary.html#discount-factor">discount factor</a>, which makes a reward worth a little less for every step of distance. That fraction is the entire reason the agent prefers a short route; nothing in the rule mentions distance. The rule is called <a class="term" href="../glossary.html#q-learning">Q-learning</a>, after the letter conventionally given to the estimate.</p>
       <div class="row">
         <button class="btn" id="l-one" type="button">One episode</button>
         <button class="btn" id="l-run" type="button">Run 50</button>
@@ -187,7 +187,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="msg" id="l-msg">Every estimate is zero. With nothing to prefer, it wanders.</p>
       <p>Watch the brown arrive from the goal and spread backwards. It has to: the only cell whose value can be known outright is the one next to the reward, and every other cell has to wait for its neighbour to be worth something before it can be worth anything itself. This is what learning from a delayed reward looks like — a wave travelling backwards, one cell per visit, from the end of the journey to the beginning.</p>
       <p>Let it settle and the numbers are exactly what the discount says they should be. The cell beside the goal is worth <span class="nb">1</span>; the next one back <span class="nb">0.9</span>; the one before that <span class="nb">0.81</span>. The start, eight moves out, settles at <span class="nb">0.478</span>, which is <span class="nb">0.9</span> multiplied by itself seven times. You can check the readout against the arithmetic.</p>
-      <p class="note">The rule above uses a <a class="term" href="../glossary.html#learning-rate">learning rate</a> of 1, so it is omitted from the displayed equation. This works here because the transitions and rewards are deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
+      <p class="note">The rule above uses a <a class="term" href="../glossary.html#learning-rate">learning rate</a> of 1, so it does not appear in the equation. That works here because the world is deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Reward information propagates through updates; zero does not mean an action was never tried.</p>
@@ -199,7 +199,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="sec-num">4</div>
     <div>
       <h2>What exploring costs</h2>
-      <p>An agent that always takes the move it currently rates best does not deliberately <a class="term" href="../glossary.html#exploration">explore</a> a lower-valued alternative, and the usual remedy is to make it flip a weighted coin: with probability <span class="nb">ε</span> ignore the table and move at random. Set <span class="nb">ε</span> and measure what it buys.</p>
+      <p>An agent that always takes the move it rates best never deliberately <a class="term" href="../glossary.html#exploration">explores</a> a lower-rated one. The usual remedy is a weighted coin: with probability <span class="nb">ε</span>, ignore the table and move at random. Set <span class="nb">ε</span> and measure what it buys.</p>
     </div>
   </div>
 
@@ -275,18 +275,18 @@ canvas.chart{aspect-ratio:auto;height:230px}
       </ul>
       <p class="msg" id="c-msg">Each agent trains for 200 episodes, then runs 500 more with the prize in place.</p>
       <p>Put it one step to the right of the start and a greedy agent never finds it — not once in two hundred, not ever, however long you leave it running. It is standing beside the thing the whole time. Its estimate for stepping right is zero and its estimate for stepping up is <span class="nb">0.478</span>, so it steps up, and nothing in the rule will ever make it do otherwise. With <span class="nb">ε = 0.1</span>, the measured batches typically find it much more often. The tally reports what happened within 500 further episodes, not a promise for every finite run.</p>
-      <p>Put it on the route instead and a greedy agent finds it at once — in about three runs out of five. The rest never see it, and the reason is a small piece of honesty about the last panel: there are two eight-move routes to the goal, one across the top and one through the middle, and they are worth exactly the same. Which one an agent settles on is decided by the coin flips of its first few wandering episodes, and the method has no preference between them. A prize on the top route is invisible to an agent that happened to learn the middle one.</p>
-      <p>Put it in the far corner and exploring stops helping much. Even at <span class="nb">ε = 0.3</span>, where a third of all moves are thrown away, only about a quarter of the agents ever stumble across it. Random moves are a poor way to travel: they undo each other, and four cells is already far when your only means of getting anywhere new is to flip a coin against yourself.</p>
+      <p>Put it on the route instead and a greedy agent finds it at once — in about three runs out of five. The rest never see it, and the reason says something the last panel did not: there are two eight-move routes to the goal, one across the top and one through the middle, worth exactly the same. Which one an agent settles on is decided by the coin flips of its first few wandering episodes, and the method has no preference between them. A prize on the top route is invisible to an agent that happened to learn the middle one.</p>
+      <p>Put it in the far corner and exploring stops helping much. Even at <span class="nb">ε = 0.3</span>, where a third of all moves are thrown away, only about a quarter of the agents ever stumble across it. Random moves are a poor way to travel — they undo each other — and four cells is already far to go on moves that cancel each other out.</p>
     </div>
   </div>
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>This is the shape of the thing. An agent learning from reward can only ever be told about the parts of the world it walks into, and what it walks into is decided by what it already believes. It is not wrong about the route: eight moves to <span class="nb">+1</span> is a true and hard-won fact, and it will defend that fact for ever by never checking. Nothing in the arithmetic distinguishes a world it has understood from a world it has merely stopped looking at.</p>
+      <p>This is the shape of the problem. An agent learning from reward can only be told about the parts of the world it walks into, and what it walks into is decided by what it already believes. It is not wrong about the route: eight moves to <span class="nb">+1</span> is a true and hard-won fact, and it will defend that fact for ever by never checking. Nothing in the arithmetic distinguishes a world it has understood from a world it has merely stopped looking at.</p>
       <p>The other half of the warning is the reward itself. The agent has no opinion about what is worth doing; it has your number, and it will pursue exactly what you wrote down rather than what you meant. Everything this lesson's machine knows about the point of its existence is <span class="nb">+1</span> in one corner and <span class="nb">−1</span> in another, and it is faithful to that specification in a way that is easy to mistake for understanding.</p>
     </div>
     <div>
-      <p>And the table has to fit. This world has nineteen open cells and four moves, so the whole of what the agent can know is seventy-six numbers, and it can afford to visit every one. A board game, or a room with a camera pointed at it, has more distinguishable situations than there are seconds in the history of the universe, and no table will hold them. What is done instead is to replace the table with a function that guesses the value of a situation it has never seen — and the machinery for learning such a function from examples is introduced in lessons 1–4.</p>
+      <p>And the table has to fit. This world has nineteen open cells and four moves, so everything the agent can know is seventy-six numbers, and it can afford to visit every one. A board game, or a room with a camera pointed at it, has more distinguishable situations than there are seconds in the history of the universe, and no table will hold them. The fix is to replace the table with a function that guesses the value of a situation it has never seen — and the machinery for learning such a function from examples is what lessons 1–4 introduced.</p>
       <p class="cite">Arthur Samuel's checkers player, &ldquo;Some Studies in Machine Learning Using the Game of Checkers,&rdquo; <em>IBM Journal of Research and Development</em> 3 (1959), learned by adjusting its estimates towards its own later ones, and is the ancestor of everything here. The idea was made general and given its analysis by Richard Sutton, &ldquo;Learning to Predict by the Methods of Temporal Differences,&rdquo; <em>Machine Learning</em> 3 (1988). The particular rule in panel 3 is Q-learning, from Christopher Watkins's Cambridge thesis <em>Learning from Delayed Rewards</em> (1989); Watkins and Peter Dayan proved in 1992 that it converges on the best route, given that every move is tried in every cell infinitely often — a condition this panel is about.</p>
     </div>
   </div>

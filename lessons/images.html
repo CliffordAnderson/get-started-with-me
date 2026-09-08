@@ -44,7 +44,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="hero-intro">
       <p class="kicker">lesson 2 · cats and dogs</p>
       <h1>A line drawn through pictures</h1>
-      <p class="lede">Nothing about the machine from the last lesson changes. It still multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires if the total clears zero. The only difference is that there are now a hundred and forty-four inputs instead of two, and each one is the brightness of a single <a class="term" href="../glossary.html#pixel">pixel</a>.</p>
+      <p class="lede">Nothing about the machine changes from the last lesson. It still multiplies each input by a <a class="term" href="../glossary.html#weight">weight</a>, adds a <a class="term" href="../glossary.html#bias">bias</a>, and fires if the total clears zero. The only difference: 144 inputs instead of two, each one the brightness of a single <a class="term" href="../glossary.html#pixel">pixel</a>.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">it says <span class="lamp cat" id="hero-lamp">cat</span></p>
@@ -69,7 +69,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="sec-num">1</div>
     <div>
       <h2>A picture is a list of numbers</h2>
-      <p>A grayscale image is a grid of brightnesses. Read the grid off row by row and you have a list — here, 144 numbers between 0 and 1. That list is the whole of what the machine receives. It has one weight for each entry, so the total it forms is the same sum as before with more terms in it: <span class="formula" style="display:inline-block;padding:.1rem .35rem">w₁x₁ + w₂x₂ + ⋯ + w₁₄₄x₁₄₄ + b</span></p>
+      <p>A grayscale image is a grid of brightnesses. Read the grid row by row and you have a list — here, 144 numbers between 0 and 1. That list is all the machine receives. It has one weight per entry, so its total is the same sum as before, with more terms: <span class="formula" style="display:inline-block;padding:.1rem .35rem">w₁x₁ + w₂x₂ + ⋯ + w₁₄₄x₁₄₄ + b</span></p>
     </div>
   </div>
 
@@ -95,9 +95,9 @@ canvas.bar2{aspect-ratio:auto;height:52px}
         <figcaption>The same picture, flattened: 144 bars, left to right, row by row.</figcaption>
       </figure>
 
-      <p class="note">The machine sees the lower figure, never the upper one. Nothing tells it that bar 14 sits directly above bar 26 in the original grid, or that either is a pixel at all. Shuffle all 144 positions into a fixed random order, apply that same order to every picture, and it would learn the task exactly as well and exactly as fast. Whatever it ends up knowing about shape, it has to reconstruct from scratch out of which entries in a list tend to be bright together.</p>
+      <p class="note">The machine sees only the lower figure. It does not know that bar 14 sits above bar 26, or that either one is a pixel. Shuffle all 144 positions into a fixed random order — the same order for every picture — and it learns the task just as well, just as fast. Anything it learns about shape, it has to build from one clue: which entries tend to be bright together.</p>
 
-      <p class="note">These are drawings generated in your browser, not photographs: an ellipse for a head, a pair of eyes, and then either two triangles on top or two lobes at the sides, with the position, size, ear shape and exposure varied at random for each one. Head and eyes are drawn the same way for both classes, so the ears are the only thing that carries any information — remember that when you see what the weights look like. Real photographs are a far harder problem, and the closing panel is about why.</p>
+      <p class="note">These are drawings generated in your browser, not photographs: an ellipse for a head, a pair of eyes, then either two triangles on top or two lobes at the sides, with position, size, ear shape and exposure varied at random. Head and eyes are drawn the same way for both classes, so the ears carry all the information — remember that when you see the weights. Real photographs are a far harder problem; the closing panel says why.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> The machine receives pixel values in fixed positions, not named features.</p>
@@ -159,8 +159,8 @@ canvas.bar2{aspect-ratio:auto;height:52px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule arrives somewhere close to that from four corrections, because it stops the instant it gets everything right. It is not looking for the best <a class="term" href="../glossary.html#template">template</a>. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
-    <p class="note">That is worth noticing before the weight image starts looking like understanding. Both pictures say the same thing — <em>ink up here counts against, ink out on the sides counts for</em> — and that single comparison of two regions is the entire theory of animals this machine will ever hold.</p>
+    <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule gets close to that in four corrections, because it stops the instant it gets everything right. It is not looking for the best <a class="term" href="../glossary.html#template">template</a>. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
+    <p class="note">Notice that before the weight image starts to look like understanding. Both pictures say the same thing — <em>ink up here counts against, ink at the sides counts for</em> — and that one comparison of two regions is the machine's entire theory of animals.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> The learned template records how pixels contribute to the classification.</p>
 </section>
@@ -171,7 +171,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="sec-num">3</div>
     <div>
       <h2>How a verdict gets made</h2>
-      <p>Multiply the picture by the weights pixel by pixel and you get a third image: what each pixel contributed. Add all 144 contributions, add the bias, and the sign of that one number is the answer. The operation has a plain geometric reading — it is a template laid over the picture, scoring how much of the ink falls on brown and how much falls on blue.</p>
+      <p>Multiply the picture by the weights pixel by pixel and you get a third image: what each pixel contributed. Add all 144 contributions, add the bias, and the sign of that one number is the answer. The operation has a plain reading: a template laid over the picture, scoring how much ink falls on brown and how much on blue.</p>
     </div>
   </div>
 
@@ -205,8 +205,8 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     </div>
 
     <div>
-      <p class="note">The third panel is where the answer actually lives. Ink that lands on brown adds; ink that lands on blue subtracts; ink on the pale middle does nothing at all, however bright it is. The head and its eyes are the brightest things in the picture and they land almost entirely on the pale middle, so they contribute almost nothing — they are the parts cats and dogs draw identically, and a correction that added them for a dog was cancelled by one that subtracted them for a cat.</p>
-      <p class="note">Notice also that the total's size means nothing to the machine. Only its sign is read. A picture that scores +0.02 and one that scores +2.0 are both simply <em>dog</em>, and the <a class="term" href="../glossary.html#step-function">step function</a> throws the difference away. That discarded <a class="term" href="../glossary.html#margin">margin</a> is what later methods go back for.</p>
+      <p class="note">The third image is where the answer lives. Ink on brown adds; ink on blue subtracts; ink on the pale middle does nothing, however bright. The head and eyes are the brightest things in the picture, and they land almost entirely on the pale middle, so they contribute almost nothing. They are the parts both classes draw alike, and every correction that added them for a dog was cancelled by one that subtracted them for a cat.</p>
+      <p class="note">The total's size means nothing to the machine. Only its sign is read. A picture that scores +0.02 and one that scores +2.0 are both simply <em>dog</em>, and the <a class="term" href="../glossary.html#step-function">step function</a> throws the difference away. That discarded <a class="term" href="../glossary.html#margin">margin</a> is what later methods go back for.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> A pixel contributes its value multiplied by its weight; brightness alone does not decide.</p>
@@ -236,7 +236,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
       </div>
       <p class="msg" id="t-msg"></p>
       <p class="note">A larger check runs alongside the twenty-four you can see: <span id="t-big">120</span> fresh pictures, redrawn each time you press the button. That figure is the honest one, and it is the one the last panel takes apart.</p>
-      <p class="note">Before reading too much into a high score: these drawings differ between the classes in exactly one respect, and that respect sits in a fixed place in the frame. The task was built to be a straight line's kind of problem. That it is solved by a straight line is not evidence about photographs of animals.</p>
+      <p class="note">Before reading too much into a high score: the two classes differ in exactly one respect, and it sits in a fixed place in the frame. The task was built to suit a straight line. That a straight line solves it says nothing about photographs of animals.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Held-out examples check transfer within this generator, not to real photographs.</p>
@@ -288,11 +288,11 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>Three pixels down and the score falls to something a coin could match. Invert the picture and it does worse than a coin, reliably wrong, because every contribution has changed sign at once. Mirroring, on the other hand, costs almost nothing, and exposure costs nothing at all — the first because these drawings are left-right symmetric, the second because scaling every pixel scales the total without moving it across zero. The machine is not fragile in general. It is fragile in exactly the ways its one template is.</p>
-      <p>The tempting fix is to train on shifted copies as well. It half works and shows you the real shape of the problem: the template blurs to cover every position it was shown, the sharp evidence smears out, and accuracy on centred pictures drops to pay for it. One template is being asked to be several. There is no setting of 144 weights that says <em>pointed ears, wherever they are</em>, because that is not a statement about a fixed list of pixels.</p>
+      <p>Three pixels down and the score falls to what a coin could match. Invert the picture and it does worse than a coin — reliably wrong, because every contribution changes sign at once. Mirroring costs almost nothing, because these drawings are left-right symmetric. Exposure costs nothing at all, because scaling every pixel scales the total without moving it across zero. The machine is not fragile in general. It is fragile in exactly the ways its one template is.</p>
+      <p>The tempting fix is to train on shifted copies too. It half works, and it shows the real shape of the problem: the template blurs to cover every position it was shown, the sharp evidence smears out, and accuracy on centred pictures drops to pay for it. One template is being asked to be several. No setting of 144 weights says <em>pointed ears, wherever they are</em> — that is not a statement about a fixed list of pixels.</p>
     </div>
     <div>
-      <p>This is a wall the next lesson walks into from the other side. Here it is a shortage of expressive power dressed up as a vision system, and you meet it by dragging a slider until the score falls over. There it is the same shortage in a function of two inputs with four cases, small enough that the impossibility can be proved in four lines instead. In both the limit belongs to the architecture and not to the training, and no amount of further correction reaches past it.</p>
+      <p>The next lesson walks into this same wall from the other side. Here it is a shortage of expressive power, found by dragging a slider until the score falls over. There it is the same shortage in a function of two inputs and four cases, small enough that the impossibility can be proved in four lines. In both lessons the limit belongs to the architecture, not the training, and no amount of correction reaches past it.</p>
       <p>What is needed is a way for the machine to compute <em>features</em> — pointedness, a pair of things above a blob — and then decide about those, rather than about raw pixels in fixed positions. That is a second layer, and the smallest honest case for one has two inputs and four points.</p>
       <p class="cite">Minsky and Papert's group invariance theorem, in <em>Perceptrons</em> (1969), makes the translation argument exactly: if the machine's predicates are unchanged as a group by shifting the image, its weights must be constant across each orbit of that group — which is a severe constraint on what can be told apart. Rosenblatt had met the practical version at the Mark I, whose 400 photocells looked at a fixed retina and whose performance depended on where in that retina you put the shape.</p>
     </div>
@@ -811,8 +811,8 @@ function setLamp(el, cls){
   });
   document.getElementById("l-reset").addEventListener("click", () => {
     halt(); clearModel(); at = 0; errs = 0;
-    msg.textContent = "Every weight back to zero, which makes the total zero, which counts as dog. " +
-      "The first cat it meets will therefore be wrong, and the first correction is that cat subtracted.";
+    msg.textContent = "Every weight is back to zero, so every total is zero, which counts as dog. " +
+      "The first cat it meets will be wrong, and the first correction subtracts that cat.";
     msg.classList.remove("hit");
     render();
   });

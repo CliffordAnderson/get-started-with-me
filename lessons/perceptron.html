@@ -34,7 +34,7 @@
     <div class="hero-intro">
       <p class="kicker">lesson 1 · perceptrons</p>
       <h1>A machine that draws one line</h1>
-      <p class="lede">A <a class="term" href="../glossary.html#perceptron">perceptron</a> takes a few numbers, weighs them up, and answers yes or no. Everything it can ever decide is a straight boundary through the space of its inputs — and it can find that boundary from <a class="term" href="../glossary.html#label">labelled</a> examples alone, by correcting its own mistakes.</p>
+      <p class="lede">A <a class="term" href="../glossary.html#perceptron">perceptron</a> takes a few numbers, weighs them, and answers yes or no. Everything it can decide comes down to one straight boundary through its input space. It finds that boundary from <a class="term" href="../glossary.html#label">labelled</a> examples alone, by correcting its own mistakes.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">learning</p>
@@ -59,14 +59,14 @@
     <div class="sec-num">1</div>
     <div>
       <h2>What it computes</h2>
-      <p>Give the unit a list of numbers. It multiplies each by a <a class="term" href="../glossary.html#weight">weight</a> of its own, adds them together, adds one more number that belongs to no input — the <a class="term" href="../glossary.html#bias">bias</a> — and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts and in which direction; the bias says how much evidence is needed before the unit will fire at all.</p>
+      <p>Give the unit a list of numbers. It multiplies each by its own <a class="term" href="../glossary.html#weight">weight</a>, adds the results, adds one more number that belongs to no input — the <a class="term" href="../glossary.html#bias">bias</a> — and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts, and in which direction. The bias says how much evidence the unit needs before it fires.</p>
     </div>
   </div>
 
   <figure style="margin-bottom:1.8rem">
     <div class="window"><canvas id="bar" class="bar" role="img"
       aria-label="A running total: each weighted input is added in turn, then the bias, and the result is compared with zero."></canvas></div>
-    <figcaption>The total, built one term at a time, each row picking up where the last left off.</figcaption>
+    <figcaption>The total, built one term at a time.</figcaption>
   </figure>
 
   <div class="split">
@@ -94,8 +94,8 @@
     </div>
 
     <div>
-      <p class="note">Set w₂ to zero and the second input stops mattering, whatever it is. Make it negative and that input now argues against firing. Nothing else in the unit can express a preference.</p>
-      <p class="note">Notice how little the bias cares about the input. It shifts every total by the same amount, whatever came in, which is why it is the unit's <a class="term" href="../glossary.html#threshold">threshold</a> rather than one of its opinions.</p>
+      <p class="note">Set w₂ to zero and the second input stops mattering, whatever its value. Make it negative and that input argues against firing. Nothing else in the unit can express a preference.</p>
+      <p class="note">The bias ignores the input entirely. It shifts every total by the same amount, whatever came in. That is why it acts as the unit's <a class="term" href="../glossary.html#threshold">threshold</a> rather than as one of its opinions.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> The weighted sum combines the inputs; the threshold keeps only its sign.</p>
@@ -107,7 +107,7 @@
     <div class="sec-num">2</div>
     <div>
       <h2>Where the line comes from</h2>
-      <p>Plot every possible input as a point. The inputs where the total comes to exactly zero form a straight line, and that line is the unit's decision: fire on one side, stay quiet on the other. The two weights are a direction — the arrow below points square across the line, toward the firing side — and the bias slides the line along that direction without turning it.</p>
+      <p>Plot every possible input as a point. The inputs where the total is exactly zero form a straight line, and that line is the unit's decision: fire on one side, stay quiet on the other. The two weights set a direction — the arrow below points straight across the line, toward the firing side. The bias slides the line along that arrow without turning it.</p>
     </div>
   </div>
 
@@ -125,7 +125,7 @@
         <label for="bb2">b</label><input id="bb2" type="range" min="-2" max="2" step="0.05" value="-0.85"><output id="bb2o">−0.85</output>
       </div>
       <p class="formula" id="b-formula">at (0.35, 0.65): w·x + b = 0.02</p>
-      <p class="note">Multiply all three numbers by ten and the line does not budge — the same points satisfy the same equation. Only the totals grow. The unit's answer depends on the sign of the total, never on its size, which is exactly why the step at zero throws away information a later lesson will want back.</p>
+      <p class="note">Multiply all three numbers by ten and the line does not move: the same points satisfy the same equation. Only the totals grow. The answer depends on the sign of the total, never on its size. The step at zero throws that size away — information a later lesson will want back.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Weights set the boundary’s direction, while the bias shifts its position.</p>
@@ -195,9 +195,9 @@
 
   <div class="split">
     <div>
-      <p>What the rule does not do is tell you which situation you are in. Run it on classes that no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. There is no signal in the procedure that distinguishes not yet from never. That gap between a model that cannot express something and an optimizer that keeps trying is worth holding onto; it recurs at every scale of this subject.</p>
-      <p>The other thing to keep separate is the unit from the machine. What we have been operating is one threshold unit. Rosenblatt's perceptron was a larger arrangement: a grid of input cells, a middle bank of feature detectors wired to them at random and never adjusted, and a final layer of threshold units whose weights were the only things that learned.</p>
-      <p>The next lesson keeps the single unit and points it at something closer to what that machine was built for: a small grid of <a class="term" href="../glossary.html#pixel">pixels</a> to be sorted into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after it shrinks that same limit down to a function you could draw on the back of an envelope, where it can be proved rather than demonstrated.</p>
+      <p>What the rule cannot do is tell you which situation you are in. Run it on classes no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. Nothing in the procedure distinguishes not yet from never. Keep that distinction in mind — a model that cannot express something, an optimizer that keeps trying anyway. It returns at every scale of this subject.</p>
+      <p>Keep the unit separate from the machine, too. What you have been operating is one threshold unit. Rosenblatt's perceptron was larger: a grid of input cells, a middle bank of feature detectors wired to them at random and never adjusted, and a final layer of threshold units whose weights were the only part that learned.</p>
+      <p>The next lesson keeps the single unit and gives it a task nearer to what that machine was built for: a small grid of <a class="term" href="../glossary.html#pixel">pixels</a> to sort into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after that shrinks the same limit down to a function of two inputs, where it can be proved rather than demonstrated.</p>
     </div>
 
     <div>

@@ -177,8 +177,10 @@ The landing page states no lesson count, on purpose. Its timing is an approximat
 ## Voice
 
 Lessons are written, not templated, and the prose carries as much of the teaching as the
-interactions. Long literary sentences, em dashes, British spellings (*labelled*,
-*neighbouring*, *cancelled*). Second person for what the reader does, never for what the
+interactions. The register is plain and direct — short sentences, no clause a reader has to
+hold in the air, nothing superfluous (a deliberate 2026 revision away from the earlier long
+literary style; do not drift back). Em dashes and British spellings (*labelled*,
+*neighbouring*, *cancelled*) stay. Second person for what the reader does, never for what the
 machine does. There is not an exclamation mark or a bulleted list anywhere in the lessons,
 and no hype about the technology; keep it that way.
 

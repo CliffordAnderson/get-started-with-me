@@ -62,7 +62,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     <div class="hero-intro">
       <p class="kicker">lesson 5 · expert systems</p>
       <h1>A machine you can argue with</h1>
-      <p class="lede">The last four lessons represented what was learned as numbers. Some could be interpreted — the second lesson made a weight image you could read — but they were not explicit claims about the world. This one, an <a class="term" href="../glossary.html#expert-system">expert system</a> in the language of the 1970s, keeps its knowledge as sentences. You can read its rules, disagree with them and trace which ones produced an answer. It still fails, for reasons that have nothing to do with a boundary in the wrong place.</p>
+      <p class="lede">The last four lessons stored what they learned as numbers. Some could be interpreted — the second lesson's weight image could be read — but none were explicit claims about the world. This machine, an <a class="term" href="../glossary.html#expert-system">expert system</a> in the language of the 1970s, keeps its knowledge as sentences. You can read its rules, disagree with them, and trace which ones produced an answer. It still fails — for reasons that have nothing to do with a boundary in the wrong place.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">15 rules</p>
@@ -87,7 +87,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     <div class="sec-num">1</div>
     <div>
       <h2>Knowledge you can read</h2>
-      <p>A <a class="term" href="../glossary.html#production-rule">rule</a> is an <span class="nb">IF</span>&nbsp;/&nbsp;<span class="nb">THEN</span> sentence about the world, with a number on the end saying how strongly the one supports the other. Here is the entire <a class="term" href="../glossary.html#rule-base">rule base</a> of the machine in this lesson — fifteen sentences, all of them in front of you. That is the whole of what it knows.</p>
+      <p>A <a class="term" href="../glossary.html#production-rule">rule</a> is an <span class="nb">IF</span>&nbsp;/&nbsp;<span class="nb">THEN</span> sentence about the world, with a number at the end saying how strongly the one supports the other. Here is this machine's entire <a class="term" href="../glossary.html#rule-base">rule base</a> — fifteen sentences, all in front of you. That is everything it knows.</p>
     </div>
   </div>
 
@@ -96,8 +96,8 @@ canvas.wide{aspect-ratio:auto;height:210px}
       <div class="rulebase" id="rb-list"></div>
     </div>
     <div class="stack">
-      <p>Compare it with the first lesson. That perceptron also knew exactly three numbers, and you could print them; but a weight such as <span class="nb">w₁ = 0.63</span> describes an input’s contribution rather than an explicit factual claim. Here the knowledge is in a language you already speak. If rule 9 is wrong, you can say so, and say why, and change it — and nothing else in the machine needs retraining, because nothing in the machine was trained.</p>
-      <p>This is the trade the whole approach is built on. It was called <a class="term" href="../glossary.html#knowledge-engineering">knowledge engineering</a>: sit with an expert, get the rules out of them, write the rules down. What the machine knows is what somebody told it — and the program that applies the rules, the <a class="term" href="../glossary.html#inference-engine">inference engine</a>, knows nothing about medicine whatever.</p>
+      <p>Compare the first lesson. That perceptron knew exactly three numbers, and you could print them; but a weight like <span class="nb">w₁ = 0.63</span> describes an input's contribution, not a claim about the world. Here the knowledge is in a language you already speak. If rule 9 is wrong you can say so, say why, and change it — and nothing else needs retraining, because nothing was trained.</p>
+      <p>This is the trade the whole approach is built on. It was called <a class="term" href="../glossary.html#knowledge-engineering">knowledge engineering</a>: sit with an expert, get the rules out of them, write the rules down. What the machine knows is what somebody told it — and the program that applies the rules, the <a class="term" href="../glossary.html#inference-engine">inference engine</a>, knows nothing about medicine at all.</p>
       <p class="note">These fifteen rules are a teaching reconstruction in the shape of <a class="term" href="../glossary.html#mycin">MYCIN</a>'s, not MYCIN's own. The real system had several hundred, written and revised over years with infectious disease specialists at Stanford. Nothing here is medical advice, and the therapies named are the ones a program of the middle 1970s would have reached for.</p>
     </div>
   </div>
@@ -110,7 +110,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     <div class="sec-num">2</div>
     <div>
       <h2>Working backwards</h2>
-      <p>Nobody runs the rules <a class="term" href="../glossary.html#forward-chaining">forwards</a> from everything known, because most of what could be concluded is beside the point. The machine starts from the question it was asked — what therapy? — and works back. To recommend a therapy it needs the organism; to get the organism it needs the kind of meningitis and the Gram stain; and when it runs out of rules for something, it asks you. That is <a class="term" href="../glossary.html#backward-chaining">backward chaining</a>, and it is why a consultation feels like an interrogation.</p>
+      <p>Nobody runs the rules <a class="term" href="../glossary.html#forward-chaining">forwards</a> from everything known — most of what could be concluded would be beside the point. The machine starts from the question it was asked, what therapy?, and works back. To recommend a therapy it needs the organism; to get the organism it needs the kind of meningitis and the Gram stain; and when it runs out of rules for something, it asks you. That is <a class="term" href="../glossary.html#backward-chaining">backward chaining</a>, and it is why a consultation feels like an interrogation.</p>
     </div>
   </div>
 
@@ -140,7 +140,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     </div>
     <div>
       <p>Brown means the rule fired: its premise was established well enough to pass, and it has added something to what the machine believes. Blue means the rule was reached and failed — the machine looked at it, could not establish the premise, and moved on. Faint means it was never reached at all, because nothing the machine wanted ever depended on it.</p>
-      <p>Notice how few rules are ever consulted. That is the payoff of working backwards, and it is also the first thing that makes the machine feel intelligent when it is not: it asks a small number of pointed questions, in an order that looks like judgement, and the order is nothing but the shape of the tree above.</p>
+      <p>Notice how few rules are ever consulted. That is the payoff of working backwards. It is also the first thing that makes the machine feel intelligent when it is not: a few pointed questions, in an order that looks like judgement — and the order is nothing but the shape of the tree above.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Backward chaining asks questions needed to pursue the current goal.</p>
@@ -172,11 +172,11 @@ canvas.wide{aspect-ratio:auto;height:210px}
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>This is the property the approach was really selling, and the reason it is still argued about. The machine is not just accountable in principle — you cannot merely say that its behaviour is determined by its rules, the way a network's behaviour is determined by its weights. You can be handed the specific sentences responsible for this answer, on this case, and go and check them against a textbook.</p>
+      <p>This is the property the approach was really selling, and the reason it is still argued about. The accountability is concrete, not just in principle. A network's behaviour is determined by its weights; here you can be handed the specific sentences responsible for this answer, on this case, and check them against a textbook.</p>
       <p class="cite">Edward Shortliffe, Randall Davis, Stanton Axline, Bruce Buchanan, C. Cordell Green and Stanley Cohen, &ldquo;Computer-Based Consultations in Clinical Therapeutics: Explanation and Rule Acquisition Capabilities of the MYCIN System,&rdquo; <em>Computers and Biomedical Research</em> 8 (1975), is where the explanation facility is set out. That it appears in the title, alongside rule acquisition and ahead of any claim about accuracy, is worth noticing.</p>
     </div>
     <div>
-      <p>It is worth being exact about what the derivation does and does not settle. It tells you faithfully how this answer followed from these rules. It says nothing at all about whether the rules are right. A rule base can be perfectly transparent and perfectly wrong, and the tree will explain the wrong answer with the same clarity as the right one — a point the fifth panel makes on purpose.</p>
+      <p>Be exact about what the derivation settles. It tells you faithfully how this answer followed from these rules. It says nothing about whether the rules are right. A rule base can be perfectly transparent and perfectly wrong, and the tree explains a wrong answer as clearly as a right one — a point the fifth panel makes on purpose.</p>
       <p>The contrast with a trained network is real, but it is narrower than it is usually made to sound. What you gain is not correctness. It is the ability to locate a disagreement in a particular sentence, which is what makes an argument possible at all.</p>
     </div>
   </div>
@@ -220,10 +220,10 @@ canvas.wide{aspect-ratio:auto;height:210px}
   <div class="split" style="margin-top:2.2rem">
     <div>
       <p>The rules are sensible enough. Two pieces of evidence pointing the same way reinforce each other with diminishing returns, so belief approaches 1 when both inputs are below 1. Evidence pointing opposite ways partly cancels. A premise is only as strong as its weakest conjunct, so <span class="nb">AND</span> takes the minimum. And a rule whose premise is under 0.2 does not fire at all, which stops the machine from accumulating a strong conclusion out of a heap of faint suggestions.</p>
-      <p>What the scheme buys is modularity, and that is the whole reason it exists. Each rule carries its own number, elicited from an expert on its own, and the numbers combine without anyone ever having to write down how all the evidence is jointly distributed. Asking a physician for a full <a class="term" href="../glossary.html#joint-distribution">joint distribution</a> over dozens of findings was not a thing that could be done in 1975, or now.</p>
+      <p>What the scheme buys is modularity, and that is why it exists. Each rule carries its own number, elicited from an expert on its own, and the numbers combine without anyone writing down how all the evidence is jointly distributed. Asking a physician for a full <a class="term" href="../glossary.html#joint-distribution">joint distribution</a> over dozens of findings could not be done in 1975, and cannot be done now.</p>
     </div>
     <div>
-      <p>What it costs is that the numbers do not mean what they look like they mean. A certainty factor is a measure of how much the evidence <em>shifts</em> belief, not of how likely something is, and the combining rule is exact only when the pieces of evidence are conditionally independent given the hypothesis — which, for two findings on the same patient, they generally are not. Feed it correlated evidence and it will happily double-count.</p>
+      <p>What it costs: the numbers do not mean what they appear to mean. A certainty factor measures how much the evidence <em>shifts</em> belief, not how likely something is, and the combining rule is exact only when the pieces of evidence are conditionally independent given the hypothesis — which, for two findings on the same patient, they generally are not. Feed it correlated evidence and it will happily double-count.</p>
       <p class="cite">The model is set out in Edward Shortliffe and Bruce Buchanan, &ldquo;A Model of Inexact Reasoning in Medicine,&rdquo; <em>Mathematical Biosciences</em> 23 (1975). David Heckerman, &ldquo;Probabilistic Interpretations for MYCIN's Certainty Factors&rdquo; (1986), later worked out the conditions under which the scheme agrees with probability theory, and they are restrictive. The authors of MYCIN were explicit from the start that certainty factors were not probabilities.</p>
     </div>
   </div>
@@ -236,7 +236,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
     <div class="sec-num">5</div>
     <div>
       <h2>The edge of the rule base</h2>
-      <p>The second lesson broke its classifier by moving two pixels. This machine exposes a different source of failure. Hand it a case its rules were never written for and it does not hesitate, hedge, or report that it is out of its depth. It answers, in the same tone, with the same derivation, at whatever certainty the arithmetic happens to produce.</p>
+      <p>The second lesson broke its classifier by moving two pixels. This machine fails differently. Hand it a case its rules were never written for and it does not hesitate, hedge, or report that it is out of its depth. It answers, in the same tone, with the same derivation, at whatever certainty the arithmetic happens to produce.</p>
     </div>
   </div>
 
@@ -255,7 +255,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>This is <a class="term" href="../glossary.html#brittleness">brittleness</a>: rules that work within their intended coverage can produce confident errors outside it. Learned networks can also be confidently wrong on unfamiliar inputs; their confidence is not a dependable warning that they are out of their depth. Here the error is traceable to particular rules about bacteria being applied to a patient who has a fungus, because no sentence in the system says that fungi exist.</p>
+      <p>This is <a class="term" href="../glossary.html#brittleness">brittleness</a>: rules that work within their intended coverage can produce confident errors outside it. Learned networks can also be confidently wrong on unfamiliar inputs; their confidence is not a dependable warning that they are out of their depth. Here the error can be traced to particular rules about bacteria, applied to a patient with a fungus, because no sentence in the system says that fungi exist.</p>
       <p>This rule base contains no check for cases outside its coverage. Scope checks, an explicit “unknown” answer and referral to a person can help, but they must be designed and evaluated too. A readable explanation establishes how an answer followed from the rules; it does not establish that those rules apply to this patient.</p>
     </div>
     <div>
@@ -279,7 +279,7 @@ canvas.wide{aspect-ratio:auto;height:210px}
 
   <div class="split">
     <div>
-      <p>The <a class="term" href="../glossary.html#knowledge-acquisition">knowledge acquisition</a> bottleneck is the plain observation that experts cannot simply state what they know. They can decide cases fluently and explain any particular decision, and turn out, when pressed for the general rule, to produce something they immediately want to qualify. Extracting a few hundred usable rules from that is years of work with a person whose time is scarce, and it has to be redone as the field moves. MYCIN's knowledge of antimicrobials began going out of date the moment it was written.</p>
+      <p>The <a class="term" href="../glossary.html#knowledge-acquisition">knowledge acquisition</a> bottleneck is the plain observation that experts cannot simply state what they know. They decide cases fluently and can explain any particular decision; pressed for the general rule, they produce something they immediately want to qualify. Extracting a few hundred usable rules from that takes years of work with a person whose time is scarce, and it has to be redone as the field moves. MYCIN's knowledge of antimicrobials began going out of date the moment it was written.</p>
       <p>Set against that: it worked. In a blinded evaluation published in 1979, eight specialists in infectious disease judged therapy recommendations for ten meningitis cases, not knowing which came from the program and which from the nine human prescribers. MYCIN's recommendations were rated acceptable 65% of the time; the five faculty specialists scored between 42.5% and 62.5%.</p>
     </div>
     <div>
