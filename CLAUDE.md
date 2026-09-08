@@ -110,53 +110,7 @@ That restraint is deliberate — the prose carries the teaching, and a paragraph
 links stops reading like prose. Adding a term touches three places: the entry, the
 `.gloss-jump` nav, and the first mention in each lesson that uses it.
 
-Check outbound links resolve before shipping them; a term with no good article says so rather
-than pointing somewhere approximate.
-
-## Lesson 6 is not supervised
-
-`rl.html` is the third tradition on the site: no labels and no rules, only a reward at the end of a
-journey. Its engine is a 5x5 gridworld and tabular Q-learning, and like `mycin.html` it is pure
-arithmetic with no `Plot` scatter, so it tests trivially under Node — slice from `"use strict"` down
-to the painting section, append a `module.exports`, and every number the prose quotes can be
-remeasured. Do that before touching the map or the constants: the walls are arranged so the pit is
-five moves from the start and the goal eight, which is what makes a random walker fall in twice as
-often as it arrives, and there are exactly two eight-move routes, which panel 5 depends on.
-
-Two claims here were drafted and then killed by measurement, and both traps are easy to walk back
-into:
-
-- **The textbook exploration story is false in this world.** Greedy learns the optimal route from
-  every seed, because a table of zeros has no best move and ties are broken at random, so a greedy
-  agent with an empty table *is* a random walker (65.1 steps against the random policy's 66.1).
-  Panel 4 says so and measures the cost of exploring instead. Do not restore the usual claim.
-- **Anything that makes stale values decay produces a floating-point artefact, not a finding.** An
-  early panel 5 removed the goal; the agent then oscillated between two cells whose values propped
-  each other up, decaying by 0.9 per bounce until they bottomed out at a denormal (2.5e-323) that
-  0.9 no longer changes. The tie-break needs exact equality, so it never fires and the agent loops
-  for ever. That looked like a spectacular result and is a property of IEEE 754. The shipped panel
-  adds a second, richer goal instead, which keeps the original reward alive and decays nothing.
-
-The palette carries one addition: the pit is blue because its value is negative, not red, and
-`--alert` is kept for the moment the agent falls in. The wedges of the cells around the pit go blue
-too, so the danger bleeds outward from it — that is the diverging scale doing its job, not a bug.
-
-## Lesson 5 is not a neural network
-
-`mycin.html` is the one lesson in the symbolic tradition, and it shares almost nothing with the
-others: no `Plot` scatter, no `drawPoint`, no training. What it does share is the palette and
-the discipline. Brown is a fact concluded true, blue one concluded false or a branch that
-failed, grey unknown — the same semantics as class 1 / class 0, so a derivation tree reads
-against the scatter plots without a second explanation.
-
-Its engine is pure symbol manipulation, which makes it the easiest lesson to test under Node:
-slice from `"use strict"` down to the hero IIFE, append a `module.exports`, and every claim the
-prose makes about a case can be measured directly. Do that before changing a rule — the panel 5
-cases are chosen so that two land inside the rule base and two outside, and altering a
-certainty factor can silently move one across the line.
-
-The site says *artificial intelligence*, not *machine learning*, because of this lesson. Keep
-it that way if more symbolic material arrives.
+Check outbound links resolve before shipping them; a term with no good article says so rather than pointing somewhere approximate.
 
 ## The about page
 
@@ -177,12 +131,14 @@ The landing page states no lesson count, on purpose. Its timing is an approximat
 ## Voice
 
 Lessons are written, not templated, and the prose carries as much of the teaching as the
-interactions. The register is plain and direct — short sentences, no clause a reader has to
-hold in the air, nothing superfluous (a deliberate 2026 revision away from the earlier long
-literary style; do not drift back). Em dashes and British spellings (*labelled*,
-*neighbouring*, *cancelled*) stay. Second person for what the reader does, never for what the
-machine does. There is not an exclamation mark or a bulleted list anywhere in the lessons,
-and no hype about the technology; keep it that way.
+interactions. The register is plain and direct — short sentences, no clause a reader has to hold in the air, nothing superfluous. Second person for what the reader does, never for what the machine does. There is not an exclamation mark or a bulleted list anywhere in the lessons, and no hype about the technology; keep it that way.
+
+Avoid mannered prose: writing that uses metaphor or a striking phrase where a plain 
+statement would do. Examples: "a dial worth turning" for "a parameter worth 
+varying"; "this point earns its keep" for "this point still matters." Such phrases 
+draw attention to the writing rather than the idea, and they are less precise, 
+because a metaphor carries associations the writer did not intend. When a literal 
+phrase is available, use it.
 
 The register is that of an honest instrument, and it is worth protecting:
 
