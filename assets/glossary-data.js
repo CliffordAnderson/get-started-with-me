@@ -50,6 +50,11 @@ const GLOSSARY = {
     "plain": "The rule for working out how much a change at the start of a chain of steps affects the end of it. If turning a handle twice as fast makes a wheel spin twice as fast, and that wheel turning twice as fast makes a belt move three times as fast, the handle affects the belt six times over.",
     "exact": "The rule of calculus for differentiating a composition of functions: the derivatives of the steps multiply. It is the whole mechanism behind backpropagation."
   },
+  "cosine-similarity": {
+    "title": "cosine similarity",
+    "plain": "A score for how alike two lists of numbers are, read as directions rather than sizes. Two words that keep the same company in the same proportions score near 1 even if one is common and the other rare; two with nothing in common score 0.",
+    "exact": "The cosine of the angle between two vectors: their dot product divided by the product of their lengths. On vectors already scaled to length one it is just the dot product. Lesson 8 uses it because profile direction — which company, in what proportion — is what matters there, not profile size."
+  },
   "credit-assignment": {
     "title": "credit assignment",
     "plain": "The problem of working out which of many earlier decisions is responsible for how things turned out. A journey of forty moves ends in a reward; the reward says nothing about which of the moves deserved it, and something has to apportion the praise before any of them can be improved.",
@@ -69,6 +74,11 @@ const GLOSSARY = {
     "title": "discount factor",
     "plain": "A fraction, usually written γ, that makes a reward count for slightly less the further off it is. At 0.9, something worth 1 next step is worth 0.9 from two steps away and 0.81 from three. It is the whole of what makes an agent prefer a short route to a long one, since nothing else in the arithmetic mentions distance at all.",
     "exact": "The per-step weight on future reward in the discounted return. Values near zero produce an agent that attends only to what happens next; values near one produce one that weighs the distant future almost equally and, in a task without a guaranteed end, may have no finite answer to compare. It is a choice about what the agent should care about rather than an estimate of anything in the world."
+  },
+  "distributional-hypothesis": {
+    "title": "distributional hypothesis",
+    "plain": "The observation that words used in similar surroundings tend to have related meanings — so the company a word keeps, gathered across enough text, says something about the word. It is a claim about usage, not a definition of meaning, and it holds only as far as the text it is gathered from.",
+    "exact": "In distributional semantics, the hypothesis that the degree of semantic similarity between two words tracks the similarity of their contexts. It licenses the move in lesson 8 from co-occurrence counts to comparable vectors; what it cannot do is distinguish words that share circumstances from words that share meaning, which is why a door and a mouth end up neighbours."
   },
   "episode": {
     "title": "episode",
@@ -324,6 +334,11 @@ const GLOSSARY = {
     "title": "weight initialisation",
     "plain": "What the weights are set to before any learning happens. It sounds like a detail and is not: start every weight in a layer at the same value and the units in it stay identical for ever, because identical units receive identical blame and take identical steps.",
     "exact": "Small random values are used to break that symmetry. Lesson 4 shows the failure directly — an all-zero start leaves a network that never moves at all, with a gradient that is perfectly correct and perfectly useless."
+  },
+  "word-vector": {
+    "title": "word vector",
+    "plain": "A word represented as a list of numbers, so that words become points and the distance between two words becomes something a machine can compute. Which likenesses the distances capture depends entirely on where the numbers came from.",
+    "exact": "Also called a word embedding. In lesson 8 the numbers are counted and reweighted co-occurrence statistics, fixed once built; in today's language models they are learned parameters, adjusted by gradient descent so that prediction improves, which is the difference the lesson ends on."
   },
   "xor": {
     "title": "XOR",

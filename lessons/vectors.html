@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Words as points — getstartedwith.me</title>
+<meta name="description" content="Every word in Kafka's The Trial gets a profile of the company it keeps, profiles become points, and a silent table of counts borrows from its neighbours. All computed in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+/* neighbour and profile listings are this lesson's signature figures;
+   brown tint marks company two listed words share, blue tint marks a
+   word contributed by neighbours voting rather than by an exact row */
+input[type=text]{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--rule);
+  border-radius:3px;min-height:2.5rem;padding:.3rem .6rem;flex:1;min-width:11rem;max-width:24rem}
+.tally{font-family:var(--mono);font-size:.86rem;line-height:1.75;margin:.5rem 0 0;
+  list-style:none;padding:0;max-width:24rem}
+.tally li{display:flex;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.tally .v{color:var(--ink)}
+.tally li.shared{background:rgba(138,82,6,.16)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 1.4rem}
+.cols h3{font-family:var(--mono);font-size:.86rem;font-weight:500;margin:.9rem 0 0}
+@media (max-width:560px){.cols{grid-template-columns:1fr}}
+.comp{overflow-x:auto}
+.comp table{border-collapse:collapse;font-family:var(--mono);font-size:.84rem;min-width:30rem}
+.comp caption{text-align:left;font-family:var(--sans);font-size:.85rem;color:var(--ink-2);padding:0 0 .45rem}
+.comp th,.comp td{border-bottom:1px solid rgba(199,196,182,.6);padding:.32rem .6rem;text-align:right;font-weight:400}
+.comp th[scope=row],.comp thead th:first-child{text-align:left}
+.comp thead th{color:var(--ink-2)}
+.genout{font-size:.95rem;line-height:1.8;padding:.8rem .95rem;margin:0;min-height:7em}
+.genout .said{color:var(--ink-2)}
+.lent{background:rgba(39,75,143,.16)}
+canvas.map{aspect-ratio:auto;height:400px;touch-action:auto}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+    <a class="away" href="../about.html">About</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 8 · word vectors</p>
+      <h1>Words as points</h1>
+      <p class="lede">The last lesson ended in silence: a table of counts met a pair of words it had never seen and had nothing to say — no guess, no near miss, no measure of how far off it was. This lesson builds the missing notion of a near miss from the same nine chapters of Kafka's <em>The Trial</em>. Every word is given a profile of the company it keeps; a profile is a list of numbers, a list of numbers is a point, and two points can be near or far. That distance is what the table lacked, and the last two sections measure what it buys.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout" id="hero-read">word profiles built <b>0</b></p>
+      <p class="msg" id="hero-msg">Type any word the novel uses at least five times, and its nearest neighbours are found by comparing profiles.</p>
+      <div class="row">
+        <label class="vh" for="hero-in">Word to look up</label>
+        <input type="text" id="hero-in" autocomplete="off" autocapitalize="off" value="lawyer">
+        <button class="btn" id="hero-go" type="button">Find its neighbours</button>
+      </div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window"><ul class="tally" id="hero-list"></ul></div>
+      <figcaption>The eight words whose company most resembles the typed word's, with their similarity scores. The profiles were counted from chapters one to nine when this page loaded; nothing is stored.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<details class="math-help">
+  <summary>A short guide to the numbers</summary>
+  <p>Everything on this page starts from <strong>counts</strong>: how often one word stands within two places of another in a fixed text. A count becomes a <strong>surprise</strong> by comparing it with chance: the logarithm of how often the company was seen, divided by how often random shuffling would produce it. Meeting &ldquo;the&rdquo; is never surprising, so it scores near zero however often it happens; company seen less than chance predicts is dropped. The expected rate of very rare company is nudged upward before the comparison, so one lucky meeting cannot dominate a profile.</p>
+  <p>A word's surprises, one slot per possible companion per position, form its profile — a list of 5,796 numbers, scaled so the list has length one. The <strong>similarity</strong> of two words is the angle between their profiles, measured as a cosine: multiply matching slots and add. Identical company gives 1; no shared company gives 0.</p>
+  <p>The map flattens each profile onto two fixed directions, found by repeatedly averaging the profiles when the page loads. It is a shadow of the full 5,796-number space, and distances in a shadow are approximate.</p>
+</details>
+
+<section id="rows" class="panel" role="tabpanel" aria-labelledby="tab-rows">
+  <p class="experiment-prompt"><strong>Before you try:</strong> &ldquo;lawyer&rdquo; is followed by 96 different words in this novel, &ldquo;painter&rdquo; by 77. How many of those do you expect them to share?</p>
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>Two rows the table cannot compare</h2>
+      <p>The table from the last lesson holds a row for every word it has seen: everything that ever followed it, with counts. Put two of those rows side by side and read them. You can see at once that they resemble each other — and you can see a catch in that resemblance, which the next section resolves. The table sees neither, permanently, because nothing in it ever compares one row with another.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="r-a">First word</label>
+        <input type="text" id="r-a" autocomplete="off" autocapitalize="off" value="lawyer">
+        <label class="vh" for="r-b">Second word</label>
+        <input type="text" id="r-b" autocomplete="off" autocapitalize="off" value="painter">
+        <button class="btn" id="r-go" type="button">Compare rows</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="r-p1" type="button">&ldquo;door&rdquo; and &ldquo;window&rdquo;</button>
+        <button class="btn" id="r-p2" type="button">&ldquo;said&rdquo; and &ldquo;answered&rdquo;</button>
+      </div>
+      <div class="cols">
+        <div>
+          <h3 id="r-ha">&nbsp;</h3>
+          <ul class="tally" id="r-la"></ul>
+        </div>
+        <div>
+          <h3 id="r-hb">&nbsp;</h3>
+          <ul class="tally" id="r-lb"></ul>
+        </div>
+      </div>
+      <p class="msg" id="r-msg">Each column lists the words that most often follow the word above it, counted from chapters one to nine. Shaded entries appear in both rows.</p>
+    </div>
+    <div class="stack">
+      <p class="readout" id="r-read">&nbsp;</p>
+      <p>&ldquo;lawyer&rdquo; occurs 190 times in chapters one to nine and &ldquo;painter&rdquo; 125, and their rows overlap: 30 of the 96 distinct words ever seen after &ldquo;lawyer&rdquo; also follow &ldquo;painter&rdquo;. Now the catch. Read what the shared entries are — &ldquo;and&rdquo;, &ldquo;was&rdquo;, &ldquo;had&rdquo; — words that follow almost anything, so that a raw overlap flatters every pair. The raw material of similarity is in the counts, tangled up with company that means nothing; separating the two is the next section's job. What the table itself does with any of it is simpler to state: nothing. Its only operation is looking a row up. Every word is an island, and a pair of words it never met is a place it has never been — which is exactly where the last lesson left it, silent.</p>
+      <p>One difference in bookkeeping before going on. Here &ldquo;Lawyer,&rdquo; and &ldquo;lawyer&rdquo; are the same word: capitals and surrounding punctuation are stripped. The last lesson kept them apart to stay faithful to the exact text it was quoting, and counted 8,671 distinct words; this lesson is after the words themselves, and counts 5,082.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The counts already contain the raw material of similarity — overlapping company — but the table has no operation that reads it.</p>
+</section>
+
+<section id="company" class="panel" role="tabpanel" aria-labelledby="tab-company">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Which pair should keep more similar company — &ldquo;door&rdquo; and &ldquo;window&rdquo;, or &ldquo;door&rdquo; and &ldquo;slowly&rdquo;?</p>
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>A word is its company</h2>
+      <p>Here is the whole method. For each of the 1,449 words the novel uses at least five times, walk chapters one to nine and count what stands near it: the word two places before, one before, one after, two after, each position kept separate. Every word ends up with a profile of 5,796 slots — 1,449 possible companions in each of four positions. &ldquo;lawyer&rdquo; fills 271 of them; the rest stay zero.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="c-a">First word</label>
+        <input type="text" id="c-a" autocomplete="off" autocapitalize="off" value="lawyer">
+        <label class="vh" for="c-b">Second word</label>
+        <input type="text" id="c-b" autocomplete="off" autocapitalize="off" value="painter">
+        <button class="btn" id="c-go" type="button">Compare profiles</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="c-p1" type="button">&ldquo;door&rdquo; and &ldquo;window&rdquo;</button>
+        <button class="btn" id="c-p2" type="button">&ldquo;door&rdquo; and &ldquo;slowly&rdquo;</button>
+        <button class="btn" id="c-p3" type="button">&ldquo;said&rdquo; and &ldquo;answered&rdquo;</button>
+      </div>
+      <div class="cols">
+        <div>
+          <h3 id="c-ha">&nbsp;</h3>
+          <ul class="tally" id="c-la"></ul>
+        </div>
+        <div>
+          <h3 id="c-hb">&nbsp;</h3>
+          <ul class="tally" id="c-lb"></ul>
+        </div>
+      </div>
+      <p class="msg" id="c-msg">Each column lists the profile's heaviest slots: the companion, the position it was seen in, and its weight. Shaded slots are filled in both profiles.</p>
+    </div>
+    <div class="stack">
+      <p class="readout" id="c-read">&nbsp;</p>
+      <p class="formula">surprise = log(seen &divide; expected by chance)</p>
+      <p>Raw counts would be ruled by &ldquo;the&rdquo; and &ldquo;and&rdquo;, which stand near everything and tell you nothing. So each count is turned into a surprise: how much more often the company was seen than chance alone would put it there. Meeting &ldquo;the&rdquo; scores near zero however often it happens. Meeting &ldquo;huld&rdquo; two places before — the lawyer's own name — scores high. Company seen less often than chance is dropped rather than held against the word.</p>
+      <p>The idea that a word is characterised by the distribution of its company is much older than the machinery, and is called the <a class="term" href="../glossary.html#distributional-hypothesis">distributional hypothesis</a>. The profile makes it mechanical: a list of 5,796 numbers is a <a class="term" href="../glossary.html#word-vector">word vector</a>, which is to say a point in a space with 5,796 directions. Two points can be compared. The measure used here is <a class="term" href="../glossary.html#cosine-similarity">cosine similarity</a> — the angle between the two profiles — which reaches 1 for identical company and 0 for none shared. &ldquo;lawyer&rdquo; against &ldquo;painter&rdquo; scores 0.22, closer than &ldquo;lawyer&rdquo; comes to any other word in the novel; against &ldquo;slowly&rdquo; it scores 0.05. The table's rows could never do this. The vectors do nothing else.</p>
+      <p class="cite">J. R. Firth, &ldquo;A Synopsis of Linguistic Theory 1930&ndash;1955,&rdquo; in <em>Studies in Linguistic Analysis</em> (Oxford: Blackwell, 1957): &ldquo;You shall know a word by the company it keeps.&rdquo; Firth was arguing about meaning and context between linguists, decades before anyone counted company into vectors; the sentence became the motto of the counting method all the same.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Counting and reweighting a word's company turns it into a vector, and vectors can be compared — the comparison recovers a likeness nobody labelled.</p>
+</section>
+
+<section id="map" class="panel" role="tabpanel" aria-labelledby="tab-map">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The map is drawn from company alone. What do you expect to gather around &ldquo;said&rdquo;?</p>
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>The vocabulary, drawn as a map</h2>
+      <p>A point with 5,796 coordinates cannot be drawn. What can be drawn is a shadow: every profile flattened onto two fixed directions along which the profiles spread widely, computed when this page loaded. Each dot below is one of the 1,449 words. Look one up and its nearest neighbours light up around it.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <figure>
+        <div class="window"><canvas id="m-plot" class="map" role="img"
+          aria-label="A scatter of 1,449 words drawn as points from their profiles. The looked-up word and its nearest neighbours are highlighted and labelled; a text table of them accompanies the chart."></canvas></div>
+        <figcaption>All 1,449 profiled words, flattened onto two directions. The looked-up word is the brown square; its eight nearest neighbours — nearest in the full space, not the picture — are the labelled brown dots.</figcaption>
+      </figure>
+      <div class="row" style="margin-top:.9rem">
+        <label class="vh" for="m-in">Word to place on the map</label>
+        <input type="text" id="m-in" autocomplete="off" autocapitalize="off" value="lawyer">
+        <button class="btn" id="m-go" type="button">Look it up</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="m-p1" type="button">&ldquo;said&rdquo;</button>
+        <button class="btn" id="m-p2" type="button">&ldquo;door&rdquo;</button>
+        <button class="btn" id="m-p3" type="button">&ldquo;two&rdquo;</button>
+      </div>
+    </div>
+    <div class="stack">
+      <p class="readout" id="m-read">&nbsp;</p>
+      <p>The regions have names nobody gave them. The people of the novel — lawyer, painter, businessman, priest — stand together; the ways of saying — said, asked, answered, shouted — keep to their own district; door, window, bed and table sit side by side; two, three and several make a small numeric family. Every one of these groupings is a regularity in how the words are used across nine chapters, surfaced by counting and nothing else.</p>
+      <p>Read the picture with care, in two respects. The two drawn directions were chosen by the author from among the strongest few because they spread these families visibly; a different pair gives a different picture, though the same words stay together. And a shadow compresses: words can land near each other on the map while their profiles are far apart. The neighbour list is computed in the full space — when the map and the list disagree, believe the list.</p>
+      <p class="cite">Scott Deerwester, Susan Dumais, George Furnas, Thomas Landauer and Richard Harshman, &ldquo;Indexing by Latent Semantic Analysis,&rdquo; <em>Journal of the American Society for Information Science</em> 41, no. 6 (1990). Compressing a word-by-context count table with this matrix arithmetic was introduced for searching document collections; the authors presented the recovered directions as useful for retrieval rather than as meanings.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Similar company becomes literal nearness, and the vocabulary arranges itself into families — people, rooms, ways of saying — that were never labelled.</p>
+</section>
+
+<section id="borrow" class="panel" role="tabpanel" aria-labelledby="tab-borrow">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The exact table answers about three chapter-ten positions in five. With neighbours allowed to vote, how many should it answer — and should those answers be as accurate?</p>
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Borrowed counts</h2>
+      <p>The held-out measurement from the last lesson can now be rerun with one addition. Walking chapter ten, the model asks at each position whether it has a row for the last two words. Where it does, it answers from the row, as before. Where it does not, the forty nearest neighbours of each of the two words vote: every neighbour that completes a known pair offers that row's counts, weighted by similarity, and the largest total wins. &ldquo;about nine&rdquo; has no row in the table; its neighbours reach the row for &ldquo;about eleven&rdquo;, and the vote answers &ldquo;o'clock&rdquo; — which is correct.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="comp">
+        <table>
+          <caption>Next-word prediction from two words of context, with and without borrowing</caption>
+          <thead>
+            <tr><th scope="col">model</th><th scope="col">answered</th><th scope="col">exactly right</th><th scope="col">right per answer</th></tr>
+          </thead>
+          <tbody id="b-body">
+            <tr><th scope="row">chapters it read, exact rows</th><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th scope="row">chapter ten, exact rows</th><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th scope="row">chapter ten, neighbours voting</th><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:.9rem">
+        <button class="btn" id="b-run" type="button">Run the comparison</button>
+      </div>
+      <p class="msg" id="b-msg">Walks the 81,559 two-word positions of chapters one to nine once, and the 2,085 of chapter ten twice — with exact rows only, then letting neighbours vote wherever the table is silent.</p>
+    </div>
+    <div class="stack">
+      <p>The exact table answers 60 per cent of chapter ten's positions; 13 per cent of those answers name the next word. With the vote it answers 84 per cent. The 503 borrowed answers are exactly right one time in twelve — worse than the rows the table owns, better than the silence they replace — and the misses change character: where there was nothing, there is now usually a word of the right kind. This is <a class="term" href="../glossary.html#generalisation">generalisation</a>, bought with similarity, and it is modest. On the chapters it memorised the exact table is right 56 per cent of the time, and no amount of borrowing brings chapter ten anywhere near that.</p>
+      <p class="cite">Yoshua Bengio, R&eacute;jean Ducharme, Pascal Vincent and Christian Jauvin, &ldquo;A Neural Probabilistic Language Model,&rdquo; <em>Journal of Machine Learning Research</em> 3 (2003). The influential case for giving words learned feature vectors so that similar words share what the model learns about them. The vectors there were trained jointly with the next-word prediction itself; the ones on this page are only counted, which is the smaller half of that idea.</p>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:2.2rem">
+    <div class="stack">
+      <div class="row">
+        <label class="vh" for="b-in">Words for the model to continue</label>
+        <input type="text" id="b-in" autocomplete="off" autocapitalize="off" placeholder="write a few words of your own">
+        <button class="btn" id="b-go" type="button">Continue my words</button>
+      </div>
+      <div class="window"><p class="genout" id="b-out"></p></div>
+      <p class="msg" id="b-say">Pairs the table knows are continued from exact rows. Where it is silent, the neighbours vote; words the vote contributed are shaded blue.</p>
+    </div>
+    <div class="stack">
+      <p>This is the box from the end of the last lesson, refitted. Type a pair the novel never contains and it usually no longer trades your words away for the ability to say anything at all — the neighbours vote, and the model keeps talking about what you said. The old failure is still underneath, in two layers. When no neighbour completes a known pair, the model falls back to your last word alone, dropping context exactly as before; the message under the box says so when it happens. And when your last word is one the novel never uses, the answer is still nothing, because a word with no profile has no neighbours to ask. That silence has not moved. It is the subject of the last section.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Borrowed counts replace silence with near misses — the model answers far more often, is right slightly more often, and stays far below its own memorised chapters.</p>
+</section>
+
+<section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; twice and &ldquo;computer&rdquo; never. What should the profiles be able to say about each?</p>
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>Where counting ends</h2>
+      <p>Everything on this page rests on counted company, so it ends where counting ends. This section is the honest inventory: which words got no profile at all, and what the profiles that do exist actually record.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="x-in">Word to probe</label>
+        <input type="text" id="x-in" autocomplete="off" autocapitalize="off" value="bank">
+        <button class="btn" id="x-go" type="button">Probe the word</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="x-p1" type="button">&ldquo;pillow&rdquo;</button>
+        <button class="btn" id="x-p2" type="button">&ldquo;computer&rdquo;</button>
+        <button class="btn" id="x-p3" type="button">&ldquo;mouth&rdquo;</button>
+      </div>
+      <ul class="tally" id="x-tally">
+        <li><span>sightings in chapters one to nine</span><span class="v">—</span></li>
+        <li><span>profile slots filled</span><span class="v">—</span></li>
+        <li><span>nearest neighbour</span><span class="v">—</span></li>
+      </ul>
+      <div class="window" style="margin-top:.9rem"><ul class="tally" id="x-list"></ul></div>
+      <p class="msg" id="x-msg">Reports what the model holds for the word: its count, its profile, and its neighbours — or the honest nothing.</p>
+    </div>
+    <div class="stack">
+      <p>First the coverage. Chapter ten contains 97 occurrences of words — 84 distinct ones — that the first nine chapters never use, and another 124 occurrences of words seen fewer than five times, too few for a profile. For all of these, this lesson adds nothing: no vector, no neighbours, no vote. Similarity widened the table's reach; it gave the model no way to meet a genuinely new word.</p>
+      <p>Then the neighbours that do exist, read for what they are. &ldquo;door&rdquo; and &ldquo;mouth&rdquo; score 0.22 — as high as &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; — because both get opened, shut and stood in front of. Shared company is not shared meaning. And &ldquo;bank&rdquo; sits among &ldquo;hallway&rdquo; and &ldquo;corner&rdquo;, because the only bank in this novel is the office building where K. works: a profile counted from one book records that book's usage, and nothing else. These vectors do not know English. They know <em>The Trial</em>.</p>
+      <p>Last, the vectors on this page were counted once and then fixed, and every word owns a single point no matter which of its uses is on the page. Today's language models keep this lesson's geometry and change where it comes from: their word vectors are parameters, adjusted by the machinery of lessons 1 to 4 until predicting the next word comes out better, and reconsidered in context each time a sentence is read. What carries over from this page unchanged is the idea itself — that a word can be a point, and that nearness between points can do work a table of separate rows cannot.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Profiles end where counting ends — rare words stay islands, neighbours share company rather than meaning, and similarity learned from one novel is that novel's.</p>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 8 of 8</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">Eight machines, four ideas about where knowledge comes from: a labelled example, an expert with a rule, a number that arrives late, and the order of the words in a book. More are being written.</p>
+  </div>
+</a>
+
+<footer>
+  <p>Every number on this page was computed in your browser while you read it. The novel travels with the page — the 437,868 characters of chapters one to nine and the 11,154 of chapter ten — and every profile was counted from that text after it arrived. The text is Franz Kafka's <em>The Trial</em> in David Wyllie's translation, from <a href="https://www.gutenberg.org/ebooks/7849">Project Gutenberg ebook 7849</a>; the translation is copyright © David Wyllie and is distributed under the <a href="https://www.gutenberg.org/policy/license.html">Project Gutenberg License</a>.</p>
+</footer>
+
+</main>
+<script src="../assets/corpus-trial.js"></script>
+<script src="../assets/glossary-data.js"></script>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+/* ============================================================
+   The model. Words are normalised — lower-cased, punctuation stripped
+   from the ends — so "Lawyer," and "lawyer" are one word. Each word
+   seen at least five times gets a profile: how often every vocabulary
+   word occupied each of four positions around it (two before, one
+   before, one after, two after). Counts become surprises (log of seen
+   over expected), profiles are scaled to length one, and similarity is
+   their dot product — the cosine of the angle between them.
+   ============================================================ */
+
+const tokenize = text => text.split(/\s+/).filter(Boolean);
+const normWord = s => s.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/g, "");
+const normStream = text => tokenize(text).map(normWord).filter(Boolean);
+
+const OFFSETS = [-2, -1, 1, 2];
+const OFFSET_NAMES = ["two before", "one before", "one after", "two after"];
+const MIN_COUNT = 5;      /* sightings a word needs before it gets a profile */
+const SMOOTH = 0.75;      /* damps the surprise of very rare company */
+const VOTERS = 40;        /* neighbours consulted when a pair is unseen */
+
+function wordCounts(stream){
+  const c = new Map();
+  for(const w of stream) c.set(w, (c.get(w)||0)+1);
+  return c;
+}
+
+function buildVocab(counts){
+  const vocab = Array.from(counts).filter(e => e[1] >= MIN_COUNT).map(e => e[0]).sort();
+  return { vocab: vocab, index: new Map(vocab.map((w,i) => [w,i])) };
+}
+
+/* raw profiles: for each vocabulary word, how often each vocabulary word
+   occupied each of the four surrounding positions */
+function profileCounts(stream, index){
+  const V = index.size, rows = new Map();
+  for(let i=0;i<stream.length;i++){
+    const a = index.get(stream[i]);
+    if(a === undefined) continue;
+    for(let oi=0;oi<OFFSETS.length;oi++){
+      const j = i + OFFSETS[oi];
+      if(j < 0 || j >= stream.length) continue;
+      const b = index.get(stream[j]);
+      if(b === undefined) continue;
+      let r = rows.get(a);
+      if(!r) rows.set(a, r = new Map());
+      const dim = oi*V + b;
+      r.set(dim, (r.get(dim)||0)+1);
+    }
+  }
+  return rows;
+}
+
+/* each count becomes log(seen/expected), negatives dropped. Raw surprise
+   overvalues rare company — one lucky meeting of a rare word looks
+   enormous — so the expected rate of rare company is nudged upward by
+   the SMOOTH power before comparing. Finished rows have length one. */
+function surprise(rows, V){
+  const rowSum = new Float64Array(V), colSum = new Map();
+  for(const e of rows) for(const q of e[1]){
+    rowSum[e[0]] += q[1];
+    colSum.set(q[0], (colSum.get(q[0])||0) + q[1]);
+  }
+  let total = 0;
+  const damped = new Map();
+  for(const e of colSum){ const s = Math.pow(e[1], SMOOTH); damped.set(e[0], s); total += s; }
+  const P = new Map();
+  for(const e of rows){
+    const o = new Map();
+    for(const q of e[1]){
+      const v = Math.log((q[1]/rowSum[e[0]]) / (damped.get(q[0])/total));
+      if(v > 0) o.set(q[0], v);
+    }
+    if(!o.size) continue;
+    let s = 0;
+    for(const v of o.values()) s += v*v;
+    s = Math.sqrt(s);
+    for(const k of o.keys()) o.set(k, o.get(k)/s);
+    P.set(e[0], o);
+  }
+  return P;
+}
+
+/* cosine of two unit-length sparse profiles: just the dot product */
+function cosine(P, a, b){
+  const r1 = P.get(a), r2 = P.get(b);
+  if(!r1 || !r2) return 0;
+  let dot = 0;
+  const small = r1.size <= r2.size ? r1 : r2;
+  const big = small === r1 ? r2 : r1;
+  for(const e of small){
+    const u = big.get(e[0]);
+    if(u) dot += e[1]*u;
+  }
+  return dot;
+}
+
+function neighbourList(P, V, a, k){
+  const out = [];
+  for(let b=0;b<V;b++){
+    if(b === a) continue;
+    const c = cosine(P, a, b);
+    if(c > 0.05) out.push([b, c]);
+  }
+  out.sort((x,y) => y[1]-x[1] || x[0]-y[0]);
+  return out.slice(0, k);
+}
+
+/* count tables over the normalised stream: context -> follower counts */
+function countTable(stream, k){
+  const t = new Map();
+  for(let i=k;i<stream.length;i++){
+    const ctx = stream.slice(i-k,i).join(" ");
+    let f = t.get(ctx);
+    if(!f) t.set(ctx, f = new Map());
+    f.set(stream[i], (f.get(stream[i])||0)+1);
+  }
+  return t;
+}
+
+function commonest(f){
+  let bw = null, bc = -1;
+  for(const e of f) if(e[1] > bc || (e[1] === bc && e[0] < bw)){ bw = e[0]; bc = e[1]; }
+  return bw;
+}
+
+function topEntries(f, m){
+  return Array.from(f).sort((a,b) => b[1]-a[1] || (a[0]<b[0]?-1:1)).slice(0, m);
+}
+
+/* neighbours vote: every near neighbour of either context word offers its
+   own row's counts, weighted by similarity and by the row's proportions */
+function voteFor(a, b, model){
+  const votes = new Map();
+  const add = (ctx, sim) => {
+    const f = model.T2.get(ctx);
+    if(!f) return;
+    let tot = 0;
+    for(const v of f.values()) tot += v;
+    for(const e of f) votes.set(e[0], (votes.get(e[0])||0) + sim*e[1]/tot);
+  };
+  const ia = model.index.get(a), ib = model.index.get(b);
+  if(ib !== undefined) for(const e of model.nbs(ib)) add(a+" "+model.vocab[e[0]], e[1]);
+  if(ia !== undefined) for(const e of model.nbs(ia)) add(model.vocab[e[0]]+" "+b, e[1]);
+  return votes;
+}
+
+/* one position of the walk: exact row first, then the vote if allowed */
+function predictAt(model, stream, i, useVotes){
+  const f = model.T2.get(stream[i-2]+" "+stream[i-1]);
+  if(f) return { borrowed: false, guess: commonest(f) };
+  if(!useVotes) return null;
+  const votes = voteFor(stream[i-2], stream[i-1], model);
+  if(!votes.size) return null;
+  return { borrowed: true, guess: commonest(votes) };
+}
+
+function tallyPrediction(model, stream, i, useVotes, r){
+  r.pos++;
+  const p = predictAt(model, stream, i, useVotes);
+  if(!p) return;
+  r.found++;
+  if(p.borrowed) r.borrowed++;
+  if(p.guess === stream[i]){
+    r.right++;
+    if(p.borrowed) r.borrowedRight++;
+  }
+}
+
+function predictWalk(model, stream, useVotes){
+  const r = { pos:0, found:0, right:0, borrowed:0, borrowedRight:0 };
+  for(let i=2;i<stream.length;i++) tallyPrediction(model, stream, i, useVotes, r);
+  return r;
+}
+
+/* continue the reader's words; the vote fills in where the table is silent.
+   Each produced word records its source: an exact row, the vote, or — when
+   even the neighbours had nothing — a one-word row, which drops context
+   exactly the way the last lesson did */
+function continueWords(words, n, model, rnd){
+  const out = words.slice(), lent = [];
+  for(let i=0;i<n;i++){
+    const a = out[out.length-2], b = out[out.length-1];
+    let f = a !== undefined ? model.T2.get(a+" "+b) : undefined;
+    let source = "exact";
+    if(!f){
+      const votes = a !== undefined ? voteFor(a, b, model) : new Map();
+      if(votes.size){ f = votes; source = "vote"; }
+      else {
+        f = model.T1.get(b);
+        if(!f) return { words: out.slice(words.length), lent: lent, stopped: b };
+        source = "drop";
+      }
+    }
+    let tot = 0;
+    for(const v of f.values()) tot += v;
+    let z = rnd()*tot, pick;
+    for(const e of f){ pick = e[0]; z -= e[1]; if(z <= 0) break; }
+    out.push(pick);
+    lent.push(source);
+  }
+  return { words: out.slice(words.length), lent: lent, stopped: null };
+}
+
+/* the strongest spread directions of the profiles, by power iteration with
+   a fixed seed, so every visitor computes the same map */
+function mapCoords(P, V, keep, iters){
+  const D = OFFSETS.length*V;
+  let state = 12345;
+  const rnd = () => {
+    state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+    return ((state >>> 0) / 4294967296) - 0.5;
+  };
+  const us = [], sigmas = [];
+  for(let c=0;c<keep;c++){
+    const v = new Float64Array(D);
+    for(let i=0;i<D;i++) v[i] = rnd();
+    const u = new Float64Array(V);
+    let sigma = 0;
+    for(let it=0;it<iters;it++){
+      u.fill(0);
+      for(const e of P){
+        let s = 0;
+        for(const q of e[1]) s += q[1]*v[q[0]];
+        u[e[0]] = s;
+      }
+      for(let p=0;p<us.length;p++){
+        let d = 0;
+        for(let a=0;a<V;a++) d += u[a]*us[p][a];
+        for(let a=0;a<V;a++) u[a] -= d*us[p][a];
+      }
+      let un = 0;
+      for(let a=0;a<V;a++) un += u[a]*u[a];
+      un = Math.sqrt(un) || 1;
+      for(let a=0;a<V;a++) u[a] /= un;
+      v.fill(0);
+      for(const e of P){
+        const ua = u[e[0]];
+        if(!ua) continue;
+        for(const q of e[1]) v[q[0]] += q[1]*ua;
+      }
+      let vn = 0;
+      for(let i=0;i<D;i++) vn += v[i]*v[i];
+      sigma = Math.sqrt(vn) || 1;
+      for(let i=0;i<D;i++) v[i] /= sigma;
+    }
+    us.push(Float64Array.from(u));
+    sigmas.push(sigma);
+  }
+  return { us: us, sigmas: sigmas };
+}
+
+/* xorshift, so a run is reproducible from its seed */
+function rng(seed){
+  let x = (seed * 2654435761) >>> 0 || 1;
+  return function(){
+    x ^= x << 13; x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;  x >>>= 0;
+    return x / 4294967296;
+  };
+}
+
+function buildModel(train){
+  const stream = normStream(train);
+  const counts = wordCounts(stream);
+  const vb = buildVocab(counts);
+  const P = surprise(profileCounts(stream, vb.index), vb.vocab.length);
+  const cache = new Map();
+  return {
+    stream: stream, counts: counts, vocab: vb.vocab, index: vb.index, P: P,
+    T1: countTable(stream, 1), T2: countTable(stream, 2),
+    nbs: function(a){
+      let hit = cache.get(a);
+      if(!hit) cache.set(a, hit = neighbourList(P, vb.vocab.length, a, VOTERS));
+      return hit;
+    }
+  };
+}
+
+const MODEL = buildModel(CORPUS_TRAIN);
+const HELD_STREAM = normStream(CORPUS_HELD);
+const MAP = mapCoords(MODEL.P, MODEL.vocab.length, 4, 30);
+/* the two drawn directions; chosen by the author, stated in the prose */
+const MAP_X = 1, MAP_Y = 3;
+const mapPoint = a => [MAP.sigmas[MAP_X]*MAP.us[MAP_X][a], MAP.sigmas[MAP_Y]*MAP.us[MAP_Y][a]];
+
+/* ---------------- painting and panels ---------------- */
+
+const fmt = n => n.toLocaleString("en");
+
+/* shared lookup: normalise input, explain absence in one sentence */
+function findProfiled(raw){
+  const w = normWord(raw);
+  if(!w) return { w: w, a: undefined, why: "Type a word first." };
+  const a = MODEL.index.get(w);
+  if(a !== undefined) return { w: w, a: a, why: null };
+  const c = MODEL.counts.get(w) || 0;
+  return { w: w, a: undefined, why: c === 0
+    ? "“" + w + "” never occurs in chapters one to nine, so it has no profile and no neighbours."
+    : "“" + w + "” occurs only " + plural(c, "time") + " in chapters one to nine — fewer than five, so it has no profile. Section 5 is about that." };
+}
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const input = document.getElementById("hero-in");
+  const list = document.getElementById("hero-list");
+  const msg = document.getElementById("hero-msg");
+  document.getElementById("hero-read").innerHTML = "word profiles built <b>" + fmt(MODEL.P.size) + "</b>";
+
+  function look(){
+    const q = findProfiled(input.value);
+    if(q.a === undefined){
+      list.replaceChildren();
+      msg.textContent = q.why;
+      return;
+    }
+    input.value = q.w;
+    list.replaceChildren(...MODEL.nbs(q.a).slice(0, 8).map(e => {
+      const li = document.createElement("li");
+      const name = document.createElement("span"), v = document.createElement("span");
+      name.textContent = MODEL.vocab[e[0]];
+      v.className = "v"; v.textContent = e[1].toFixed(2);
+      li.append(name, v);
+      return li;
+    }));
+    msg.textContent = "The nearest neighbours of “" + q.w + "”, by the similarity of their company across " +
+      fmt(MODEL.stream.length) + " words of text.";
+    announce(msg.textContent);
+  }
+
+  document.getElementById("hero-go").addEventListener("click", look);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); look(); } });
+  look();
+})();
+
+/* =================== 1. rows side by side =================== */
+
+(function rowsPanel(){
+  const ia = document.getElementById("r-a"), ib = document.getElementById("r-b");
+  const ha = document.getElementById("r-ha"), hb = document.getElementById("r-hb");
+  const la = document.getElementById("r-la"), lb = document.getElementById("r-lb");
+  const read = document.getElementById("r-read"), msg = document.getElementById("r-msg");
+
+  function column(ul, f, other){
+    ul.replaceChildren(...topEntries(f, 10).map(e => {
+      const li = document.createElement("li");
+      if(other.has(e[0])) li.className = "shared";
+      const name = document.createElement("span"), v = document.createElement("span");
+      name.textContent = e[0];
+      v.className = "v"; v.textContent = e[1];
+      li.append(name, v);
+      return li;
+    }));
+  }
+
+  function compare(){
+    const wa = normWord(ia.value), wb = normWord(ib.value);
+    const fa = wa && MODEL.T1.get(wa), fb = wb && MODEL.T1.get(wb);
+    if(!fa || !fb){
+      const missing = !fa ? wa : wb;
+      msg.textContent = missing
+        ? "“" + missing + "” never occurs in chapters one to nine, so the table has no row for it."
+        : "Type two words from the novel.";
+      return;
+    }
+    ia.value = wa; ib.value = wb;
+    ha.textContent = "after “" + wa + "”";
+    hb.textContent = "after “" + wb + "”";
+    column(la, fa, fb);
+    column(lb, fb, fa);
+    let shared = 0;
+    for(const w of fa.keys()) if(fb.has(w)) shared++;
+    read.innerHTML = "“" + wa + "” <b>" + fmt(MODEL.counts.get(wa)) + "</b> occurrences · “" +
+      wb + "” <b>" + fmt(MODEL.counts.get(wb)) + "</b>";
+    msg.textContent = "“" + wa + "” has " + fa.size + " distinct followers and “" + wb + "” has " +
+      fb.size + "; they share " + shared + ". Shaded entries appear in both rows — visible to you, unread by the table.";
+    announce(msg.textContent);
+  }
+
+  document.getElementById("r-go").addEventListener("click", compare);
+  [ia, ib].forEach(el => el.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); compare(); } }));
+  [["r-p1","door","window"],["r-p2","said","answered"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { ia.value = b[1]; ib.value = b[2]; compare(); });
+  });
+  compare();
+})();
+
+/* =================== 2. profiles and similarity =================== */
+
+(function companyPanel(){
+  const ia = document.getElementById("c-a"), ib = document.getElementById("c-b");
+  const ha = document.getElementById("c-ha"), hb = document.getElementById("c-hb");
+  const la = document.getElementById("c-la"), lb = document.getElementById("c-lb");
+  const read = document.getElementById("c-read"), msg = document.getElementById("c-msg");
+
+  function column(ul, a, other){
+    const row = MODEL.P.get(a);
+    ul.replaceChildren(...Array.from(row).sort((x,y) => y[1]-x[1]).slice(0, 8).map(e => {
+      const li = document.createElement("li");
+      if(other.has(e[0])) li.className = "shared";
+      const name = document.createElement("span"), v = document.createElement("span");
+      const V = MODEL.vocab.length;
+      name.textContent = MODEL.vocab[e[0] % V] + " · " + OFFSET_NAMES[(e[0]/V)|0];
+      v.className = "v"; v.textContent = e[1].toFixed(2);
+      li.append(name, v);
+      return li;
+    }));
+  }
+
+  function compare(){
+    const qa = findProfiled(ia.value), qb = findProfiled(ib.value);
+    if(qa.a === undefined || qb.a === undefined){
+      msg.textContent = (qa.a === undefined ? qa : qb).why;
+      return;
+    }
+    ia.value = qa.w; ib.value = qb.w;
+    ha.textContent = "profile of “" + qa.w + "”";
+    hb.textContent = "profile of “" + qb.w + "”";
+    column(la, qa.a, MODEL.P.get(qb.a));
+    column(lb, qb.a, MODEL.P.get(qa.a));
+    const sim = cosine(MODEL.P, qa.a, qb.a);
+    read.innerHTML = "similarity <b>" + sim.toFixed(2) + "</b>";
+    msg.textContent = "“" + qa.w + "” fills " + MODEL.P.get(qa.a).size + " of the 5,796 slots and “" +
+      qb.w + "” " + MODEL.P.get(qb.a).size + ". The cosine of the angle between the two profiles is " + sim.toFixed(2) + ".";
+    announce(msg.textContent);
+  }
+
+  document.getElementById("c-go").addEventListener("click", compare);
+  [ia, ib].forEach(el => el.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); compare(); } }));
+  [["c-p1","door","window"],["c-p2","door","slowly"],["c-p3","said","answered"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { ia.value = b[1]; ib.value = b[2]; compare(); });
+  });
+  compare();
+})();
+
+/* ======================== 3. the map ======================== */
+
+(function mapPanel(){
+  const V = MODEL.vocab.length;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for(const e of MODEL.P){
+    const q = mapPoint(e[0]);
+    x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]);
+    y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]);
+  }
+  const mx = (x1-x0)*0.07, my = (y1-y0)*0.07;
+  const p = Plot(document.getElementById("m-plot"), [x0-mx, x1+mx, y0-my, y1+my]);
+  const input = document.getElementById("m-in");
+  const read = document.getElementById("m-read");
+  let picked = null;
+
+  function render(){
+    const g = p.ctx;
+    g.clearRect(0,0,p.w,p.h);
+    g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+    g.fillStyle = "rgba(34,38,44,.30)";
+    for(const e of MODEL.P){
+      if(picked && (e[0] === picked.a || picked.set.has(e[0]))) continue;
+      const q = mapPoint(e[0]);
+      g.beginPath(); g.arc(p.X(q[0]), p.Y(q[1]), 1.8, 0, Math.PI*2); g.fill();
+    }
+    if(!picked) return;
+    for(const e of picked.nbs){
+      const q = mapPoint(e[0]);
+      g.fillStyle = C.on;
+      g.beginPath(); g.arc(p.X(q[0]), p.Y(q[1]), 3.4, 0, Math.PI*2); g.fill();
+    }
+    const q = mapPoint(picked.a);
+    const x = p.X(q[0]), y = p.Y(q[1]);
+    g.fillStyle = C.on;
+    g.beginPath();
+    if(g.roundRect) g.roundRect(x-5, y-5, 10, 10, 2.5); else g.rect(x-5, y-5, 10, 10);
+    g.fill();
+
+    /* labels: dots stay where the shadow puts them, but a tight cluster
+       stacks its labels into a legible column, tied back by leader lines */
+    g.font = '400 11px "IBM Plex Mono", monospace';
+    g.textBaseline = "middle";
+    const right = x <= p.w/2;   /* put the column on the emptier side */
+    const spots = picked.nbs.map(e => {
+      const w = mapPoint(e[0]);
+      return { word: MODEL.vocab[e[0]], x: p.X(w[0]), y: p.Y(w[1]) };
+    }).sort((a,b) => a.y - b.y);
+    const step = 15;
+    let at = -Infinity;
+    for(const s of spots){
+      const ly = clamp(Math.max(s.y, at + step), 10, p.h - 8);
+      at = ly;
+      const lx = right ? x + 26 : x - 26;
+      g.strokeStyle = "rgba(138,82,6,.45)"; g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(s.x + (right ? 4 : -4), s.y);
+      g.lineTo(lx + (right ? -4 : 4), ly);
+      g.stroke();
+      g.fillStyle = C.ink;
+      g.textAlign = right ? "left" : "right";
+      g.fillText(s.word, lx, ly);
+    }
+    g.fillStyle = C.ink;
+    g.font = '500 12px "IBM Plex Mono", monospace';
+    g.textAlign = right ? "right" : "left";
+    g.fillText(MODEL.vocab[picked.a], x + (right ? -9 : 9), y);
+  }
+
+  function look(){
+    const q = findProfiled(input.value);
+    if(q.a === undefined){
+      read.textContent = q.why;
+      announce(q.why);
+      return;
+    }
+    input.value = q.w;
+    const nbs = MODEL.nbs(q.a).slice(0, 8);
+    picked = { a: q.a, nbs: nbs, set: new Set(nbs.map(e => e[0])) };
+    read.innerHTML = "“" + q.w + "” — <b>" + fmt(MODEL.counts.get(q.w)) + "</b> sightings, nearest “" +
+      MODEL.vocab[nbs[0][0]] + "” at " + nbs[0][1].toFixed(2);
+    figureTable("m-plot", "Nearest neighbours of “" + q.w + "”, with map coordinates",
+      ["Word","Similarity","x","y"],
+      [[q.w, "—", mapPoint(q.a)[0].toFixed(3), mapPoint(q.a)[1].toFixed(3)]].concat(
+        nbs.map(e => [MODEL.vocab[e[0]], e[1].toFixed(2), mapPoint(e[0])[0].toFixed(3), mapPoint(e[0])[1].toFixed(3)])));
+    render();
+    announce(read.textContent);
+  }
+
+  document.getElementById("m-go").addEventListener("click", look);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); look(); } });
+  [["m-p1","said"],["m-p2","door"],["m-p3","two"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { input.value = b[1]; look(); });
+  });
+  redraws.push(() => { p.fit(); render(); });
+  look();
+})();
+
+/* ==================== 4. borrowed counts ==================== */
+
+(function borrowPanel(){
+  const section = document.getElementById("borrow");
+  const body = document.getElementById("b-body");
+  const msg = document.getElementById("b-msg");
+  const input = document.getElementById("b-in");
+  const out = document.getElementById("b-out");
+  const say = document.getElementById("b-say");
+  let contSeed = 4100;
+
+  function fill(rowIdx, r){
+    const cells = body.querySelectorAll("tr")[rowIdx].querySelectorAll("td");
+    cells[0].textContent = (100*r.found/r.pos).toFixed(1) + "%";
+    cells[1].textContent = (100*r.right/r.pos).toFixed(1) + "%";
+    cells[2].textContent = r.found ? (100*r.right/r.found).toFixed(1) + "%" : "—";
+  }
+
+  function run(){
+    const A = { pos:0, found:0, right:0, borrowed:0, borrowedRight:0 };
+    const B = { pos:0, found:0, right:0, borrowed:0, borrowedRight:0 };
+    const Cv = { pos:0, found:0, right:0, borrowed:0, borrowedRight:0 };
+    const n1 = MODEL.stream.length - 2, n2 = HELD_STREAM.length - 2;
+    runChunks(section, n1 + n2 + n2, i => {
+      if(i < n1) tallyPrediction(MODEL, MODEL.stream, i+2, false, A);
+      else if(i < n1+n2) tallyPrediction(MODEL, HELD_STREAM, i-n1+2, false, B);
+      else tallyPrediction(MODEL, HELD_STREAM, i-n1-n2+2, true, Cv);
+    }).then(done => {
+      if(!done) return;
+      fill(0, A); fill(1, B); fill(2, Cv);
+      msg.textContent = "On chapter ten the exact rows answer " + (100*B.found/B.pos).toFixed(1) +
+        " per cent of the " + fmt(B.pos) + " positions. The vote adds " + fmt(Cv.borrowed) +
+        " borrowed answers, of which " + Cv.borrowedRight + " name the next word exactly — " +
+        (100*Cv.borrowedRight/Cv.borrowed).toFixed(1) + " per cent of what was borrowed, against " +
+        (100*B.right/B.found).toFixed(1) + " per cent for the rows the table owns.";
+      msg.classList.add("hit");
+      announce(msg.textContent);
+    });
+  }
+
+  function go(){
+    const words = normStream(input.value);
+    if(!words.length){
+      say.textContent = "Type a few words first.";
+      return;
+    }
+    const res = continueWords(words, 30, MODEL, rng(contSeed++));
+    if(!res.words.length){
+      out.textContent = "";
+      say.textContent = "“" + res.stopped + "” never occurs in chapters one to nine. No row, no profile, no neighbours to ask — the model still has nothing. Section 5 is about this edge.";
+    } else {
+      const lead = document.createElement("span");
+      lead.className = "said";
+      lead.textContent = words.join(" ") + " ";
+      out.replaceChildren(lead, ...res.words.map((w, i) => {
+        const s = document.createElement("span");
+        s.textContent = w + (i < res.words.length-1 ? " " : "");
+        if(res.lent[i] === "vote") s.className = "lent";
+        return s;
+      }));
+      const votes = res.lent.filter(s => s === "vote").length;
+      const drops = res.lent.filter(s => s === "drop").length;
+      const parts = [];
+      if(votes) parts.push(plural(votes, "shaded word") + " came from neighbours voting where the table had no row; the rest came from exact rows.");
+      else if(!drops) parts.push("Every pair along the way had an exact row, so no counts were borrowed.");
+      if(drops) parts.push("At " + plural(drops, "point") + " even the neighbours had nothing to offer, and it fell back to the last word alone — the old trade.");
+      if(res.stopped) parts.push("It stopped at “" + res.stopped + "”, which has no row and no profile.");
+      say.textContent = parts.join(" ");
+    }
+    announce(say.textContent);
+  }
+
+  document.getElementById("b-run").addEventListener("click", run);
+  document.getElementById("b-go").addEventListener("click", go);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); go(); } });
+})();
+
+/* ==================== 5. where counting ends ==================== */
+
+(function limitsPanel(){
+  const input = document.getElementById("x-in");
+  const tally = document.getElementById("x-tally").querySelectorAll(".v");
+  const list = document.getElementById("x-list");
+  const msg = document.getElementById("x-msg");
+
+  function probe(){
+    const w = normWord(input.value);
+    if(!w){
+      msg.textContent = "Type a word first.";
+      return;
+    }
+    input.value = w;
+    const c = MODEL.counts.get(w) || 0;
+    const a = MODEL.index.get(w);
+    tally[0].textContent = fmt(c);
+    if(a === undefined){
+      tally[1].textContent = "none";
+      tally[2].textContent = "none";
+      list.replaceChildren();
+      msg.textContent = c === 0
+        ? "“" + w + "” never occurs in chapters one to nine. The model holds nothing for it: no count, no profile, no neighbours, and nothing for the vote to work with."
+        : "“" + w + "” occurs " + plural(c, "time") + " — fewer than five, so no profile was built. The sightings exist in the table's rows, but the word has no vector and stays an island.";
+    } else {
+      const nbs = MODEL.nbs(a).slice(0, 8);
+      tally[1].textContent = fmt(MODEL.P.get(a).size) + " of 5,796";
+      tally[2].textContent = MODEL.vocab[nbs[0][0]] + " (" + nbs[0][1].toFixed(2) + ")";
+      list.replaceChildren(...nbs.map(e => {
+        const li = document.createElement("li");
+        const name = document.createElement("span"), v = document.createElement("span");
+        name.textContent = MODEL.vocab[e[0]];
+        v.className = "v"; v.textContent = e[1].toFixed(2);
+        li.append(name, v);
+        return li;
+      }));
+      msg.textContent = "“" + w + "” has a profile and neighbours. Read them as shared company in this novel — not as meanings, and not as anything the model knows about English.";
+    }
+    announce(msg.textContent);
+  }
+
+  document.getElementById("x-go").addEventListener("click", probe);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); probe(); } });
+  [["x-p1","pillow"],["x-p2","computer"],["x-p3","mouth"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { input.value = b[1]; probe(); });
+  });
+  probe();
+})();
+
+initPanels([
+  ["rows","Two similar rows"], ["company","A word is its company"],
+  ["map","The map"], ["borrow","Borrowed counts"],
+  ["limits","Where counting ends"]
+]);
+</script>
+</body>
+</html>

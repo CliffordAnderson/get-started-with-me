@@ -11,9 +11,11 @@ lessons/backprop.html   lesson 4 — where the weights come from
 lessons/mycin.html      lesson 5 — knowledge written down instead of learned
 lessons/rl.html         lesson 6 — learning from delayed rewards
 lessons/nextword.html   lesson 7 — a language model built from counting
+lessons/vectors.html    lesson 8 — words as points, from the same novel
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting, panels and reading/experiment tools
 assets/glossary-data.js generated offline definitions
+assets/corpus-trial.js  the fixed corpus shared by lessons 7 and 8
 scripts/               dependency-free source and numerical checks
 ```
 
@@ -87,11 +89,12 @@ so a plot that does not register will render one pixel wide when its panel opens
   as many fresh examples as it needs and a held-out set is genuinely held out. `images.html`
   keeps its picture generator and its 12×12 canvas painters inline, since nothing else uses
   them; only machinery shared by more than one lesson belongs in `assets/lesson.js`.
-  Lesson 7 is the one place raw data ships with a page: its corpus is a fixed novel
-  (*The Trial*, Wyllie translation, Project Gutenberg ebook 7849, embedded as two
-  `type="text/plain"` blocks), every table is counted from that text in the browser, and
-  chapter ten is kept in a separate block that no table ever reads, so it stays held out.
-  The Gutenberg attribution in that lesson's footer is a license condition; keep it.
+  Lessons 7 and 8 are the one place raw data ships with a page: their corpus is a fixed
+  novel (*The Trial*, Wyllie translation, Project Gutenberg ebook 7849), held in
+  `assets/corpus-trial.js` as two string constants because two lessons share it. Every
+  table and every profile is counted from `CORPUS_TRAIN` in the browser; `CORPUS_HELD`
+  is chapter ten, read only to measure predictions, never to make them, so it stays held
+  out. The Gutenberg attribution in both lessons' footers is a license condition; keep it.
 - One trained model per lesson, in a single mutable object the panels all read. A panel that
   retrains it changes what the later panels show, which is the honest behaviour — panels that
   can be reached with an untrained model say so rather than reporting a meaningless score.

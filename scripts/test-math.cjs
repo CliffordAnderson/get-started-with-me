@@ -81,11 +81,11 @@ assert.ok(calls.includes('fillRect') && calls.includes('arc'),'visible grid must
 console.log('PASS: hidden-grid geometry and subsequent visible-grid rendering.');
 
 // Lesson 7: the n-gram engine, its corpus split, and every number its prose quotes.
+const corpusSource=readFileSync(path.join(root,'assets/corpus-trial.js'),'utf8');
 const nwHtml=readFileSync(path.join(root,'lessons/nextword.html'),'utf8');
-const corpus={};
-for(const m of nwHtml.matchAll(/<script id="(corpus-[a-z]+)" type="text\/plain">\n([\s\S]*?)\n<\/script>/g))corpus[m[1]]=m[2];
 const nwSource=nwHtml.split('"use strict";')[1].split('/* ---------------- painting and panels')[0];
-const nwContext=vm.createContext({Math,document:{getElementById:id=>({textContent:corpus[id]})}});
+const nwContext=vm.createContext({Math});
+vm.runInContext(corpusSource,nwContext);
 vm.runInContext(nwSource+'\nglobalThis.nw={tokenize,wordTable,topFollowers,generateWords,charTable,generateChars,forcedShare,windowSet,verbatimShare,predictShare,continueFrom,rng,TRAIN,HELD,TOKENS,HELD_TOKENS,TABLES,sentenceStart};',nwContext);
 const nw=nwContext.nw;
 assert.equal(nw.TRAIN.length,437868);assert.equal(nw.HELD.length,11154);
@@ -129,3 +129,63 @@ assert.equal(nw.continueFrom(nw.tokenize('he opened the door'),5,nw.rng(5)).k,3)
 assert.equal(nw.continueFrom(nw.tokenize('completely absurd nonsense here'),5,nw.rng(5)).k,1);
 assert.equal(nw.continueFrom(nw.tokenize('zzzq'),5,nw.rng(5)).k,0);
 console.log('PASS: corpus split, table sizes, forced shares, held-out collapse, verbatim shares, hero claim, and continuation backoff.');
+
+// Lesson 8: the profile engine, the borrowing walk, and every number its prose quotes.
+const wvHtml=readFileSync(path.join(root,'lessons/vectors.html'),'utf8');
+const wvSource=wvHtml.split('"use strict";')[1].split('/* ---------------- painting and panels')[0];
+const wvContext=vm.createContext({Math});
+vm.runInContext(corpusSource,wvContext);
+vm.runInContext(wvSource+'\nglobalThis.wv={normWord,normStream,cosine,voteFor,commonest,predictWalk,continueWords,mapCoords,rng,MODEL,HELD_STREAM,MAP,mapPoint};',wvContext);
+const wv=wvContext.wv,M=wv.MODEL;
+// "counted from the same nine chapters": streams, vocabulary, profile dimensions
+assert.equal(M.stream.length,81561);assert.equal(wv.HELD_STREAM.length,2087);
+assert.equal(M.counts.size,5082);
+assert.equal(M.vocab.length,1449);assert.equal(4*M.vocab.length,5796);
+assert.equal(M.P.size,1449,'every vocabulary word must end up with a profile');
+// "lawyer" row facts: 190 and 125 occurrences, 96 and 77 distinct followers sharing 30
+assert.equal(M.counts.get('lawyer'),190);assert.equal(M.counts.get('painter'),125);
+const fLawyer=M.T1.get('lawyer'),fPainter=M.T1.get('painter');
+assert.equal(fLawyer.size,96);assert.equal(fPainter.size,77);
+{let shared=0;for(const w of fLawyer.keys())if(fPainter.has(w))shared++;assert.equal(shared,30);}
+// profile and similarity numbers: 271 slots, 0.22 / 0.05 / 0.22 cosines
+const iw=w=>M.index.get(w);
+assert.equal(M.P.get(iw('lawyer')).size,271);
+assert.equal(wv.cosine(M.P,iw('lawyer'),iw('painter')).toFixed(2),'0.22');
+assert.equal(wv.cosine(M.P,iw('lawyer'),iw('slowly')).toFixed(2),'0.05');
+assert.equal(wv.cosine(M.P,iw('door'),iw('mouth')).toFixed(2),'0.22');
+// "painter" is the word nearest to "lawyer"
+assert.equal(M.vocab[M.nbs(iw('lawyer'))[0][0]],'painter');
+// the "about nine" example: no row, but the vote answers "o'clock"
+assert.ok(!M.T2.has('about nine'));
+assert.equal(wv.commonest(wv.voteFor('about','nine',M)),"o'clock");
+// the borrowing table: 56% memorised, 60/8 exact on held, 84/10 with votes, 503 borrowed with 42 right
+const wa=wv.predictWalk(M,M.stream,false);
+assert.equal((100*wa.right/wa.pos).toFixed(1),'55.8');assert.equal(wa.found,wa.pos);
+const wb=wv.predictWalk(M,wv.HELD_STREAM,false);
+assert.equal((100*wb.found/wb.pos).toFixed(1),'60.2');
+assert.equal((100*wb.right/wb.pos).toFixed(1),'8.0');
+assert.equal((100*wb.right/wb.found).toFixed(1),'13.2');
+const wc=wv.predictWalk(M,wv.HELD_STREAM,true);
+assert.equal((100*wc.found/wc.pos).toFixed(1),'84.3');
+assert.equal((100*wc.right/wc.pos).toFixed(1),'10.0');
+assert.equal(wc.borrowed,503);assert.equal(wc.borrowedRight,42);
+// coverage on chapter ten: 97 tokens of 84 unseen words, plus 124 below the profile threshold
+{let ut=0,thin=0;const ud=new Set();
+ for(const w of wv.HELD_STREAM){const c=M.counts.get(w)||0;if(c===0){ut++;ud.add(w);}else if(c<5)thin++;}
+ assert.equal(ut,97);assert.equal(ud.size,84);assert.equal(thin,124);}
+// the map is deterministic and its drawn coordinates are finite
+{const again=wv.mapCoords(M.P,M.vocab.length,4,30);
+ assert.deepEqual(again.sigmas,wv.MAP.sigmas);
+ for(const e of M.P){const q=wv.mapPoint(e[0]);assert.ok(Number.isFinite(q[0])&&Number.isFinite(q[1]));}}
+// continuation borrows where the table is silent, admits dropping context when
+// even the neighbours are silent, and still stops at an unknown word
+{const r=wv.continueWords(wv.normStream('k. answered slowly'),30,M,wv.rng(4100));
+ assert.ok(r.words.length>0);assert.ok(r.lent.includes('vote'));}
+{const r=wv.continueWords(wv.normStream('the trial dragged'),30,M,wv.rng(4100));
+ assert.ok(r.words.length>0);assert.ok(r.lent.includes('drop'));}
+{const r=wv.continueWords(wv.normStream('the zzzq'),20,M,wv.rng(5));
+ assert.equal(r.words.length,0);assert.equal(r.stopped,'zzzq');}
+// seeded continuation repeats
+assert.equal(wv.continueWords(wv.normStream('the painter was'),20,M,wv.rng(31)).words.join(' '),
+             wv.continueWords(wv.normStream('the painter was'),20,M,wv.rng(31)).words.join(' '));
+console.log('PASS: profile counts, similarity scores, nearest-neighbour claims, borrowing gains, held-out coverage, map determinism, and continuation borrowing.');

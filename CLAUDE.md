@@ -89,9 +89,10 @@ Generated in the browser from a seeded PRNG rather than checked in. This is what
 draw as many fresh examples as it wants and keeps a held-out set genuinely held out — see
 `makeSet` in `images.html`, where training and test sets come from disjoint seed ranges. Never
 inline a precomputed result to save the work. The one sanctioned exception is raw source
-material: `nextword.html` embeds its corpus (a Project Gutenberg novel, with a license-required
-attribution in the footer) as two `type="text/plain"` blocks — chapters 1–9 for counting,
-chapter 10 held out — and still counts every table from it in the browser.
+material: lessons 7 and 8 share a corpus (a Project Gutenberg novel, with a license-required
+attribution in both footers), held in `assets/corpus-trial.js` as two string constants —
+chapters 1–9 for counting, chapter 10 held out — and still count every table and profile
+from it in the browser.
 
 ## Inserting a lesson in the middle
 

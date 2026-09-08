@@ -1,3 +1,20 @@
+# Lesson 8: word vectors — September 2026
+
+- Added `lessons/vectors.html`: distributional word vectors counted from the corpus lesson 7
+  ships. Five panels — follower rows the table cannot compare, positional profiles reweighted
+  by surprise and compared by cosine, a two-direction map of the 1,449 profiled words, the
+  chapter-ten prediction walk rerun with neighbours voting where the table is silent, and an
+  inventory of what counting cannot reach.
+- Moved the shared novel out of lesson 7's `text/plain` blocks into `assets/corpus-trial.js`
+  (two string constants, unchanged text), since two lessons now read it. Lesson 7's behaviour
+  and all of its checked numbers are unchanged.
+- Added glossary entries for cosine similarity, the distributional hypothesis and word vector;
+  extended the numerical checks to cover every number lesson 8's prose quotes, including the
+  borrowing gains (503 borrowed answers, 42 exactly right) and the map's determinism.
+- Verified in headless Chrome: all five panels compute, the browser walk reproduces the Node
+  numbers exactly, and map labels stack legibly instead of overlapping. Screen-reader and
+  manual mobile testing were not performed.
+
 # Review update — September 2026
 
 - Corrected claims about finite training budgets, neural-network confidence, interpretability,
