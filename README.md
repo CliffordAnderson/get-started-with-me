@@ -10,6 +10,7 @@ lessons/xor.html        lesson 3 — where one unit runs out
 lessons/backprop.html   lesson 4 — where the weights come from
 lessons/mycin.html      lesson 5 — knowledge written down instead of learned
 lessons/rl.html         lesson 6 — learning from delayed rewards
+lessons/nextword.html   lesson 7 — a language model built from counting
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting, panels and reading/experiment tools
 assets/glossary-data.js generated offline definitions
@@ -86,6 +87,11 @@ so a plot that does not register will render one pixel wide when its panel opens
   as many fresh examples as it needs and a held-out set is genuinely held out. `images.html`
   keeps its picture generator and its 12×12 canvas painters inline, since nothing else uses
   them; only machinery shared by more than one lesson belongs in `assets/lesson.js`.
+  Lesson 7 is the one place raw data ships with a page: its corpus is a fixed novel
+  (*The Trial*, Wyllie translation, Project Gutenberg ebook 7849, embedded as two
+  `type="text/plain"` blocks), every table is counted from that text in the browser, and
+  chapter ten is kept in a separate block that no table ever reads, so it stays held out.
+  The Gutenberg attribution in that lesson's footer is a license condition; keep it.
 - One trained model per lesson, in a single mutable object the panels all read. A panel that
   retrains it changes what the later panels show, which is the honest behaviour — panels that
   can be reached with an untrained model say so rather than reporting a meaningless score.
@@ -155,7 +161,11 @@ and JavaScript syntax. The second runs the shipped mathematical engines: all nin
 components against numerical derivatives, late training successes, zero-weight symmetry,
 seed reproducibility, the eight-move route, its discounted value and the distinction between
 an untried action and a tried action still valued at zero. It also checks that hidden-grid geometry
-never supplies a negative canvas radius or prevents the following visible-grid redraw.
+never supplies a negative canvas radius or prevents the following visible-grid redraw. For
+lesson 7 it verifies the corpus split and every number the prose quotes — table sizes,
+forced-continuation shares, verbatim-quotation shares at fixed seeds, the collapse of
+prediction accuracy on the held-out chapter, and the hero caption's claim that every
+three-word run of a generated passage occurs in the novel.
 
 The supplied update passed these checks. Browser rendering and assistive-technology behavior
 have not been manually verified. Before publishing, check the dialog, focus changes, reading

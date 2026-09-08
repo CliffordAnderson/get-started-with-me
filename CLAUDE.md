@@ -88,7 +88,10 @@ positive, so it reads against the scatter plots without a second explanation.
 Generated in the browser from a seeded PRNG rather than checked in. This is what lets a lesson
 draw as many fresh examples as it wants and keeps a held-out set genuinely held out — see
 `makeSet` in `images.html`, where training and test sets come from disjoint seed ranges. Never
-inline a precomputed result to save the work.
+inline a precomputed result to save the work. The one sanctioned exception is raw source
+material: `nextword.html` embeds its corpus (a Project Gutenberg novel, with a license-required
+attribution in the footer) as two `type="text/plain"` blocks — chapters 1–9 for counting,
+chapter 10 held out — and still counts every table from it in the browser.
 
 ## Inserting a lesson in the middle
 

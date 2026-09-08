@@ -160,6 +160,11 @@ const GLOSSARY = {
     "plain": "The right answer attached to an example, put there by somebody who already knew it. A picture of a cat carries the label cat.",
     "exact": "The target value the machine is asked to reproduce. Having labels is what makes a problem supervised."
   },
+  "language-model": {
+    "title": "language model",
+    "plain": "A machine whose one task is to predict the next word from the words so far. Anything that can do this can also write: predict a word, add it, predict again. How well it predicts is a measure of how much of the language's regularity it has absorbed.",
+    "exact": "A probability distribution over the next symbol given the preceding ones — equivalently, over whole sequences. Lesson 7's tables of counts are the simplest estimate of one; modern systems instead learn the distribution with neural networks trained on very large bodies of text."
+  },
   "learning-rate": {
     "title": "learning rate",
     "plain": "How big a step to take each time you adjust the weights. Small steps are reliable but slow; large ones are quick until they start jumping clean over the thing they were aiming at.",
@@ -189,6 +194,11 @@ const GLOSSARY = {
     "title": "MYCIN",
     "plain": "A program written at Stanford in the early 1970s to recommend antibiotic therapy for bacterial infections. It put questions to a physician, applied several hundred rules, and produced a recommendation with a certainty attached and a derivation available on request.",
     "exact": "Edward Shortliffe’s doctoral work, supervised by Bruce Buchanan and Stanley Cohen, written in Lisp and developed over five or six years. In a blinded evaluation published in 1979 its meningitis recommendations were judged acceptable more often than those of the five faculty specialists it was compared against. It was never used on a patient. Counts of its rules differ by source and by year, the base having grown throughout; figures of roughly 450 and roughly 600 are both given."
+  },
+  "n-gram": {
+    "title": "n-gram",
+    "plain": "A run of n consecutive items from a text — letters or words. Counting how often each one occurs turns a text into a table: the first n−1 items are a context, and the counts record what came next, and how often.",
+    "exact": "A model that predicts the next item from the previous n−1, using those counts, is an n-gram model. Its table grows as n does while the count in each row shrinks, which is the trade lesson 7 measures."
   },
   "parity": {
     "title": "parity",

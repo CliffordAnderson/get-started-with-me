@@ -79,3 +79,53 @@ let visibleDrawn=false;
 assert.ok(visibleDrawn);
 assert.ok(calls.includes('fillRect') && calls.includes('arc'),'visible grid must draw its cells and agent');
 console.log('PASS: hidden-grid geometry and subsequent visible-grid rendering.');
+
+// Lesson 7: the n-gram engine, its corpus split, and every number its prose quotes.
+const nwHtml=readFileSync(path.join(root,'lessons/nextword.html'),'utf8');
+const corpus={};
+for(const m of nwHtml.matchAll(/<script id="(corpus-[a-z]+)" type="text\/plain">\n([\s\S]*?)\n<\/script>/g))corpus[m[1]]=m[2];
+const nwSource=nwHtml.split('"use strict";')[1].split('/* ---------------- painting and panels')[0];
+const nwContext=vm.createContext({Math,document:{getElementById:id=>({textContent:corpus[id]})}});
+vm.runInContext(nwSource+'\nglobalThis.nw={tokenize,wordTable,topFollowers,generateWords,charTable,generateChars,forcedShare,windowSet,verbatimShare,predictShare,continueFrom,rng,TRAIN,HELD,TOKENS,HELD_TOKENS,TABLES,sentenceStart};',nwContext);
+const nw=nwContext.nw;
+assert.equal(nw.TRAIN.length,437868);assert.equal(nw.HELD.length,11154);
+assert.ok(!nw.TRAIN.includes(nw.HELD.slice(0,80)),'held-out chapter must not appear in the training text');
+assert.equal(nw.TOKENS.length,81571);assert.equal(nw.HELD_TOKENS.length,2087);
+assert.equal(new Set(nw.TOKENS).size,8671);
+assert.deepEqual([1,2,3,4].map(k=>nw.TABLES[k].size),[8670,44143,71449,79503]);
+assert.equal(nw.TABLES[1].get('the').length,4341);
+assert.equal(JSON.stringify(nw.topFollowers(nw.TABLES[1].get('the'),3)),JSON.stringify([['lawyer',94],['door',88],['court',82]]));
+assert.equal(new Set(nw.TRAIN).size,66);
+assert.equal(nw.charTable(nw.TRAIN,1).size,66);
+assert.equal(nw.charTable(nw.TRAIN,3).size,5893);
+assert.equal(nw.charTable(nw.TRAIN,7).size,149419);
+// "81 per cent of two-word contexts were only ever followed by one thing; 94 at three; 98.5 at four"
+assert.deepEqual([1,2,3,4].map(k=>{const f=nw.forcedShare(nw.TABLES[k]);return (100*f.forced/f.contexts).toFixed(1);}),['56.0','81.1','93.6','98.5']);
+// "about nine times in ten" on read text; "once in seven" and "once in fifty" on chapter ten
+const p3a=nw.predictShare(nw.TABLES[3],3,nw.TOKENS),p3b=nw.predictShare(nw.TABLES[3],3,nw.HELD_TOKENS);
+assert.equal((100*p3a.right/p3a.positions).toFixed(1),'89.9');
+assert.equal((100*p3b.known/p3b.positions).toFixed(1),'15.3');
+assert.equal((100*p3b.right/p3b.positions).toFixed(1),'2.0');
+// "almost none / about a fifth / roughly five in six / nearly all" verbatim six-word windows
+const seen6=nw.windowSet(nw.TOKENS,6);
+assert.deepEqual([1,2,3,4].map(k=>{
+  const r=nw.rng(9000);
+  return nw.verbatimShare(seen6,nw.generateWords(nw.TOKENS,nw.TABLES[k],k,2000,r,nw.sentenceStart(r)),6).hits;
+}),[1,448,1637,1960]);
+// the hero's caption: every three-word run of a two-word-context sample is in the novel
+const seen3=nw.windowSet(nw.TOKENS,3);
+for(let seed=11;seed<=30;seed++){
+  const r=nw.rng(seed);
+  const g=nw.generateWords(nw.TOKENS,nw.TABLES[2],2,60,r,nw.sentenceStart(r));
+  const v=nw.verbatimShare(seen3,g,3);
+  assert.equal(v.hits,v.total,'three-word-run claim, seed '+seed);
+}
+// 172 of chapter ten's words occur nowhere in chapters one to nine
+{const vocab=new Set(nw.TOKENS);let u=0;for(const w of nw.HELD_TOKENS)if(!vocab.has(w))u++;assert.equal(u,172);}
+// seeded generation repeats; the continue box backs off and can come up empty-handed
+assert.equal(nw.generateWords(nw.TOKENS,nw.TABLES[3],3,50,nw.rng(42),100).join(' '),
+             nw.generateWords(nw.TOKENS,nw.TABLES[3],3,50,nw.rng(42),100).join(' '));
+assert.equal(nw.continueFrom(nw.tokenize('he opened the door'),5,nw.rng(5)).k,3);
+assert.equal(nw.continueFrom(nw.tokenize('completely absurd nonsense here'),5,nw.rng(5)).k,1);
+assert.equal(nw.continueFrom(nw.tokenize('zzzq'),5,nw.rng(5)).k,0);
+console.log('PASS: corpus split, table sizes, forced shares, held-out collapse, verbatim shares, hero claim, and continuation backoff.');
