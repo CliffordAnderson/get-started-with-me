@@ -12,10 +12,11 @@ lessons/mycin.html      lesson 5 — knowledge written down instead of learned
 lessons/rl.html         lesson 6 — learning from delayed rewards
 lessons/nextword.html   lesson 7 — a language model built from counting
 lessons/vectors.html    lesson 8 — words as points, from the same novel
+lessons/embeddings.html lesson 9 — where those points come from when they are learned
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting, panels and reading/experiment tools
 assets/glossary-data.js generated offline definitions
-assets/corpus-trial.js  the fixed corpus shared by lessons 7 and 8
+assets/corpus-trial.js  the fixed corpus shared by lessons 7, 8 and 9
 scripts/               dependency-free source and numerical checks
 ```
 
@@ -89,12 +90,14 @@ so a plot that does not register will render one pixel wide when its panel opens
   as many fresh examples as it needs and a held-out set is genuinely held out. `images.html`
   keeps its picture generator and its 12×12 canvas painters inline, since nothing else uses
   them; only machinery shared by more than one lesson belongs in `assets/lesson.js`.
-  Lessons 7 and 8 are the one place raw data ships with a page: their corpus is a fixed
+  Lessons 7, 8 and 9 are the one place raw data ships with a page: their corpus is a fixed
   novel (*The Trial*, Wyllie translation, Project Gutenberg ebook 7849), held in
-  `assets/corpus-trial.js` as two string constants because two lessons share it. Every
-  table and every profile is counted from `CORPUS_TRAIN` in the browser; `CORPUS_HELD`
-  is chapter ten, read only to measure predictions, never to make them, so it stays held
-  out. The Gutenberg attribution in both lessons' footers is a license condition; keep it.
+  `assets/corpus-trial.js` as two string constants because three lessons share it. Every
+  table, every profile and every training position is derived from `CORPUS_TRAIN` in the
+  browser; `CORPUS_HELD` is chapter ten, read only to measure predictions, never to make
+  them, so it stays held out. Lesson 9 trains its network in the page from small random
+  numbers — no weights are shipped. The Gutenberg attribution in all three lessons'
+  footers is a license condition; keep it.
 - One trained model per lesson, in a single mutable object the panels all read. A panel that
   retrains it changes what the later panels show, which is the honest behaviour — panels that
   can be reached with an untrained model say so rather than reporting a meaningless score.
@@ -130,8 +133,13 @@ for every visualisation. Result announcements are debounced to avoid reading eve
 
 ## Repeatable experiments
 
-The backpropagation restart batch and the reinforcement-learning batches have an editable
-**Experiment seed**. The same seed and settings repeat a batch; **New seed** chooses the next
+The backpropagation restart batch, the reinforcement-learning batches and lesson 9's
+training run have an editable **Experiment seed**. Lesson 9 derives both the initial weights
+and the shuffling order from it, so the same seed repeats a run exactly; **Train three more
+epochs** continues the same network rather than starting a new one, and its result therefore
+depends on the sequence of buttons pressed. Sections 4 and 5 read whatever state section 3
+has left, and say plainly when that state is untrained rather than reporting a meaningless
+score. The same seed and settings repeat a batch; **New seed** chooses the next
 seed. The random-walk button replaces its previous batch, rather than accumulating it.
 Backpropagation and reinforcement learning also have a starting-seed restart control;
 this reloads and clears the lesson. Reproduce interactive runs by following the same controls
@@ -169,6 +177,13 @@ lesson 7 it verifies the corpus split and every number the prose quotes — tabl
 forced-continuation shares, verbatim-quotation shares at fixed seeds, the collapse of
 prediction accuracy on the held-out chapter, and the hero caption's claim that every
 three-word run of a generated passage occurs in the novel.
+
+Lesson 9's checks train the shipped network for six epochs over all 47,782 positions, so
+`test-math.cjs` now takes about forty seconds rather than three. That run reproduces the
+numbers the lesson's prose quotes — 6.00 and 6.25 bits of surprise, 187 of 1,102 held-out
+words, and the 873 / 150 / 148 / 229 / 39 split against the count table — and a gradient
+check on a small network compares every analytic derivative the shipped `learn` uses with a
+numerical one.
 
 The supplied update passed these checks. Browser rendering and assistive-technology behavior
 have not been manually verified. Before publishing, check the dialog, focus changes, reading

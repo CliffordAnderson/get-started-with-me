@@ -210,6 +210,11 @@ const GLOSSARY = {
     "plain": "A run of n consecutive items from a text — letters or words. Counting how often each one occurs turns a text into a table: the first n−1 items are a context, and the counts record what came next, and how often.",
     "exact": "A model that predicts the next item from the previous n−1, using those counts, is an n-gram model. Its table grows as n does while the count in each row shrinks, which is the trade lesson 7 measures."
   },
+  "one-hot-encoding": {
+    "title": "one-hot encoding",
+    "plain": "The plainest way to hand a word, or any other category, to a machine that only multiplies numbers: give each possible value its own slot, and write a one in that slot and a zero in all the others. It records which value this is and nothing else about it.",
+    "exact": "A vector of length V with a single 1 at the index of the represented item. Any two distinct items are orthogonal, so their dot product is 0 and the distance between them is √2 whichever pair is chosen; the encoding therefore supplies no notion of similarity. Multiplying a one-hot vector by a weight matrix selects one row of that matrix, which is why the first layer of a network fed one-hot words is a lookup table of learnable vectors."
+  },
   "parity": {
     "title": "parity",
     "plain": "Whether the number of switches that are on is odd or even. With two inputs it is the same question as XOR; with a hundred inputs it is the same question asked of a hundred switches.",
@@ -269,6 +274,11 @@ const GLOSSARY = {
     "title": "sigmoid",
     "plain": "A dial in place of a switch. Instead of jumping from 0 to 1 at a threshold, it slides smoothly between them, so a small change to the inputs makes a small change to the answer rather than none or all of it.",
     "exact": "Here, the logistic function σ(z) = 1 / (1 + exp(−z)). Its mathematical values lie strictly between 0 and 1, and its derivative is σ(z)(1−σ(z)). An output in this interval is not automatically a calibrated probability or confidence score; finite-precision calculations may round to an endpoint."
+  },
+  "softmax": {
+    "title": "softmax",
+    "plain": "A way of turning a list of scores into a list of probabilities. The bigger scores end up with the larger shares, every share is positive, and the shares add to one, so the result can be read as the machine's opinion about which of several answers is right.",
+    "exact": "For scores z, the softmax gives exp(z_i) divided by the sum of exp(z_j) over all j. It generalises the sigmoid from two outcomes to many. Adding a constant to every score leaves the result unchanged, which is what lets an implementation subtract the largest score before taking exponentials without altering the answer. The output is a probability distribution over the listed options and says nothing about whether the right answer is among them."
   },
   "squared-error": {
     "title": "squared error",

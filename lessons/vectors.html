@@ -266,7 +266,7 @@ canvas.map{aspect-ratio:auto;height:400px;touch-action:auto}
 </section>
 
 <section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
-  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; twice and &ldquo;computer&rdquo; never. What should the profiles be able to say about each?</p>
+  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; three times and &ldquo;computer&rdquo; never. What should the profiles be able to say about each?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
@@ -298,18 +298,38 @@ canvas.map{aspect-ratio:auto;height:400px;touch-action:auto}
     <div class="stack">
       <p>First the coverage. Chapter ten contains 97 occurrences of words — 84 distinct ones — that the first nine chapters never use, and another 124 occurrences of words seen fewer than five times, too few for a profile. For all of these, this lesson adds nothing: no vector, no neighbours, no vote. Similarity widened the table's reach; it gave the model no way to meet a genuinely new word.</p>
       <p>Then the neighbours that do exist, read for what they are. &ldquo;door&rdquo; and &ldquo;mouth&rdquo; score 0.22 — as high as &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; — because both get opened, shut and stood in front of. Shared company is not shared meaning. And &ldquo;bank&rdquo; sits among &ldquo;hallway&rdquo; and &ldquo;corner&rdquo;, because the only bank in this novel is the office building where K. works: a profile counted from one book records that book's usage, and nothing else. These vectors do not know English. They know <em>The Trial</em>.</p>
-      <p>Last, the vectors on this page were counted once and then fixed, and every word owns a single point no matter which of its uses is on the page. Today's language models keep this lesson's geometry and change where it comes from: their word vectors are parameters, adjusted by the machinery of lessons 1 to 4 until predicting the next word comes out better, and reconsidered in context each time a sentence is read. What carries over from this page unchanged is the idea itself — that a word can be a point, and that nearness between points can do work a table of separate rows cannot.</p>
+      <p>Last, the vectors on this page were counted once and then fixed, and every word owns a single point no matter which of its uses is on the page. Today's language models keep this lesson's geometry and change where it comes from: their word vectors are parameters, adjusted by the machinery of lessons 1 to 4 until predicting the next word comes out better, and reconsidered in context each time a sentence is read. What carries over from this page unchanged is the idea itself — that a word can be a point, and that nearness between points can do work a table of separate rows cannot. The next lesson makes exactly that change on this same novel: it hands the next-word question to a network, lets backpropagation fill in a table of word vectors instead of counting one, and measures which of the two comes out better.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Profiles end where counting ends — rare words stay islands, neighbours share company rather than meaning, and similarity learned from one novel is that novel's.</p>
 </section>
 
-<a class="nextup" href="../index.html">
+<a class="nextup" href="embeddings.html">
   <div>
-    <p class="lab">Lesson 8 of 8</p>
-    <span class="ttl">Back to all lessons</span>
-    <p class="say">Eight machines, four ideas about where knowledge comes from: a labelled example, an expert with a rule, a number that arrives late, and the order of the words in a book. More are being written.</p>
+    <p class="lab">Next lesson</p>
+    <span class="ttl">A column for every word</span>
+    <p class="say">The profiles on this page were counted and then left alone. The next lesson gets word vectors the other way round: a network is trained on the next-word question, and the table of vectors is what its first layer of weights turns into.</p>
   </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+    <rect x="12" y="14" width="60" height="90" fill="#EFEDE5"/>
+    <g fill="#D7D4C7">
+      <rect x="18" y="20" width="48" height="6"/><rect x="18" y="32" width="48" height="6"/>
+      <rect x="18" y="56" width="48" height="6"/><rect x="18" y="68" width="48" height="6"/>
+      <rect x="18" y="80" width="48" height="6"/><rect x="18" y="92" width="48" height="6"/>
+    </g>
+    <rect x="18" y="44" width="48" height="6" fill="#8A5206"/>
+    <g stroke="#22262C" stroke-width="1.4" fill="none" stroke-linecap="round">
+      <path d="M72 47H100"/><path d="M96 43l6 4-6 4"/>
+    </g>
+    <g fill="#274B8F">
+      <rect x="108" y="38" width="10" height="8"/><rect x="132" y="38" width="10" height="8"/>
+      <rect x="120" y="48" width="10" height="8"/><rect x="144" y="48" width="10" height="8"/>
+    </g>
+    <g fill="#8A5206">
+      <rect x="120" y="38" width="10" height="8"/><rect x="144" y="38" width="10" height="8"/>
+      <rect x="108" y="48" width="10" height="8"/><rect x="132" y="48" width="10" height="8"/>
+    </g>
+  </svg>
 </a>
 
 <footer>

@@ -173,6 +173,9 @@ assert.equal(wc.borrowed,503);assert.equal(wc.borrowedRight,42);
 {let ut=0,thin=0;const ud=new Set();
  for(const w of wv.HELD_STREAM){const c=M.counts.get(w)||0;if(c===0){ut++;ud.add(w);}else if(c<5)thin++;}
  assert.equal(ut,97);assert.equal(ud.size,84);assert.equal(thin,124);}
+// the words both lessons' final prompts name: "pillow" three times, "computer" never
+assert.equal(M.counts.get('pillow'),3);
+assert.equal(M.counts.get('computer'),undefined);
 // the map is deterministic and its drawn coordinates are finite
 {const again=wv.mapCoords(M.P,M.vocab.length,4,30);
  assert.deepEqual(again.sigmas,wv.MAP.sigmas);
@@ -189,3 +192,120 @@ assert.equal(wc.borrowed,503);assert.equal(wc.borrowedRight,42);
 assert.equal(wv.continueWords(wv.normStream('the painter was'),20,M,wv.rng(31)).words.join(' '),
              wv.continueWords(wv.normStream('the painter was'),20,M,wv.rng(31)).words.join(' '));
 console.log('PASS: profile counts, similarity scores, nearest-neighbour claims, borrowing gains, held-out coverage, map determinism, and continuation borrowing.');
+
+// Lesson 9: the neural next-word model, its gradients, and every number its prose quotes.
+const emHtml=readFileSync(path.join(root,'lessons/embeddings.html'),'utf8');
+const emSource=emHtml.split('"use strict";')[1].split('/* ---------------- painting and panels')[0];
+const emContext=vm.createContext({Math});
+vm.runInContext(corpusSource,emContext);
+vm.runInContext(emSource+'\nglobalThis.em={makeNet,forward,learn,workspace,shuffled,score,seeded,'
+  +'rowCos,learnedNeighbours,countedNeighbours,countTable,commonest,normStream,'
+  +'TRAIN_STREAM,HELD_STREAM,COUNTS,VOCAB,INDEX,TRAIN_CASES,HELD_CASES,PROF,T2,'
+  +'VSIZE,DIM,HIDDEN,LR,EPOCHS};',emContext);
+const em=emContext.em;
+// the same corpus as lessons 7 and 8, cut down to the 600 commonest words
+assert.equal(em.TRAIN_STREAM.length,81561);assert.equal(em.HELD_STREAM.length,2087);
+assert.equal(em.COUNTS.size,5082);assert.equal(em.VOCAB.length,600);
+assert.equal(em.VOCAB[em.VOCAB.length-1],'middle');
+assert.equal(em.COUNTS.get('middle'),16);
+assert.equal(em.TRAIN_CASES.length/3,47782);assert.equal(em.HELD_CASES.length/3,1102);
+// "600 slots account for 84 per cent of the words in chapters one to nine"
+{let c=0;for(const w of em.TRAIN_STREAM)if(em.INDEX.has(w))c++;
+ assert.equal((100*c/em.TRAIN_STREAM.length).toFixed(1),'84.1');}
+// "403 of the 2,087 words, 326 distinct ones, fall outside the vocabulary"
+{let out=0;const d=new Set();
+ for(const w of em.HELD_STREAM)if(!em.INDEX.has(w)){out++;d.add(w);}
+ assert.equal(out,403);assert.equal(d.size,326);
+ assert.equal(em.HELD_STREAM.length-2-em.HELD_CASES.length/3,983);}
+// "30,456 weights: 9,600 in the table, 20,856 in the two layers above it"
+{const n=em.makeNet(em.VSIZE,em.DIM,em.HIDDEN,1);
+ assert.equal(n.E.length,9600);
+ assert.equal(n.W1.length+n.b1.length+n.W2.length+n.b2.length,20856);
+ assert.equal(n.E.length+n.W1.length+n.b1.length+n.W2.length+n.b2.length,30456);}
+// A derivative error would invalidate the training run the whole lesson rests on.
+// learn() folds the learning rate into every update, so dividing the weight
+// change by it recovers the analytic gradient the shipped code actually used.
+{const V=12,D=4,H=5,a=3,b=7,c=5;
+ const before=em.makeNet(V,D,H,99),after=em.makeNet(V,D,H,99);
+ em.learn(after,a,b,c,1,em.workspace(after));
+ const loss=(key,i,delta)=>{const n=em.makeNet(V,D,H,99);n[key][i]+=delta;
+   const h=new Float64Array(H),p=new Float64Array(V);em.forward(n,a,b,h,p);return -Math.log(p[c]);};
+ const eps=1e-6;
+ for(const key of ['E','W1','b1','W2','b2'])
+   for(let i=0;i<before[key].length;i++){
+     const analytic=before[key][i]-after[key][i];
+     const numeric=(loss(key,i,eps)-loss(key,i,-eps))/(2*eps);
+     assert.ok(Math.abs(numeric-analytic)<1e-6,'gradient mismatch '+key+'['+i+']');
+   }}
+// the one-hot claim in section 1: distinct words never share a slot, so every
+// pair of encodings has dot product 0 and distance root two
+assert.equal(new Set(em.VOCAB).size,600);
+{const dot=(x,y)=>x===y?1:0;
+ assert.equal(dot(em.INDEX.get('lawyer'),em.INDEX.get('painter')),0);
+ assert.equal(dot(em.INDEX.get('lawyer'),em.INDEX.get('the')),0);
+ assert.equal(Math.sqrt(2).toFixed(2),'1.41');}
+// section 6's prompt and its worked examples
+assert.equal(em.COUNTS.get('pillow'),3);
+assert.equal(em.COUNTS.get('computer'),undefined);
+assert.equal(em.INDEX.get('pillow'),undefined,'"pillow" must fall outside the 600');
+// counting, as lesson 8 did, still puts "painter" nearest to "lawyer"
+assert.equal(em.VOCAB[em.countedNeighbours(em.PROF,em.VSIZE,em.INDEX.get('lawyer'),1)[0][0]],'painter');
+// the training run the prose quotes: seed 1, six epochs over all 47,782 positions
+function trainRun(seed,epochs){
+  const net=em.makeNet(em.VSIZE,em.DIM,em.HIDDEN,seed),work=em.workspace(net);
+  const rnd=em.seeded((seed*2654435761)>>>0),N=em.TRAIN_CASES.length/3,hist=[];
+  for(let e=0;e<epochs;e++){
+    const order=em.shuffled(N,rnd);let loss=0;
+    for(let i=0;i<N;i++){const t=order[i]*3;
+      loss+=em.learn(net,em.TRAIN_CASES[t],em.TRAIN_CASES[t+1],em.TRAIN_CASES[t+2],em.LR,work);}
+    net.epochs++;
+    const s=em.score(net,em.HELD_CASES);
+    hist.push({train:loss/N/Math.LN2,held:s.bits,right:s.right});
+  }
+  return {net,hist};
+}
+const run=trainRun(1,em.EPOCHS);
+const last=run.hist[run.hist.length-1];
+assert.equal(last.train.toFixed(2),'6.00');
+assert.equal(last.held.toFixed(2),'6.25');
+assert.equal(last.right,187);
+assert.equal(Math.round(Math.pow(2,last.held)),76);
+// held-out surprise falls but stops improving; training surprise keeps falling
+assert.ok(run.hist[0].held>run.hist[em.EPOCHS-1].held,'held surprise should fall overall');
+assert.ok(run.hist.every((h,i)=>i===0||h.train<run.hist[i-1].train),'training surprise should fall every epoch');
+assert.ok(run.hist.some((h,i)=>i>0&&h.held>run.hist[i-1].held),'held surprise should rise at least once');
+// section 5: the network answers all 1,102 positions at much the same rate
+// whether or not the count table has a row for the context
+{const net=run.net,h=new Float64Array(net.H),p=new Float64Array(net.V);
+ let pos=0,row=0,tableRight=0,netOnRow=0,blank=0,netOnBlank=0,net_=0;
+ for(let i=2;i<em.HELD_STREAM.length;i++){
+   const a=em.INDEX.get(em.HELD_STREAM[i-2]),b=em.INDEX.get(em.HELD_STREAM[i-1]),c=em.INDEX.get(em.HELD_STREAM[i]);
+   if(a===undefined||b===undefined||c===undefined)continue;
+   pos++;em.forward(net,a,b,h,p);
+   let best=0;for(let o=1;o<net.V;o++)if(p[o]>p[best])best=o;
+   const ok=best===c;if(ok)net_++;
+   const f=em.T2.get(em.HELD_STREAM[i-2]+' '+em.HELD_STREAM[i-1]);
+   if(f){row++;if(em.commonest(f)===em.HELD_STREAM[i])tableRight++;if(ok)netOnRow++;}
+   else{blank++;if(ok)netOnBlank++;}
+ }
+ assert.equal(pos,1102);assert.equal(row,873);assert.equal(blank,229);
+ assert.equal(tableRight,150);assert.equal(netOnRow,148);assert.equal(netOnBlank,39);
+ assert.equal(net_,187);
+ assert.equal((100*tableRight/row).toFixed(1),'17.2');
+ assert.equal((100*tableRight/pos).toFixed(1),'13.6');
+ assert.equal((100*netOnRow/row).toFixed(1),'17.0');
+ assert.equal((100*netOnBlank/blank).toFixed(1),'17.0');}
+// section 4's quoted neighbours, at the default seed
+{const near=(w,k)=>em.learnedNeighbours(run.net,em.INDEX.get(w),k).map(e=>em.VOCAB[e[0]]).join(' ');
+ assert.equal(near('said',4),'answered asked added shouted');
+ assert.equal(near('he',2),'k she');
+ assert.equal(near('lawyer',2),'painter priest');
+ // "door" comes out well under both methods; "hand" puts "hands" first either way
+ assert.equal(near('door',2),'doorway window');
+ assert.equal(near('hand',1),'hands');
+ assert.equal(em.VOCAB[em.countedNeighbours(em.PROF,em.VSIZE,em.INDEX.get('hand'),1)[0][0]],'arm');}
+// a seeded run repeats exactly, which is what the experiment seed promises
+{const a=trainRun(3,1),b=trainRun(3,1);
+ assert.deepEqual(Array.from(a.net.E),Array.from(b.net.E),'seeded training must reproduce');
+ assert.notDeepEqual(Array.from(a.net.E),Array.from(trainRun(4,1).net.E),'a different seed must differ');}
+console.log('PASS: vocabulary coverage, weight counts, every gradient of a small network against numerical derivatives, the quoted training run, the held-out comparison, quoted neighbours, and seed reproducibility.');

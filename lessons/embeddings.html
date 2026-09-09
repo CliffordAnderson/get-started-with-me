@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A column for every word — getstartedwith.me</title>
+<meta name="description" content="A word enters a network as a vector of 600 slots with one 1 in it. The first weight matrix then holds one column per word, and backpropagation fills that table in. All trained in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+/* this lesson's signature figures are the sparse input vector and the
+   dense table behind it, so both get a canvas; the listings borrow
+   lesson 8's tally so the two lessons' neighbour lists read alike */
+input[type=text]{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--rule);
+  border-radius:3px;min-height:2.5rem;padding:.3rem .6rem;flex:1;min-width:11rem;max-width:24rem}
+.tally{font-family:var(--mono);font-size:.86rem;line-height:1.75;margin:.5rem 0 0;
+  list-style:none;padding:0;max-width:24rem}
+.tally li{display:flex;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.tally .v{color:var(--ink)}
+.tally li.shared{background:rgba(138,82,6,.16)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 1.4rem}
+.cols h3{font-family:var(--mono);font-size:.86rem;font-weight:500;margin:.9rem 0 0}
+@media (max-width:560px){.cols{grid-template-columns:1fr}}
+canvas.hot{aspect-ratio:auto;height:150px}
+canvas.slab{aspect-ratio:auto;height:250px}
+canvas.curve{aspect-ratio:auto;height:270px}
+.comp{overflow-x:auto}
+.comp table{border-collapse:collapse;font-family:var(--mono);font-size:.84rem;min-width:28rem}
+.comp caption{text-align:left;font-family:var(--sans);font-size:.85rem;color:var(--ink-2);padding:0 0 .45rem}
+.comp th,.comp td{border-bottom:1px solid rgba(199,196,182,.6);padding:.32rem .6rem;text-align:right;font-weight:400}
+.comp th[scope=row],.comp thead th:first-child{text-align:left}
+.comp thead th{color:var(--ink-2)}
+.walk{font-family:var(--mono);font-size:.84rem;line-height:1.8;padding:.7rem .9rem;margin:0;max-height:15rem;overflow-y:auto}
+.walk div{border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.walk .ctx{color:var(--ink-2)}
+.walk .ok{color:var(--ink);background:rgba(138,82,6,.16)}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+    <a class="away" href="../about.html">About</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 9 · learned word vectors</p>
+      <h1>A column for every word</h1>
+      <p class="lede">The last lesson counted a profile for every word and found that nearness between profiles does work a table of counts cannot. Those profiles were counted once and then fixed. This lesson gets word vectors the other way: it hands the network from lesson 4 the next-word question from lesson 7, and lets <a class="term" href="../glossary.html#backpropagation">backpropagation</a> decide what the numbers should be. The first thing to settle is how a word gets into a machine that only multiplies numbers.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout" id="hero-read">slot <b>—</b> of 600</p>
+      <p class="msg" id="hero-msg">Type any of the 600 commonest words in chapters one to nine of the novel.</p>
+      <div class="row">
+        <label class="vh" for="hero-in">Word to encode</label>
+        <input type="text" id="hero-in" autocomplete="off" autocapitalize="off" value="lawyer">
+        <button class="btn" id="hero-go" type="button">Encode the word</button>
+      </div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="window"><canvas id="hero-hot" class="hot" role="img"
+        aria-label="A grid of 600 cells, one for each word the network knows. Every cell is empty except the single filled cell standing for the typed word."></canvas></div>
+      <figcaption>The typed word as the network receives it: 600 numbers, 599 of them zero. This is a <a class="term" href="../glossary.html#one-hot-encoding">one-hot encoding</a>, and it is the same picture for every word but for which cell is filled.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<details class="math-help">
+  <summary>A short guide to the numbers</summary>
+  <p>A word arrives as 600 numbers: zero in every slot but its own, where it is one. Multiplying that vector by a table of weights adds up 600 rows with 599 of them multiplied by zero, so the answer is simply the one row belonging to that word. That row is the word's <a class="term" href="../glossary.html#word-vector">vector</a> — sixteen numbers here — and it is a <a class="term" href="../glossary.html#weight">weight</a> like any other weight in the network.</p>
+  <p>The network reads two words, adds up their rows through sixteen weights each into 32 <a class="term" href="../glossary.html#sigmoid">sigmoid</a> units, and turns those into a score for each of the 600 words it could say next. The scores become probabilities by the <a class="term" href="../glossary.html#softmax">softmax</a>: raise each to a power of <em>e</em> and divide by the total, so they are positive and add to one.</p>
+  <p>Training measures <strong>surprise</strong>: how many halvings of certainty the true next word cost, which is zero when the network was sure and large when it was blindsided. That number in bits is what the curve in section 3 plots. Six bits of surprise per word means the network was, on average, as unsure as someone choosing evenly among sixty-four words.</p>
+</details>
+
+<section id="onehot" class="panel" role="tabpanel" aria-labelledby="tab-onehot">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The last lesson found that &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; keep similar company. Encoded this way, how similar should the two look?</p>
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>How a word gets in</h2>
+      <p>Every machine in this course multiplies numbers by weights and adds them up. A word is not a number, so before anything else something has to be agreed: which numbers stand for &ldquo;lawyer&rdquo;. The plainest answer available is also the one nearly every language model still starts from, and it has a consequence worth seeing before it is repaired.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="o-a">First word</label>
+        <input type="text" id="o-a" autocomplete="off" autocapitalize="off" value="lawyer">
+        <label class="vh" for="o-b">Second word</label>
+        <input type="text" id="o-b" autocomplete="off" autocapitalize="off" value="painter">
+        <button class="btn" id="o-go" type="button">Encode both</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="o-p1" type="button">&ldquo;lawyer&rdquo; and &ldquo;the&rdquo;</button>
+        <button class="btn" id="o-p2" type="button">&ldquo;said&rdquo; and &ldquo;asked&rdquo;</button>
+      </div>
+      <figure>
+        <div class="window"><canvas id="o-hot" class="hot" role="img"
+          aria-label="Two grids of 600 cells, one above the other, each with a single filled cell. No column is ever filled in both."></canvas></div>
+        <figcaption>The two words as the network receives them. The upper grid is the first word, the lower the second.</figcaption>
+      </figure>
+      <ul class="tally" id="o-tally">
+        <li><span>slots the two share</span><span class="v">—</span></li>
+        <li><span>similarity of the two encodings</span><span class="v">—</span></li>
+        <li><span>distance between them</span><span class="v">—</span></li>
+      </ul>
+      <p class="msg" id="o-msg">Every pair of different words gives the same three numbers.</p>
+    </div>
+    <div class="stack">
+      <p>Give each word a slot. The vocabulary here is the 600 words used most often in chapters one to nine of Kafka's <em>The Trial</em>, the novel lessons 7 and 8 counted from, so a word is a list of 600 numbers: one in its own slot, zero everywhere else. Nothing has been decided about the word by doing this. The slot numbers come from an alphabetical or a frequency ordering, and neither carries meaning; only the position matters, and only because it differs from every other position.</p>
+      <p>That is the consequence. Two different words never fill the same slot, so the product of their two lists is always zero and the distance between them is always the square root of two. &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; are exactly as far apart as &ldquo;lawyer&rdquo; and &ldquo;the&rdquo;. The encoding asserts that all 600 words are mutually unrelated, in equal measure, and it asserts this before any text has been read. Lesson 8 described the count table's words as islands; this is that island written as a vector.</p>
+      <p>Two limits are being set here rather than discovered, and both come back in section 6. A vocabulary of 600 is a choice: the novel uses 5,082 distinct words, and every one of the other 4,482 has no slot at all, so it cannot be presented to this network in any form. And the vector says nothing, which means everything the network ends up knowing about a word has to be learned and stored somewhere else.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A one-hot encoding gives every word a slot and nothing else, so it makes all words equally unrelated before any text is read.</p>
+</section>
+
+<section id="lookup" class="panel" role="tabpanel" aria-labelledby="tab-lookup">
+  <p class="experiment-prompt"><strong>Before you try:</strong> If the input is 599 zeros and a single one, how much of the first weight matrix does any one word actually touch?</p>
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>The first weight matrix is a table of vectors</h2>
+      <p>The vector goes into a layer of weights, and that layer is where the lesson turns. Because the input is almost all zeros, the multiplication does something much simpler than it looks, and the weights on the other side of it stop being an implementation detail and become the object of interest.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="l-in">Word to look up</label>
+        <input type="text" id="l-in" autocomplete="off" autocapitalize="off" value="lawyer">
+        <button class="btn" id="l-go" type="button">Select its row</button>
+      </div>
+      <figure>
+        <div class="window"><canvas id="l-slab" class="slab" role="img"
+          aria-label="Part of the weight table: one row per word and sixteen columns, drawn as blue for negative weights and brown for positive. The selected word's row is outlined."></canvas></div>
+        <figcaption>Sixteen rows of the table, the selected word&rsquo;s outlined. Rows run from the commonest word to the rarest, so the neighbouring rows here are words of similar frequency and nothing more. Blue is a negative weight, brown positive, as everywhere on this site.</figcaption>
+      </figure>
+      <ul class="tally" id="l-tally">
+        <li><span>rows in the table</span><span class="v">600</span></li>
+        <li><span>numbers in a row</span><span class="v">16</span></li>
+        <li><span>weights the selected word touches</span><span class="v">—</span></li>
+      </ul>
+      <p class="msg" id="l-msg">The sixteen numbers of the selected row are this word's vector.</p>
+    </div>
+    <div class="stack">
+      <p>Multiply a one-hot vector by a matrix and you are adding up 600 rows, 599 of which have been multiplied by zero. The answer is the remaining row, unchanged. So the matrix has one row per word, sixteen numbers wide, and passing a word through the first layer is a table lookup wearing the clothes of a multiplication. Nothing about it is a special mechanism; it is the ordinary <a class="term" href="../glossary.html#artificial-neuron">layer of weights</a> from lesson 1 with a very sparse input.</p>
+      <p>The consequence is the point of this lesson. Those sixteen numbers are weights, and weights are what <a class="term" href="../glossary.html#gradient-descent">gradient descent</a> adjusts. Lesson 8's profiles were counted from the text and then left alone; these are parameters, and the same rule that moved the hidden weights in lesson 4 moves them. Whatever a word ends up meaning to this network is written in its row, and it is written there by training, not by counting.</p>
+      <p>Until section 3 has run, the picture above is of the small random numbers the network was initialised with, and no two of them mean anything; the line under it says which of the two states you are looking at. What section 3 does is run <a class="term" href="../glossary.html#backpropagation">backpropagation</a> against a question, and what section 4 does is come back and read this same table afterwards.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A one-hot input turns the first weight matrix into a lookup table with one row of learnable numbers per word.</p>
+</section>
+
+<section id="train" class="panel" role="tabpanel" aria-labelledby="tab-train">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Nobody will tell the network that &ldquo;said&rdquo; and &ldquo;asked&rdquo; are alike. What could make it put similar numbers in their two rows anyway?</p>
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>Filling the table in</h2>
+      <p>The table has to be filled by training, and training needs a question. Lesson 7 has one: given the two words just read, which word comes next. It asked that question of a table of counts. Asking it of a network is what this section does, and the rows of section 2 are among the weights that move as a result.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <button class="btn" id="t-go" type="button">Train the network</button>
+        <button class="btn" id="t-more" type="button" disabled>Train three more epochs</button>
+      </div>
+      <figure>
+        <div class="window"><canvas id="t-curve" class="curve" role="img"
+          aria-label="Average surprise per word in bits, plotted against training epochs. One line for the nine chapters the network trains on, a second for the held-out tenth chapter."></canvas></div>
+        <figcaption>Average surprise per word, in bits, after each pass through the text. The brown line is the nine chapters being trained on; the blue line is chapter ten, which the network never sees during training.</figcaption>
+      </figure>
+      <ul class="tally" id="t-tally">
+        <li><span>epochs trained</span><span class="v">0</span></li>
+        <li><span>surprise on the nine chapters</span><span class="v">—</span></li>
+        <li><span>surprise on chapter ten</span><span class="v">—</span></li>
+        <li><span>as unsure as choosing among</span><span class="v">—</span></li>
+      </ul>
+      <p class="msg" id="t-msg">Nothing has been trained yet. Training runs 47,782 positions six times over and takes a few seconds.</p>
+    </div>
+    <div class="stack">
+      <p>The network is the one from lesson 4 with its ends widened. Two words come in, each as 600 slots with a single one; each selects its sixteen-number row; the 32 numbers that result feed 32 <a class="term" href="../glossary.html#sigmoid">sigmoid</a> <a class="term" href="../glossary.html#hidden-layer">hidden units</a>; those feed 600 output scores, one per word the network could say. The <a class="term" href="../glossary.html#softmax">softmax</a> turns the scores into probabilities. Then the true next word is revealed, the surprise is measured, and backpropagation walks the blame back through every weight it passed on the way forward — including the two selected rows, which are the only part of the table that moves for this position.</p>
+      <p>That last clause is the whole mechanism. A word's row is nudged only when the word appears, and it is nudged towards whatever makes the words that actually followed more likely. Two words that are followed by similar things receive similar nudges, thousands of times over, and drift towards similar rows. Nothing compares one row with another at any point, which is what lesson 8's table could never do — but here the comparison does not need to happen, because a shared consequence is enough.</p>
+      <p>There are 30,456 weights in total: 9,600 of them in the table of word rows, the remaining 20,856 in the two layers above it. The training positions are the 47,782 places in chapters one to nine where all three words — the two of context and the one to predict — are among the 600. Everything below is computed while you watch; nothing on this page was trained in advance.</p>
+      <p class="note">Watch the two lines separate. The brown line keeps falling because the network is still improving on text it has already read; the blue line flattens, because that is where improvement has to be earned rather than memorised. Training longer moves the two apart rather than bringing both down.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Nothing compares two words, but words followed by similar things get similar corrections, so their rows drift together.</p>
+</section>
+
+<section id="rows" class="panel" role="tabpanel" aria-labelledby="tab-rows">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The last lesson counted profiles from this same text. Should the learned rows agree with the counted ones, and where would you expect them to differ?</p>
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Reading the table afterwards</h2>
+      <p>The rows are sixteen numbers each and nobody assigned them a meaning, so the only way to find out what they hold is to compare them. Beside each learned list is the counted list from lesson 8's method, run over these same 600 words and the same nine chapters, so the two differ in how they were arrived at and in nothing else.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="n-in">Word to look up</label>
+        <input type="text" id="n-in" autocomplete="off" autocapitalize="off" value="said">
+        <button class="btn" id="n-go" type="button">Find its neighbours</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="n-p1" type="button">&ldquo;lawyer&rdquo;</button>
+        <button class="btn" id="n-p2" type="button">&ldquo;he&rdquo;</button>
+        <button class="btn" id="n-p3" type="button">&ldquo;door&rdquo;</button>
+        <button class="btn" id="n-p4" type="button">&ldquo;hand&rdquo;</button>
+      </div>
+      <div class="cols">
+        <div>
+          <h3>learned, by training</h3>
+          <ul class="tally" id="n-learned"></ul>
+        </div>
+        <div>
+          <h3>counted, as lesson 8</h3>
+          <ul class="tally" id="n-counted"></ul>
+        </div>
+      </div>
+      <p class="msg" id="n-msg">Train the network in section 3 first; until then the learned column is reading untrained random numbers.</p>
+    </div>
+    <div class="stack">
+      <p>With the default seed, &ldquo;said&rdquo; comes back beside &ldquo;answered&rdquo;, &ldquo;asked&rdquo;, &ldquo;added&rdquo; and &ldquo;shouted&rdquo;; &ldquo;he&rdquo; beside &ldquo;k&rdquo; and &ldquo;she&rdquo;; &ldquo;lawyer&rdquo; beside &ldquo;painter&rdquo; and &ldquo;priest&rdquo;. None of that was counted, and none of it was told to the network. It arrived because those words are followed by similar things, so their rows were pushed the same way.</p>
+      <p>The two columns disagree more than they agree, and the disagreements are the informative part. Read a few words and a pattern shows: the learned rows do well on words that share a grammatical job — verbs of speech, pronouns, quantifiers — and less well on concrete nouns, where the counted profiles are often the more sensible of the two. &ldquo;hand&rdquo; is the plain case. Both methods put &ldquo;hands&rdquo; near the top, but counting follows it with &ldquo;arm&rdquo;, &ldquo;head&rdquo; and &ldquo;coat&rdquo;, while the learned row admits &ldquo;evening&rdquo; and &ldquo;words&rdquo; into the same four. &ldquo;door&rdquo; goes the other way and comes out well in both. With 82,000 words of one novel to learn from, the counted method is not the one that comes off worse.</p>
+      <p>The similarity numbers themselves are not comparable between the columns. A counted profile is 2,400 slots that are mostly zero, so two profiles overlap in few places and the scores stay near 0.3; a learned row is sixteen numbers all in use, so scores near 0.9 are ordinary. Compare the orderings, not the values.</p>
+      <p>One further difference is easy to miss. A counted profile is built from a word's own occurrences and can be computed for that word alone. A learned row exists only as part of a network trained on everything at once, and moving one row changes what every other row has to do. They are the same shape of object, arrived at by different means, and only one of them can be improved by a question it has not been asked yet.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Learned rows group words by the job they do; on 82,000 words of one novel they do not beat counted profiles on concrete nouns.</p>
+</section>
+
+<section id="silent" class="panel" role="tabpanel" aria-labelledby="tab-silent">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Lesson 7's table had no row for a fifth of chapter ten's positions. What should a network do at those positions, and how well?</p>
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>What a function buys over a table</h2>
+      <p>Lesson 7 ended on the table's silence and lesson 8 narrowed it by borrowing from neighbours. A network cannot be silent: whatever two words go in, 600 probabilities come out. The question this section settles by measurement is whether the answers it gives where the table had nothing are worth anything.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <button class="btn" id="w-go" type="button" disabled>Walk chapter ten</button>
+      </div>
+      <div class="comp" id="w-comp"></div>
+      <p class="msg" id="w-msg">Train the network in section 3 first; a walk needs a trained model to report anything.</p>
+      <figure>
+        <div class="window"><div class="walk" id="w-list"></div></div>
+        <figcaption>Positions where the count table had no row at all, with what the network said next. A shaded line is one it got right.</figcaption>
+      </figure>
+    </div>
+    <div class="stack">
+      <p>The walk is restricted, and the restriction has to be stated before the numbers are. Chapter ten gives 2,085 positions. The network can only be asked about the 1,102 of them whose three words are all among its 600; the other 983 involve a word it has no slot for, and section 6 is about those. Both models are scored on the same 1,102 positions, so the comparison is fair even though it covers about half the chapter.</p>
+      <p>With the default seed the table has a row for 873 of the 1,102 and gets 150 of them right, which is 17.2 per cent of the positions it answers and 13.6 per cent of all of them. The network gets 148 of those same 873, so on the table's own ground the two are level and the table is very slightly ahead. On the 229 positions where the table has nothing, the network gets 39 — a rate of 17.0 per cent, the same rate it manages on contexts it has seen.</p>
+      <p>That equality is the result worth having. The network is not better at recall; the table memorised those contexts and memorising is hard to beat. What the network has is a rate that does not depend on whether the exact context was in the training text, which is what it means for something to be a function of the words rather than a list of them. Lesson 8 bought the same coverage by borrowing counts from neighbours; here the coverage is not bought at all, because there was never a row to be missing.</p>
+      <p>Two cautions on these figures. The sample is 1,102 positions, so a few percentage points is noise rather than signal. And the run depends on the seed: across the first few seeds the network's overall share of the 1,102 ranges from about 15 to about 17 per cent, which is enough to change whether it edges ahead of the table on the table's own rows. What does not move across seeds is the shape — full coverage, and much the same accuracy on seen and unseen contexts.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> The network answers every position at about one rate, whether or not the exact context was in the training text; the table answers four in five and never the rest.</p>
+</section>
+
+<section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; three times. Which of the three models in lessons 7, 8 and 9 can say anything at all about it?</p>
+  <div class="sec-head">
+    <div class="sec-num">6</div>
+    <div>
+      <h2>Where the slot runs out</h2>
+      <p>The silence of lesson 7 has moved but it has not gone, and section 1 said where it went. A one-hot vector has a slot for each word in a fixed vocabulary and no way to represent anything else, so the boundary of what this network can even be shown was drawn before training began.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div>
+      <div class="row">
+        <label class="vh" for="x-in">Word to probe</label>
+        <input type="text" id="x-in" autocomplete="off" autocapitalize="off" value="pillow">
+        <button class="btn" id="x-go" type="button">Probe the word</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="x-p1" type="button">&ldquo;pillow&rdquo;</button>
+        <button class="btn" id="x-p2" type="button">&ldquo;computer&rdquo;</button>
+        <button class="btn" id="x-p3" type="button">&ldquo;middle&rdquo;</button>
+        <button class="btn" id="x-p4" type="button">&ldquo;lawyer&rdquo;</button>
+      </div>
+      <ul class="tally" id="x-tally">
+        <li><span>sightings in chapters one to nine</span><span class="v">—</span></li>
+        <li><span>slot in the network's input</span><span class="v">—</span></li>
+        <li><span>row in the table</span><span class="v">—</span></li>
+        <li><span>can be predicted as a next word</span><span class="v">—</span></li>
+      </ul>
+      <p class="msg" id="x-msg">Reports whether the word is inside the vocabulary, and what follows from the answer.</p>
+    </div>
+    <div class="stack">
+      <p>Take the coverage first. The novel uses 5,082 distinct words and this network holds 600 of them, the rarest being &ldquo;middle&rdquo; at sixteen sightings. Those 600 account for 84 per cent of the words in chapters one to nine, which is why so much can be trained on so few. In chapter ten, 403 of the 2,087 words — 326 distinct ones — fall outside the vocabulary. For each of them there is no input slot, so the word cannot be read; and no output slot, so it cannot be said. This is a harder silence than lesson 7's. A count table with no row for a context can still be given a new row when it meets one. Adding a word here means adding a column to the input, a row to the table and a unit to the output, and then training again.</p>
+      <p>Next, what the rows record. They were learned from one novel, so they carry that novel's usage in exactly the way lesson 8's profiles did. The proper names sit among the pronouns because the book is about a small cast, and the words this text happens to use interchangeably will look interchangeable here whether or not they are so in English. Nothing on this page knows English. It knows the first nine chapters of one translation of one book.</p>
+      <p>Last, the honest scale note. The parts of this lesson that survive into a modern language model are the input convention and the learned table: words still enter as slots in a fixed vocabulary — usually pieces of words rather than whole ones — and the first weight matrix is still a table of vectors filled in by gradient descent. What does not survive is the rest of the architecture. A network of 30,456 weights reading two words of context is not a small version of a current model; it is the ancestor that showed the table could be learned at all. The distance between the two is measured in the amount of text, the length of context and a different arrangement of layers, and not one of those three is a detail.</p>
+      <p class="cite">Yoshua Bengio, Réjean Ducharme, Pascal Vincent and Christian Jauvin, &ldquo;A Neural Probabilistic Language Model,&rdquo; <em>Journal of Machine Learning Research</em> 3 (2003), is the architecture on this page: a learned feature vector per word, a hidden layer over the concatenated vectors of the context, and a softmax over the vocabulary. Their argument was that learning the vectors and the predictor together would fight the sparseness that defeats a count table, and they measured it on corpora several hundred times the size of this one.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A fixed vocabulary decides in advance what can be read or said, and no amount of training reaches a word without a slot.</p>
+</section>
+
+<a class="nextup" href="../index.html">
+  <div>
+    <p class="lab">Lesson 9 of 9</p>
+    <span class="ttl">Back to all lessons</span>
+    <p class="say">Nine machines, four ideas about where knowledge comes from: a labelled example, an expert with a rule, a number that arrives late, and the order of the words in a book. More are being written.</p>
+  </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+    <rect x="12" y="14" width="60" height="90" fill="#EFEDE5"/>
+    <g fill="#D7D4C7">
+      <rect x="18" y="20" width="48" height="6"/><rect x="18" y="32" width="48" height="6"/>
+      <rect x="18" y="56" width="48" height="6"/><rect x="18" y="68" width="48" height="6"/>
+      <rect x="18" y="80" width="48" height="6"/><rect x="18" y="92" width="48" height="6"/>
+    </g>
+    <rect x="18" y="44" width="48" height="6" fill="#8A5206"/>
+    <g stroke="#22262C" stroke-width="1.4" fill="none" stroke-linecap="round">
+      <path d="M72 47H100"/><path d="M96 43l6 4-6 4"/>
+    </g>
+    <g fill="#274B8F">
+      <rect x="108" y="38" width="10" height="8"/><rect x="132" y="38" width="10" height="8"/>
+      <rect x="120" y="48" width="10" height="8"/><rect x="144" y="48" width="10" height="8"/>
+    </g>
+    <g fill="#8A5206">
+      <rect x="120" y="38" width="10" height="8"/><rect x="144" y="38" width="10" height="8"/>
+      <rect x="108" y="48" width="10" height="8"/><rect x="132" y="48" width="10" height="8"/>
+    </g>
+  </svg>
+</a>
+
+<footer>
+  <p>Every number on this page was computed in your browser while you read it. The network was trained here, from small random numbers, in the seconds after you pressed the button. The novel travels with the page — the 437,868 characters of chapters one to nine and the 11,154 of chapter ten — and the vocabulary, the training positions and the counted profiles were all built from that text after it arrived. The text is Franz Kafka's <em>The Trial</em> in David Wyllie's translation, from <a href="https://www.gutenberg.org/ebooks/7849">Project Gutenberg ebook 7849</a>; the translation is copyright © David Wyllie and is distributed under the <a href="https://www.gutenberg.org/policy/license.html">Project Gutenberg License</a>.</p>
+</footer>
+
+</main>
+<script src="../assets/corpus-trial.js"></script>
+<script src="../assets/glossary-data.js"></script>
+<script src="../assets/lesson.js"></script>
+<script>
+"use strict";
+
+/* ============================================================
+   Lesson 9. A word reaches the network as a one-hot vector: one slot
+   per vocabulary word, all zero but its own. Multiplying that by the
+   first weight matrix therefore selects a single row, so the matrix is
+   a table of word vectors — and its numbers are weights, moved by the
+   same backpropagation as everything else. The network is Bengio's
+   (2003): two context words in, a sigmoid hidden layer, a softmax over
+   the vocabulary out, trained on lesson 7's next-word question over
+   lesson 7 and 8's corpus. Nothing here is precomputed; the training
+   run happens in the page.
+   ============================================================ */
+
+const tokenize = text => text.split(/\s+/).filter(Boolean);
+const normWord = s => s.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/g, "");
+const normStream = text => tokenize(text).map(normWord).filter(Boolean);
+
+const VSIZE  = 600;   /* words the network can read or say */
+const DIM    = 16;    /* numbers in one word's row */
+const HIDDEN = 32;    /* hidden units, as in lesson 4 */
+const LR     = 0.1;
+const EPOCHS = 6;
+const MORE   = 3;     /* epochs the second button adds */
+const OFFSETS = [-2, -1, 1, 2];  /* the counted profile's window, as lesson 8 */
+const SMOOTH = 0.75;             /* damps the surprise of rare company, as lesson 8 */
+const LN2 = Math.LN2;
+
+function seeded(seed){
+  let x = seed >>> 0 || 1;
+  return function(){
+    x ^= x << 13; x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;  x >>>= 0;
+    return x / 4294967296;
+  };
+}
+
+function wordCounts(stream){
+  const c = new Map();
+  for(const w of stream) c.set(w, (c.get(w)||0)+1);
+  return c;
+}
+
+/* the network needs a slot per word it can read and a unit per word it
+   can say, so the vocabulary is capped at the commonest VSIZE words */
+function topVocab(counts, V){
+  const vocab = Array.from(counts)
+    .sort((a,b) => b[1]-a[1] || (a[0]<b[0]?-1:1))
+    .slice(0, V).map(e => e[0]);
+  return { vocab: vocab, index: new Map(vocab.map((w,i) => [w,i])) };
+}
+
+/* every position whose two context words and answer are all in the vocabulary */
+function makeCases(stream, index){
+  const out = [];
+  for(let i=2;i<stream.length;i++){
+    const a = index.get(stream[i-2]), b = index.get(stream[i-1]), c = index.get(stream[i]);
+    if(a !== undefined && b !== undefined && c !== undefined) out.push(a, b, c);
+  }
+  return Int32Array.from(out);
+}
+
+function makeNet(V, D, H, seed){
+  const r = seeded(seed);
+  const small = n => { const a = new Float64Array(n); for(let i=0;i<n;i++) a[i] = (r()-0.5)*0.2; return a; };
+  return { V:V, D:D, H:H, epochs:0,
+    E:  small(V*D),                        /* the table: one row per word */
+    W1: small(2*D*H), b1: new Float64Array(H),
+    W2: small(H*V),   b2: new Float64Array(V) };
+}
+
+/* forward pass. h receives the hidden activations, p the probability of
+   every word in the vocabulary being the next one. */
+function forward(net, a, b, h, p){
+  const V = net.V, D = net.D, H = net.H, E = net.E, W1 = net.W1, W2 = net.W2;
+  for(let j=0;j<H;j++){
+    let s = net.b1[j]; const off = j*2*D;
+    for(let k=0;k<D;k++) s += W1[off+k]*E[a*D+k] + W1[off+D+k]*E[b*D+k];
+    h[j] = 1/(1+Math.exp(-s));
+  }
+  let mx = -Infinity;
+  for(let o=0;o<V;o++){
+    let s = net.b2[o]; const off = o*H;
+    for(let j=0;j<H;j++) s += W2[off+j]*h[j];
+    p[o] = s; if(s > mx) mx = s;
+  }
+  let sum = 0;
+  for(let o=0;o<V;o++){ p[o] = Math.exp(p[o]-mx); sum += p[o]; }
+  for(let o=0;o<V;o++) p[o] /= sum;
+}
+
+/* one training position: forward, then walk the blame back. Every
+   gradient below is read before its own weight is changed, so this is a
+   single simultaneous step. The two rows of the table belonging to the
+   context words are the only rows that move. */
+function learn(net, a, b, c, lr, work){
+  const V = net.V, D = net.D, H = net.H, E = net.E, W1 = net.W1, W2 = net.W2;
+  const h = work.h, p = work.p, dh = work.dh, dx = work.dx;
+  forward(net, a, b, h, p);
+  dh.fill(0);
+  for(let o=0;o<V;o++){
+    const d = lr*(p[o] - (o === c ? 1 : 0)), off = o*H;
+    for(let j=0;j<H;j++){ dh[j] += d*W2[off+j]; W2[off+j] -= d*h[j]; }
+    net.b2[o] -= d;
+  }
+  dx.fill(0);
+  for(let j=0;j<H;j++){
+    const d = dh[j]*h[j]*(1-h[j]), off = j*2*D;
+    for(let k=0;k<2*D;k++) dx[k] += d*W1[off+k];
+    for(let k=0;k<D;k++){ W1[off+k] -= d*E[a*D+k]; W1[off+D+k] -= d*E[b*D+k]; }
+    net.b1[j] -= d;
+  }
+  for(let k=0;k<D;k++){ E[a*D+k] -= dx[k]; E[b*D+k] -= dx[D+k]; }
+  return -Math.log(Math.max(p[c], 1e-12));
+}
+
+function workspace(net){
+  return { h:new Float64Array(net.H), p:new Float64Array(net.V),
+           dh:new Float64Array(net.H), dx:new Float64Array(2*net.D) };
+}
+
+function shuffled(n, rnd){
+  const o = Int32Array.from({length:n}, (_,i) => i);
+  for(let i=n-1;i>0;i--){ const j = (rnd()*(i+1))|0; const t = o[i]; o[i] = o[j]; o[j] = t; }
+  return o;
+}
+
+/* average surprise and top-one accuracy over a set of positions */
+function score(net, cases){
+  const h = new Float64Array(net.H), p = new Float64Array(net.V);
+  let loss = 0, right = 0;
+  const n = cases.length/3;
+  for(let i=0;i<cases.length;i+=3){
+    forward(net, cases[i], cases[i+1], h, p);
+    let best = 0;
+    for(let o=1;o<net.V;o++) if(p[o] > p[best]) best = o;
+    if(best === cases[i+2]) right++;
+    loss -= Math.log(Math.max(p[cases[i+2]], 1e-12));
+  }
+  return { n:n, bits:loss/n/LN2, right:right, accuracy:n ? right/n : 0 };
+}
+
+/* ---------------- the rows, read as vectors ---------------- */
+
+function rowNorm(net, a){
+  let s = 0;
+  for(let k=0;k<net.D;k++) s += net.E[a*net.D+k]*net.E[a*net.D+k];
+  return Math.sqrt(s) || 1;
+}
+function rowCos(net, a, b){
+  let d = 0;
+  for(let k=0;k<net.D;k++) d += net.E[a*net.D+k]*net.E[b*net.D+k];
+  return d/(rowNorm(net,a)*rowNorm(net,b));
+}
+function learnedNeighbours(net, a, k){
+  const out = [];
+  for(let b=0;b<net.V;b++) if(b !== a) out.push([b, rowCos(net,a,b)]);
+  out.sort((x,y) => y[1]-x[1] || x[0]-y[0]);
+  return out.slice(0,k);
+}
+
+/* ---------------- lesson 8's counted profile, over these 600 words ----------------
+   Same recipe as lesson 8: how often each vocabulary word occupied each of
+   four positions around this one, each count turned into log(seen/expected)
+   with negatives dropped, the row scaled to length one. Small enough here
+   to hold as one dense array rather than the sparse maps lesson 8 needs. */
+function countedProfiles(stream, index, V){
+  const D = OFFSETS.length*V;
+  const P = new Float64Array(V*D);
+  for(let i=0;i<stream.length;i++){
+    const a = index.get(stream[i]);
+    if(a === undefined) continue;
+    for(let oi=0;oi<OFFSETS.length;oi++){
+      const j = i + OFFSETS[oi];
+      if(j < 0 || j >= stream.length) continue;
+      const b = index.get(stream[j]);
+      if(b !== undefined) P[a*D + oi*V + b]++;
+    }
+  }
+  const rowSum = new Float64Array(V), colSum = new Float64Array(D);
+  for(let a=0;a<V;a++) for(let d=0;d<D;d++){ const v = P[a*D+d]; rowSum[a] += v; colSum[d] += v; }
+  let total = 0;
+  for(let d=0;d<D;d++){ colSum[d] = Math.pow(colSum[d], SMOOTH); total += colSum[d]; }
+  for(let a=0;a<V;a++){
+    let s = 0;
+    for(let d=0;d<D;d++){
+      const v = P[a*D+d];
+      let u = 0;
+      if(v > 0 && rowSum[a] > 0 && colSum[d] > 0) u = Math.log((v/rowSum[a]) / (colSum[d]/total));
+      P[a*D+d] = u > 0 ? u : 0;
+      s += P[a*D+d]*P[a*D+d];
+    }
+    s = Math.sqrt(s) || 1;
+    for(let d=0;d<D;d++) P[a*D+d] /= s;
+  }
+  return { P:P, D:D };
+}
+function countedCos(prof, a, b){
+  const D = prof.D, P = prof.P;
+  let d = 0;
+  for(let k=0;k<D;k++) d += P[a*D+k]*P[b*D+k];
+  return d;
+}
+function countedNeighbours(prof, V, a, k){
+  const out = [];
+  for(let b=0;b<V;b++) if(b !== a) out.push([b, countedCos(prof,a,b)]);
+  out.sort((x,y) => y[1]-x[1] || x[0]-y[0]);
+  return out.slice(0,k);
+}
+
+/* ---------------- lesson 7's table, for the comparison in section 5 ---------------- */
+function countTable(stream, k){
+  const t = new Map();
+  for(let i=k;i<stream.length;i++){
+    const ctx = stream.slice(i-k,i).join(" ");
+    let f = t.get(ctx);
+    if(!f) t.set(ctx, f = new Map());
+    f.set(stream[i], (f.get(stream[i])||0)+1);
+  }
+  return t;
+}
+function commonest(f){
+  let bw = null, bc = -1;
+  for(const e of f) if(e[1] > bc || (e[1] === bc && e[0] < bw)){ bw = e[0]; bc = e[1]; }
+  return bw;
+}
+
+/* ---------------- the corpus, read once when the page loads ---------------- */
+
+const TRAIN_STREAM = normStream(CORPUS_TRAIN);
+const HELD_STREAM  = normStream(CORPUS_HELD);
+const COUNTS = wordCounts(TRAIN_STREAM);
+const VB = topVocab(COUNTS, VSIZE);
+const VOCAB = VB.vocab, INDEX = VB.index;
+const TRAIN_CASES = makeCases(TRAIN_STREAM, INDEX);
+const HELD_CASES  = makeCases(HELD_STREAM, INDEX);
+const PROF = countedProfiles(TRAIN_STREAM, INDEX, VSIZE);
+const T2 = countTable(TRAIN_STREAM, 2);
+
+/* one network for the whole lesson; sections 4 and 5 read whatever state
+   section 3 has left it in, and say so when that state is untrained */
+let NET = makeNet(VSIZE, DIM, HIDDEN, 1);
+let HISTORY = [];
+const afterTrain = [];
+
+/* ---------------- painting and panels ---------------- */
+
+const fmt = n => n.toLocaleString("en");
+const pct = (a,b) => b ? (100*a/b).toFixed(1) + "%" : "—";
+
+/* shared lookup: normalise, then explain an absence in one sentence */
+function findWord(raw){
+  const w = normWord(raw);
+  if(!w) return { w:w, a:undefined, why:"Type a word first." };
+  const a = INDEX.get(w);
+  if(a !== undefined) return { w:w, a:a, why:null };
+  const c = COUNTS.get(w) || 0;
+  return { w:w, a:undefined, why: c === 0
+    ? "“" + w + "” never occurs in chapters one to nine, so it has no slot and the network cannot be shown it."
+    : "“" + w + "” occurs " + plural(c, "time") + " in chapters one to nine, too few for a place among the 600. Section 6 is about that." };
+}
+
+/* ---------------- painting ---------------- */
+
+const HOT_COLS = 40, HOT_ROWS = VSIZE/HOT_COLS;
+
+/* one grid of 600 cells per entry, the entry's own cell filled */
+function paintHot(p, entries){
+  const g = p.ctx;
+  g.clearRect(0,0,p.w,p.h);
+  g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+  const n = entries.length, gap = 14;
+  const cw = (p.w - 8) / HOT_COLS;
+  const ch = Math.min(cw, (p.h - 8 - gap*(n-1)) / (HOT_ROWS*n));
+  const gh = ch*HOT_ROWS;
+  const x0 = (p.w - cw*HOT_COLS)/2;
+  let y0 = (p.h - (gh*n + gap*(n-1)))/2;
+  entries.forEach(e => {
+    for(let r=0;r<HOT_ROWS;r++) for(let c=0;c<HOT_COLS;c++){
+      const i = r*HOT_COLS + c;
+      const x = x0 + c*cw, y = y0 + r*ch;
+      const on = i === e.slot;
+      g.fillStyle = on ? C.on : C.grid;
+      g.fillRect(x+0.5, y+0.5, Math.max(1,cw-1.2), Math.max(1,ch-1.2));
+    }
+    y0 += gh + gap;
+  });
+}
+
+/* a window of the table: SLAB_ROWS words down, DIM weights across.
+   Blue is a negative weight, brown positive, as everywhere on this site. */
+const SLAB_ROWS = 16;
+function paintSlab(p, sel){
+  const g = p.ctx;
+  g.clearRect(0,0,p.w,p.h);
+  g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+  const gutter = Math.min(96, p.w*0.32);
+  const top = clamp(sel - (SLAB_ROWS>>1), 0, VSIZE - SLAB_ROWS);
+  const rh = p.h/SLAB_ROWS, cw = (p.w - gutter - 4)/DIM;
+  let peak = 1e-9;
+  for(let r=0;r<SLAB_ROWS;r++) for(let k=0;k<DIM;k++)
+    peak = Math.max(peak, Math.abs(NET.E[(top+r)*DIM+k]));
+  g.font = '400 10px "IBM Plex Mono", monospace';
+  g.textBaseline = "middle";
+  for(let r=0;r<SLAB_ROWS;r++){
+    const a = top + r, y = r*rh;
+    g.fillStyle = a === sel ? C.ink : C.ink2;
+    g.textAlign = "right";
+    g.fillText(VOCAB[a], gutter-8, y+rh/2);
+    for(let k=0;k<DIM;k++){
+      const v = NET.E[a*DIM+k]/peak;
+      g.fillStyle = v < 0 ? C.off : C.on;
+      g.globalAlpha = Math.min(1, Math.abs(v));
+      g.fillRect(gutter + k*cw + 0.5, y + 0.5, Math.max(1,cw-1), Math.max(1,rh-1));
+      g.globalAlpha = 1;
+    }
+  }
+  const ys = (sel - top)*rh;
+  g.strokeStyle = C.ink; g.lineWidth = 1.6;
+  g.strokeRect(gutter - 1.5, ys + 0.5, p.w - gutter - 2, rh - 1);
+}
+
+/* the two surprise curves, in bits per word */
+function paintCurve(p, hist){
+  const g = p.ctx;
+  const span = Math.max(EPOCHS, hist.length);
+  p.view = [0, span, 5.5, 9.6];
+  g.clearRect(0,0,p.w,p.h);
+  g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+  g.strokeStyle = C.grid; g.lineWidth = 1;
+  g.beginPath();
+  for(let e=0;e<=span;e++){ const x = Math.round(p.X(e))+.5; g.moveTo(x,0); g.lineTo(x,p.h); }
+  for(let v=6;v<=9;v++){ const y = Math.round(p.Y(v))+.5; g.moveTo(0,y); g.lineTo(p.w,y); }
+  g.stroke();
+  g.fillStyle = C.ink2;
+  g.font = '500 11px "IBM Plex Mono", monospace';
+  g.textAlign = "left"; g.textBaseline = "middle";
+  for(let v=6;v<=9;v++) g.fillText(v + " bits", 10, p.Y(v)-8);
+  g.textBaseline = "bottom";
+  g.fillText("epochs", p.w-52, p.h-6);
+  if(!hist.length){
+    g.fillStyle = C.ink2;
+    g.font = '400 12px "IBM Plex Sans", sans-serif';
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText("Not trained yet", p.w/2, p.h/2);
+    return;
+  }
+  const line = (key, colour) => {
+    const pts = hist.filter(h => h[key] != null);
+    if(!pts.length) return;
+    g.strokeStyle = colour; g.lineWidth = 2; g.beginPath();
+    pts.forEach((h,i) => { const x = p.X(h.epoch), y = p.Y(h[key]);
+      if(i) g.lineTo(x,y); else g.moveTo(x,y); });
+    g.stroke();
+    pts.forEach(h => { g.fillStyle = colour; g.beginPath();
+      g.arc(p.X(h.epoch), p.Y(h[key]), 3, 0, 6.284); g.fill(); });
+  };
+  line("held", C.off);
+  line("train", C.on);
+}
+
+/* ---------------- hero: one word, as the network receives it ---------------- */
+(function(){
+  const p = Plot(document.getElementById("hero-hot"), [0,1,0,1]);
+  const input = document.getElementById("hero-in"), read = document.getElementById("hero-read"),
+        msg = document.getElementById("hero-msg");
+  let slot = -1;
+  function draw(){ p.fit(); paintHot(p, [{slot:slot}]); }
+  function show(){
+    const f = findWord(input.value);
+    if(f.a === undefined){
+      slot = -1; read.innerHTML = "slot <b>—</b> of 600";
+      msg.textContent = f.why;
+    } else {
+      slot = f.a;
+      read.innerHTML = "slot <b>" + fmt(f.a+1) + "</b> of 600";
+      msg.textContent = "“" + f.w + "” is slot " + fmt(f.a+1) + ": that number is 1 and the other 599 are 0. "
+        + "The slots run from the commonest word to the rarest, and nothing follows from the order.";
+    }
+    draw();
+  }
+  redraws.push(draw);
+  document.getElementById("hero-go").addEventListener("click", show);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); show(); } });
+  show();
+})();
+
+/* ---------------- 1. two words, and the distance between them ---------------- */
+(function(){
+  const p = Plot(document.getElementById("o-hot"), [0,1,0,1]);
+  const ia = document.getElementById("o-a"), ib = document.getElementById("o-b"),
+        tally = document.getElementById("o-tally"), msg = document.getElementById("o-msg");
+  const vals = tally.querySelectorAll(".v");
+  let slots = [-1,-1];
+  function draw(){ p.fit(); paintHot(p, [{slot:slots[0]},{slot:slots[1]}]); }
+  function show(){
+    const fa = findWord(ia.value), fb = findWord(ib.value);
+    slots = [fa.a === undefined ? -1 : fa.a, fb.a === undefined ? -1 : fb.a];
+    draw();
+    if(fa.a === undefined || fb.a === undefined){
+      vals.forEach(v => v.textContent = "—");
+      msg.textContent = (fa.a === undefined ? fa.why : fb.why);
+      return;
+    }
+    const same = fa.a === fb.a;
+    vals[0].textContent = same ? "600 of 600" : "0 of 600";
+    vals[1].textContent = same ? "1.00" : "0.00";
+    vals[2].textContent = same ? "0.00" : "1.41";
+    msg.textContent = same
+      ? "The same word, so the same vector."
+      : "“" + fa.w + "” fills slot " + fmt(fa.a+1) + " and “" + fb.w + "” slot " + fmt(fb.a+1)
+        + ". No slot is filled in both, so their product is 0 and the distance between them is the square root of two — "
+        + "the same two numbers you get for any other pair of different words.";
+  }
+  redraws.push(draw);
+  document.getElementById("o-go").addEventListener("click", show);
+  [ia,ib].forEach(el => el.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); show(); } }));
+  [["o-p1","lawyer","the"],["o-p2","said","asked"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { ia.value = b[1]; ib.value = b[2]; show(); });
+  });
+  show();
+})();
+
+/* ---------------- 2. the first weight matrix, read as a table ---------------- */
+(function(){
+  const p = Plot(document.getElementById("l-slab"), [0,1,0,1]);
+  const input = document.getElementById("l-in"), msg = document.getElementById("l-msg"),
+        vals = document.getElementById("l-tally").querySelectorAll(".v");
+  let sel = 0;
+  function draw(){ p.fit(); paintSlab(p, sel); }
+  function show(){
+    const f = findWord(input.value);
+    if(f.a === undefined){ msg.textContent = f.why; vals[2].textContent = "—"; return; }
+    sel = f.a;
+    vals[2].textContent = "16 of " + fmt(VSIZE*DIM);
+    const row = [];
+    for(let k=0;k<DIM;k++) row.push(num(NET.E[sel*DIM+k], 3));
+    msg.textContent = "The row for “" + f.w + "”: " + row.join(", ") + ". "
+      + (NET.epochs ? "These are the numbers training has put there after "
+          + plural(NET.epochs, "epoch") + "."
+        : "Untrained, so these are still the small random numbers the network started with.");
+    draw();
+  }
+  redraws.push(draw);
+  afterTrain.push(show);
+  document.getElementById("l-go").addEventListener("click", show);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); show(); } });
+  show();
+})();
+
+/* ---------------- 3. training ---------------- */
+(function(){
+  const p = Plot(document.getElementById("t-curve"), [0,EPOCHS,5.5,9.6]);
+  const section = document.getElementById("train");
+  const goBtn = document.getElementById("t-go"), moreBtn = document.getElementById("t-more"),
+        msg = document.getElementById("t-msg"), vals = document.getElementById("t-tally").querySelectorAll(".v");
+  const seeds = batchControls("train", 1);
+  const SLICE = 250, N = TRAIN_CASES.length/3, PER = Math.ceil(N/SLICE);
+  let work = null, rnd = null;
+
+  function draw(){ p.fit(); paintCurve(p, HISTORY); }
+  redraws.push(draw);
+
+  function report(){
+    const last = HISTORY[HISTORY.length-1];
+    vals[0].textContent = String(NET.epochs);
+    if(!last || last.train == null){ vals[1].textContent = "—"; vals[2].textContent = "—"; vals[3].textContent = "—"; return; }
+    vals[1].textContent = last.train.toFixed(2) + " bits";
+    vals[2].textContent = last.held.toFixed(2) + " bits";
+    vals[3].textContent = fmt(Math.round(Math.pow(2, last.held))) + " words";
+    msg.textContent = "After " + plural(NET.epochs, "epoch") + " the network is surprised by "
+      + last.train.toFixed(2) + " bits per word on the nine chapters it trains on and "
+      + last.held.toFixed(2) + " on chapter ten, which it has never seen — as unsure there as someone choosing evenly among "
+      + fmt(Math.round(Math.pow(2, last.held))) + " words. It called " + fmt(last.right) + " of "
+      + fmt(last.n) + " held-out words correctly, " + pct(last.right, last.n) + ".";
+    draw();
+  }
+
+  async function run(epochs, fresh){
+    if(section.dataset.busy === "true") return;
+    const seed = seeds.get();
+    if(seed === null) return;
+    if(fresh){
+      NET = makeNet(VSIZE, DIM, HIDDEN, seed);
+      work = workspace(NET);
+      rnd = seeded((seed*2654435761) >>> 0);
+      const s0 = score(NET, HELD_CASES);
+      HISTORY = [{epoch:0, train:null, held:s0.bits, acc:s0.accuracy, right:s0.right, n:s0.n}];
+      draw();
+    }
+    let order = null, epochLoss = 0;
+    const ok = await runChunks(section, epochs*PER, k => {
+      const s = k % PER;
+      if(s === 0){ order = shuffled(N, rnd); epochLoss = 0; }
+      const from = s*SLICE, to = Math.min(N, from+SLICE);
+      for(let i=from;i<to;i++){
+        const t = order[i]*3;
+        epochLoss += learn(NET, TRAIN_CASES[t], TRAIN_CASES[t+1], TRAIN_CASES[t+2], LR, work);
+      }
+      if(s === PER-1){
+        NET.epochs++;
+        const hs = score(NET, HELD_CASES);
+        HISTORY.push({epoch:NET.epochs, train:epochLoss/N/LN2, held:hs.bits,
+                      acc:hs.accuracy, right:hs.right, n:hs.n});
+        draw();
+      }
+    }, () => { vals[0].textContent = String(NET.epochs); });
+    if(!ok) return;
+    figureTable("t-curve", "Average surprise per word in bits, after each pass over the nine chapters",
+      ["Epoch","Nine chapters","Chapter ten","Held-out words called right"],
+      HISTORY.map(h => [h.epoch, h.train == null ? "—" : h.train.toFixed(2),
+                        h.held.toFixed(2), h.right + " of " + h.n]));
+    moreBtn.disabled = false;
+    goBtn.textContent = "Train again from scratch";
+    report();
+    afterTrain.forEach(f => f());
+  }
+
+  goBtn.addEventListener("click", () => run(EPOCHS, true));
+  moreBtn.addEventListener("click", () => run(MORE, false));
+  draw();
+})();
+
+/* ---------------- 4. neighbours: learned beside counted ---------------- */
+(function(){
+  const input = document.getElementById("n-in"), msg = document.getElementById("n-msg"),
+        la = document.getElementById("n-learned"), lb = document.getElementById("n-counted");
+  const fill = (ul, list) => {
+    ul.textContent = "";
+    list.forEach(e => {
+      const li = document.createElement("li");
+      const w = document.createElement("span"); w.textContent = VOCAB[e[0]];
+      const v = document.createElement("span"); v.className = "v"; v.textContent = e[1].toFixed(2);
+      li.append(w, v); ul.append(li);
+    });
+  };
+  function show(){
+    const f = findWord(input.value);
+    if(f.a === undefined){ la.textContent = ""; lb.textContent = ""; msg.textContent = f.why; return; }
+    fill(la, learnedNeighbours(NET, f.a, 8));
+    fill(lb, countedNeighbours(PROF, VSIZE, f.a, 8));
+    msg.textContent = NET.epochs
+      ? "The eight nearest rows to “" + f.w + "” after " + plural(NET.epochs, "epoch")
+        + ", beside the eight nearest counted profiles. The two scores are not on the same scale; compare the orderings."
+      : "The network has not been trained, so the left column is reading random numbers and means nothing. "
+        + "Train it in section 3 and come back. The right column is counted and is already correct.";
+  }
+  afterTrain.push(show);
+  document.getElementById("n-go").addEventListener("click", show);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); show(); } });
+  [["n-p1","lawyer"],["n-p2","he"],["n-p3","door"],["n-p4","hand"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { input.value = b[1]; show(); });
+  });
+  show();
+})();
+
+/* ---------------- 5. the held-out walk, network beside table ---------------- */
+(function(){
+  const section = document.getElementById("silent");
+  const goBtn = document.getElementById("w-go"), msg = document.getElementById("w-msg"),
+        comp = document.getElementById("w-comp"), list = document.getElementById("w-list");
+
+  function walk(){
+    const h = new Float64Array(NET.H), p = new Float64Array(NET.V);
+    const r = { pos:0, row:0, tableRight:0, netOnRow:0, blank:0, netOnBlank:0, net:0, shown:[] };
+    for(let i=2;i<HELD_STREAM.length;i++){
+      const a = INDEX.get(HELD_STREAM[i-2]), b = INDEX.get(HELD_STREAM[i-1]), c = INDEX.get(HELD_STREAM[i]);
+      if(a === undefined || b === undefined || c === undefined) continue;
+      r.pos++;
+      forward(NET, a, b, h, p);
+      let best = 0;
+      for(let o=1;o<NET.V;o++) if(p[o] > p[best]) best = o;
+      const ok = best === c;
+      if(ok) r.net++;
+      const f = T2.get(HELD_STREAM[i-2] + " " + HELD_STREAM[i-1]);
+      if(f){
+        r.row++;
+        if(commonest(f) === HELD_STREAM[i]) r.tableRight++;
+        if(ok) r.netOnRow++;
+      } else {
+        r.blank++;
+        if(ok) r.netOnBlank++;
+        if(r.shown.length < 60)
+          r.shown.push({ ctx: HELD_STREAM[i-2] + " " + HELD_STREAM[i-1],
+                         said: VOCAB[best], truth: HELD_STREAM[i], ok: ok });
+      }
+    }
+    return r;
+  }
+
+  function render(r){
+    comp.textContent = "";
+    const table = document.createElement("table");
+    const cap = document.createElement("caption");
+    cap.textContent = "Chapter ten, the " + fmt(r.pos) + " positions whose three words are all among the 600";
+    const head = document.createElement("thead");
+    head.innerHTML = "<tr><th scope='col'>positions</th><th scope='col'>count</th>"
+      + "<th scope='col'>table right</th><th scope='col'>network right</th></tr>";
+    const body = document.createElement("tbody");
+    [["the table has a row", r.row, r.tableRight, r.netOnRow],
+     ["the table is silent", r.blank, 0, r.netOnBlank],
+     ["all positions", r.pos, r.tableRight, r.net]].forEach(row => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th"); th.scope = "row"; th.textContent = row[0]; tr.append(th);
+      [fmt(row[1]), fmt(row[2]) + " (" + pct(row[2],row[1]) + ")", fmt(row[3]) + " (" + pct(row[3],row[1]) + ")"]
+        .forEach(v => { const td = document.createElement("td"); td.textContent = v; tr.append(td); });
+      body.append(tr);
+    });
+    table.append(cap, head, body);
+    comp.append(table);
+
+    list.textContent = "";
+    r.shown.forEach(s => {
+      const d = document.createElement("div");
+      if(s.ok) d.className = "ok";
+      const ctx = document.createElement("span"); ctx.className = "ctx"; ctx.textContent = s.ctx + " → ";
+      const said = document.createElement("span"); said.textContent = s.said;
+      const truth = document.createElement("span"); truth.className = "ctx";
+      truth.textContent = s.ok ? "  (right)" : "  (the novel says " + s.truth + ")";
+      d.append(ctx, said, truth); list.append(d);
+    });
+
+    msg.textContent = "The table has a row for " + fmt(r.row) + " of the " + fmt(r.pos)
+      + " positions and gets " + fmt(r.tableRight) + " of those right, " + pct(r.tableRight, r.row)
+      + ". The network answers all " + fmt(r.pos) + ": " + fmt(r.netOnRow) + " right on the same "
+      + fmt(r.row) + " (" + pct(r.netOnRow, r.row) + ") and " + fmt(r.netOnBlank) + " of the "
+      + fmt(r.blank) + " the table had nothing for (" + pct(r.netOnBlank, r.blank)
+      + "). On a sample this size a point or two either way is noise.";
+  }
+
+  function refresh(){
+    goBtn.disabled = !NET.epochs;
+    if(!NET.epochs){
+      msg.textContent = "Train the network in section 3 first; a walk needs a trained model to report anything.";
+      comp.textContent = ""; list.textContent = "";
+      return;
+    }
+    msg.textContent = "The network has been trained for " + plural(NET.epochs, "epoch") + ". Walk chapter ten to compare it with the count table.";
+  }
+  goBtn.addEventListener("click", () => { if(NET.epochs) render(walk()); });
+  afterTrain.push(refresh);
+  refresh();
+})();
+
+/* ---------------- 6. where the slot runs out ---------------- */
+(function(){
+  const input = document.getElementById("x-in"), msg = document.getElementById("x-msg"),
+        vals = document.getElementById("x-tally").querySelectorAll(".v");
+  function show(){
+    const w = normWord(input.value);
+    if(!w){ vals.forEach(v => v.textContent = "—"); msg.textContent = "Type a word first."; return; }
+    const c = COUNTS.get(w) || 0, a = INDEX.get(w);
+    vals[0].textContent = c ? fmt(c) : "never";
+    vals[1].textContent = a === undefined ? "none" : "slot " + fmt(a+1);
+    vals[2].textContent = a === undefined ? "none" : "16 numbers";
+    vals[3].textContent = a === undefined ? "no" : "yes";
+    if(a !== undefined){
+      msg.textContent = "“" + w + "” occurs " + plural(c, "time")
+        + " in chapters one to nine, which puts it among the 600. It has an input slot, a row in the table and an output unit, so the network can be shown it and can say it.";
+    } else if(c === 0){
+      msg.textContent = "“" + w + "” never occurs in chapters one to nine. It has no slot, so there is no vector to hand the network and no unit that could ever produce it. Lesson 8 could at least report that the word was unknown; here it cannot be expressed at all.";
+    } else {
+      msg.textContent = "“" + w + "” occurs " + plural(c, "time")
+        + ", too few for a place among the 600 commonest. The network was built before this word came up, and adding it now means a wider input, a longer table, a wider output and training the whole thing again.";
+    }
+  }
+  document.getElementById("x-go").addEventListener("click", show);
+  input.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); show(); } });
+  [["x-p1","pillow"],["x-p2","computer"],["x-p3","middle"],["x-p4","lawyer"]].forEach(b => {
+    document.getElementById(b[0]).addEventListener("click", () => { input.value = b[1]; show(); });
+  });
+  show();
+})();
+
+initPanels([
+  ["onehot","How a word gets in"], ["lookup","A table of vectors"],
+  ["train","Filling it in"], ["rows","Reading it afterwards"],
+  ["silent","Function against table"], ["limits","Where the slot runs out"]
+]);
+</script>
+</body>
+</html>

@@ -72,6 +72,7 @@
   <a href="#margin">margin</a>
   <a href="#mycin">MYCIN</a>
   <a href="#n-gram">n-gram</a>
+  <a href="#one-hot-encoding">one-hot encoding</a>
   <a href="#parity">parity</a>
   <a href="#perceptron">perceptron</a>
   <a href="#perceptrons-1969">Perceptrons (1969)</a>
@@ -84,6 +85,7 @@
   <a href="#rule-base">rule base</a>
   <a href="#seeded-generator">seeded generator</a>
   <a href="#sigmoid">sigmoid</a>
+  <a href="#softmax">softmax</a>
   <a href="#squared-error">squared error</a>
   <a href="#step-function">step function</a>
   <a href="#supervised-learning">supervised learning</a>
@@ -135,7 +137,7 @@
   <div>
     <p>The smallest working part of a neural network. It takes several numbers in, multiplies each by its own <a href="#weight">weight</a>, adds them all up along with a <a href="#bias">bias</a>, and puts the total through an <a href="#activation-function">activation function</a> to produce one number out.</p>
     <p class="exact">A mathematical caricature of a nerve cell, first written down by McCulloch and Pitts in 1943. It borrows the idea of summed inputs and a firing threshold and almost nothing else.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
   </div>
 </article>
 
@@ -144,7 +146,7 @@
   <div>
     <p>The method that works out how much each weight in a layered network is to blame for the network's mistake. The output's error is known directly; every weight further back gets its share by passing that error backwards along the same connections that carried the answer forwards.</p>
     <p class="exact">Repeated application of the <a href="#chain-rule">chain rule</a> to compute the <a href="#gradient">gradient</a> of the error with respect to every parameter. Published for neural networks by Rumelhart, Hinton and Williams in 1986, though the same computation had been described by Linnainmaa in 1970 and by Werbos in 1974.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Backpropagation">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a>, <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Backpropagation">Wikipedia</a></p>
   </div>
 </article>
 
@@ -333,7 +335,7 @@
   <div>
     <p>Learning by repeatedly taking a small step downhill. Work out which way is down, move a little way in that direction, and do it again until the ground stops falling away.</p>
     <p class="exact">Iteratively subtracting a multiple of the <a href="#gradient">gradient</a> from the parameters. The multiple is the <a href="#learning-rate">learning rate</a>; too large and the steps overshoot the valley instead of settling into it.</p>
-    <p class="gloss-meta"><span>Used in lesson <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Gradient_descent">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Gradient_descent">Wikipedia</a></p>
   </div>
 </article>
 
@@ -360,7 +362,7 @@
   <div>
     <p>A row of units sitting between the inputs and the output, whose answers nobody ever sees or specifies. They exist only to re-describe the input for the units that come after them.</p>
     <p class="exact">Hidden because it appears in neither the input nor the output, so no training example says what it ought to produce. That is exactly the difficulty <a href="#backpropagation">backpropagation</a> solves.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Multilayer_perceptron">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a>, <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Multilayer_perceptron">Wikipedia</a></p>
   </div>
 </article>
 
@@ -481,6 +483,15 @@
   </div>
 </article>
 
+<article class="gloss" id="one-hot-encoding">
+  <h2>one-hot encoding</h2>
+  <div>
+    <p>The plainest way to hand a word, or any other category, to a machine that only multiplies numbers: give each possible value its own slot, and write a one in that slot and a zero in all the others. It records which value this is and nothing else about it.</p>
+    <p class="exact">A vector of length V with a single 1 at the index of the represented item. Any two distinct items are orthogonal, so their dot product is 0 and the distance between them is √2 whichever pair is chosen; the encoding therefore supplies no notion of similarity. Multiplying a one-hot vector by a weight matrix selects one row of that matrix, which is why the first layer of a network fed one-hot words is a lookup table of learnable vectors.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/One-hot">Wikipedia</a></p>
+  </div>
+</article>
+
 <article class="gloss" id="parity">
   <h2>parity</h2>
   <div>
@@ -585,7 +596,16 @@
   <div>
     <p>A dial in place of a switch. Instead of jumping from 0 to 1 at a threshold, it slides smoothly between them, so a small change to the inputs makes a small change to the answer rather than none or all of it.</p>
     <p class="exact">Here, the logistic function σ(z) = 1 / (1 + exp(−z)). Its mathematical values lie strictly between 0 and 1, and its derivative is σ(z)(1−σ(z)). An output in this interval is not automatically a calibrated probability or confidence score; finite-precision calculations may round to an endpoint.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a> and <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Sigmoid_function">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/xor.html">3</a>, <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Sigmoid_function">Wikipedia</a></p>
+  </div>
+</article>
+
+<article class="gloss" id="softmax">
+  <h2>softmax</h2>
+  <div>
+    <p>A way of turning a list of scores into a list of probabilities. The bigger scores end up with the larger shares, every share is positive, and the shares add to one, so the result can be read as the machine's opinion about which of several answers is right.</p>
+    <p class="exact">For scores z, the softmax gives exp(z_i) divided by the sum of exp(z_j) over all j. It generalises the sigmoid from two outcomes to many. Adding a constant to every score leaves the result unchanged, which is what lets an implementation subtract the largest score before taking exponentials without altering the answer. The output is a probability distribution over the listed options and says nothing about whether the right answer is among them.</p>
+    <p class="gloss-meta"><span>Used in lesson <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Softmax_function">Wikipedia</a></p>
   </div>
 </article>
 
@@ -693,7 +713,7 @@
   <div>
     <p>A number saying how much one input counts towards the answer. Large and positive means that input pushes hard towards yes, large and negative pushes hard towards no, and near zero means the machine is barely listening to it at all.</p>
     <p class="exact">The coefficient an input is multiplied by before the sum. The weights, together with the <a href="#bias">bias</a>, are the whole of what a unit has learned and the only thing training changes.</p>
-    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/perceptron.html">1</a> to <a href="lessons/backprop.html">4</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Artificial_neuron">Wikipedia</a></p>
   </div>
 </article>
 
@@ -711,7 +731,7 @@
   <div>
     <p>A word represented as a list of numbers, so that words become points and the distance between two words becomes something a machine can compute. Which likenesses the distances capture depends entirely on where the numbers came from.</p>
     <p class="exact">Also called a word embedding. In lesson 8 the numbers are counted and reweighted co-occurrence statistics, fixed once built; in today's language models they are learned parameters, adjusted by gradient descent so that prediction improves, which is the difference the lesson ends on.</p>
-    <p class="gloss-meta"><span>Used in lesson <a href="lessons/vectors.html">8</a></span><a class="out" href="https://en.wikipedia.org/wiki/Word_embedding">Wikipedia</a></p>
+    <p class="gloss-meta"><span>Used in lessons <a href="lessons/vectors.html">8</a> and <a href="lessons/embeddings.html">9</a></span><a class="out" href="https://en.wikipedia.org/wiki/Word_embedding">Wikipedia</a></p>
   </div>
 </article>
 
