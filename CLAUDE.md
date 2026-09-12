@@ -59,8 +59,11 @@ and still illegible, which is invisible from the DOM.
 Each lesson is one self-contained HTML file: content in markup, all behaviour in a single
 inline `<script>` at the bottom, one IIFE per panel. `assets/lesson.js` holds only machinery
 shared by more than one lesson; anything used by a single lesson stays inline, however
-reusable it looks. (`images.html` keeps its picture generator and its 12×12 canvas painters
-inline for exactly this reason.)
+reusable it looks. (`images.html` keeps its thumbnail sheet and its verdict bar inline for
+exactly this reason.) The counterpart applies when a second lesson needs the same thing:
+`images.html` and `conv.html` must draw identical animals for lesson 5's comparison to mean
+anything, so the generator, the transformations and the 12×12 painters live in
+`assets/animals.js` rather than being copied.
 
 Three conventions are load-bearing and easy to break:
 
@@ -89,7 +92,7 @@ Generated in the browser from a seeded PRNG rather than checked in. This is what
 draw as many fresh examples as it wants and keeps a held-out set genuinely held out — see
 `makeSet` in `images.html`, where training and test sets come from disjoint seed ranges. Never
 inline a precomputed result to save the work. The one sanctioned exception is raw source
-material: lessons 7 and 8 share a corpus (a Project Gutenberg novel, with a license-required
+material: lessons 8, 9 and 10 share a corpus (a Project Gutenberg novel, with a license-required
 attribution in both footers), held in `assets/corpus-trial.js` as two string constants —
 chapters 1–9 for counting, chapter 10 held out — and still count every table and profile
 from it in the browser.

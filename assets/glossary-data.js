@@ -50,10 +50,15 @@ const GLOSSARY = {
     "plain": "The rule for working out how much a change at the start of a chain of steps affects the end of it. If turning a handle twice as fast makes a wheel spin twice as fast, and that wheel turning twice as fast makes a belt move three times as fast, the handle affects the belt six times over.",
     "exact": "The rule of calculus for differentiating a composition of functions: the derivatives of the steps multiply. It is the whole mechanism behind backpropagation."
   },
+  "convolution": {
+    "title": "convolution",
+    "plain": "Applying one small set of weights at every position in an image and collecting the answers into a map. The same detector is asked about every part of the picture, so what it looks for is not tied to any one place in the frame.",
+    "exact": "A layer that slides a filter across its input and records the response at each offset, producing a feature map. The weights are shared across positions, which is what distinguishes it from a fully connected layer reading the same pixels."
+  },
   "cosine-similarity": {
     "title": "cosine similarity",
     "plain": "A score for how alike two lists of numbers are, read as directions rather than sizes. Two words that keep the same company in the same proportions score near 1 even if one is common and the other rare; two with nothing in common score 0.",
-    "exact": "The cosine of the angle between two vectors: their dot product divided by the product of their lengths. On vectors already scaled to length one it is just the dot product. Lesson 8 uses it because profile direction — which company, in what proportion — is what matters there, not profile size."
+    "exact": "The cosine of the angle between two vectors: their dot product divided by the product of their lengths. On vectors already scaled to length one it is just the dot product. Lesson 9 uses it because profile direction — which company, in what proportion — is what matters there, not profile size."
   },
   "credit-assignment": {
     "title": "credit assignment",
@@ -78,7 +83,7 @@ const GLOSSARY = {
   "distributional-hypothesis": {
     "title": "distributional hypothesis",
     "plain": "The observation that words used in similar surroundings tend to have related meanings — so the company a word keeps, gathered across enough text, says something about the word. It is a claim about usage, not a definition of meaning, and it holds only as far as the text it is gathered from.",
-    "exact": "In distributional semantics, the hypothesis that the degree of semantic similarity between two words tracks the similarity of their contexts. It licenses the move in lesson 8 from co-occurrence counts to comparable vectors; what it cannot do is distinguish words that share circumstances from words that share meaning, which is why a door and a mouth end up neighbours."
+    "exact": "In distributional semantics, the hypothesis that the degree of semantic similarity between two words tracks the similarity of their contexts. It licenses the move in lesson 9 from co-occurrence counts to comparable vectors; what it cannot do is distinguish words that share circumstances from words that share meaning, which is why a door and a mouth end up neighbours."
   },
   "episode": {
     "title": "episode",
@@ -103,12 +108,17 @@ const GLOSSARY = {
   "exploration": {
     "title": "exploration and exploitation",
     "plain": "The standing tension in learning by trying things. Exploiting means taking the best option you currently know of; exploring means taking something else in the hope of finding better. Every step spent exploring is a step not spent earning, and an agent that never explores can only ever be as good as what it happened to find first.",
-    "exact": "Usually managed by ε-greedy action selection: with probability ε ignore the estimates and act at random, otherwise take the best known action. Simple, and weak in a particular way — independent random moves tend to undo one another, so dithering explores the neighbourhood of the current policy and reaches nothing far from it. Lesson 6 measures both the cost of exploring and the cost of not."
+    "exact": "Usually managed by ε-greedy action selection: with probability ε ignore the estimates and act at random, otherwise take the best known action. Simple, and weak in a particular way — independent random moves tend to undo one another, so dithering explores the neighbourhood of the current policy and reaches nothing far from it. Lesson 7 measures both the cost of exploring and the cost of not."
   },
   "feature": {
     "title": "feature",
     "plain": "One of the individual measurements you hand the machine about a thing. If the thing is a small picture, one feature might be the brightness of a single pixel; if it is a person, it might be their height.",
     "exact": "A component of the input vector. Choosing what the features should be was for decades most of the work; what changed with layered networks is that a network can compose its own from raw measurements."
+  },
+  "filter": {
+    "title": "filter",
+    "plain": "The small square of weights a convolution applies — in lesson 5, nine numbers in a three-by-three arrangement. Laid over nine pixels, it multiplies and adds, and returns one number saying how strongly those pixels match what it responds to.",
+    "exact": "Also called a kernel. Its size fixes how much of the image any single response can depend on. A filter is not required to be interpretable: a trained one often looks like nothing in particular while still contributing to a good score, so reading one as a detector of some namable thing is a guess rather than a fact about the weights."
   },
   "forward-chaining": {
     "title": "forward chaining",
@@ -173,7 +183,7 @@ const GLOSSARY = {
   "language-model": {
     "title": "language model",
     "plain": "A machine whose one task is to predict the next word from the words so far. Anything that can do this can also write: predict a word, add it, predict again. How well it predicts is a measure of how much of the language's regularity it has absorbed.",
-    "exact": "A probability distribution over the next symbol given the preceding ones — equivalently, over whole sequences. Lesson 7's tables of counts are the simplest estimate of one; modern systems instead learn the distribution with neural networks trained on very large bodies of text."
+    "exact": "A probability distribution over the next symbol given the preceding ones — equivalently, over whole sequences. Lesson 8's tables of counts are the simplest estimate of one; modern systems instead learn the distribution with neural networks trained on very large bodies of text."
   },
   "learning-rate": {
     "title": "learning rate",
@@ -208,7 +218,7 @@ const GLOSSARY = {
   "n-gram": {
     "title": "n-gram",
     "plain": "A run of n consecutive items from a text — letters or words. Counting how often each one occurs turns a text into a table: the first n−1 items are a context, and the counts record what came next, and how often.",
-    "exact": "A model that predicts the next item from the previous n−1, using those counts, is an n-gram model. Its table grows as n does while the count in each row shrinks, which is the trade lesson 7 measures."
+    "exact": "A model that predicts the next item from the previous n−1, using those counts, is an n-gram model. Its table grows as n does while the count in each row shrinks, which is the trade lesson 8 measures."
   },
   "one-hot-encoding": {
     "title": "one-hot encoding",
@@ -238,7 +248,12 @@ const GLOSSARY = {
   "policy": {
     "title": "policy",
     "plain": "The agent's rule for what to do: given where it is, which action it takes. Everything an agent has learned shows up here, and the policy is the thing you would actually deploy — the estimates behind it are working notes.",
-    "exact": "A mapping from states to actions, or to a distribution over them. It may be held explicitly, or read off a value function by taking the best-valued action in each state, which is what lesson 6 does. A greedy policy always takes the best known action; an ε-greedy one departs from it at random a fixed fraction of the time."
+    "exact": "A mapping from states to actions, or to a distribution over them. It may be held explicitly, or read off a value function by taking the best-valued action in each state, which is what lesson 7 does. A greedy policy always takes the best known action; an ε-greedy one departs from it at random a fixed fraction of the time."
+  },
+  "pooling": {
+    "title": "pooling",
+    "plain": "Reducing a feature map to fewer numbers by summarising a region of it, most often by keeping the largest value. Taken over a whole map, it keeps whether a detector responded anywhere and discards where it did.",
+    "exact": "The step that supplies tolerance to a shifted input. Lesson 5 measures the two ingredients of a convolution separately and finds that weight sharing on its own does not measurably survive a two-pixel shift while pooling does. The same discarding makes any question whose answer depends on position unanswerable downstream."
   },
   "production-rule": {
     "title": "production rule",
@@ -247,8 +262,8 @@ const GLOSSARY = {
   },
   "q-learning": {
     "title": "Q-learning",
-    "plain": "The rule in lesson 6. After each move, the agent sets its estimate for that move to the reward that arrived plus the discounted value of the best move available where it landed. Applied over and over, this carries value backwards from the reward, one cell per visit, until every position knows what it is worth.",
-    "exact": "An off-policy temporal-difference control method, published by Christopher Watkins in 1989. Off-policy means it learns the value of acting best while behaving otherwise, so the exploring it does to gather experience does not corrupt what it concludes. Watkins and Peter Dayan proved in 1992 that it converges on the optimal action-values provided every action is tried in every state infinitely often — a condition that is easy to state and, as lesson 6 shows, easy to violate."
+    "plain": "The rule in lesson 7. After each move, the agent sets its estimate for that move to the reward that arrived plus the discounted value of the best move available where it landed. Applied over and over, this carries value backwards from the reward, one cell per visit, until every position knows what it is worth.",
+    "exact": "An off-policy temporal-difference control method, published by Christopher Watkins in 1989. Off-policy means it learns the value of acting best while behaving otherwise, so the exploring it does to gather experience does not corrupt what it concludes. Watkins and Peter Dayan proved in 1992 that it converges on the optimal action-values provided every action is tried in every state infinitely often — a condition that is easy to state and, as lesson 7 shows, easy to violate."
   },
   "reinforcement-learning": {
     "title": "reinforcement learning",
@@ -328,7 +343,7 @@ const GLOSSARY = {
   "value-function": {
     "title": "value function",
     "plain": "An estimate of what a position is worth: not what you get for standing there, which is usually nothing, but everything you can expect to collect from there onwards if you go on acting well. It is what lets a machine prefer a move that pays nothing now over one that pays nothing now and leads nowhere.",
-    "exact": "The expected discounted return from a state, or from a state-action pair, under a given policy. Lesson 6 keeps one as a table with a row per cell and a column per direction, which is possible only because the world has nineteen cells; where states cannot be enumerated the table is replaced by a learned function that estimates the value of positions it has never seen."
+    "exact": "The expected discounted return from a state, or from a state-action pair, under a given policy. Lesson 7 keeps one as a table with a row per cell and a column per direction, which is possible only because the world has nineteen cells; where states cannot be enumerated the table is replaced by a learned function that estimates the value of positions it has never seen."
   },
   "vanishing-gradient": {
     "title": "vanishing gradient",
@@ -345,10 +360,15 @@ const GLOSSARY = {
     "plain": "What the weights are set to before any learning happens. It sounds like a detail and is not: start every weight in a layer at the same value and the units in it stay identical for ever, because identical units receive identical blame and take identical steps.",
     "exact": "Small random values are used to break that symmetry. Lesson 4 shows the failure directly — an all-zero start leaves a network that never moves at all, with a gradient that is perfectly correct and perfectly useless."
   },
+  "weight-sharing": {
+    "title": "weight sharing",
+    "plain": "Using the same weights in more than one place instead of giving each place its own. A convolution shares one filter across every position in the image, so nine numbers do work that would otherwise need nine numbers per position.",
+    "exact": "In training, a shared weight collects a gradient from every position it was used at, and those contributions are added before it moves. Sharing reduces the parameter count sharply. It does not by itself make a network tolerant of a shifted input; lesson 5 measures that separately and finds the tolerance comes from pooling. Wikipedia has no article on the term; it is described within the article on convolutional networks."
+  },
   "word-vector": {
     "title": "word vector",
     "plain": "A word represented as a list of numbers, so that words become points and the distance between two words becomes something a machine can compute. Which likenesses the distances capture depends entirely on where the numbers came from.",
-    "exact": "Also called a word embedding. In lesson 8 the numbers are counted and reweighted co-occurrence statistics, fixed once built; in today's language models they are learned parameters, adjusted by gradient descent so that prediction improves, which is the difference the lesson ends on."
+    "exact": "Also called a word embedding. In lesson 9 the numbers are counted and reweighted co-occurrence statistics, fixed once built; in today's language models they are learned parameters, adjusted by gradient descent so that prediction improves, which is the difference the lesson ends on."
   },
   "xor": {
     "title": "XOR",

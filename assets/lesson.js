@@ -15,7 +15,7 @@ const step  = z => z >= 0 ? 1 : 0;
 const num   = (v,d=2) => (v<0?"\u2212":"") + Math.abs(v).toFixed(d);
 const signed = (v,d=2) => (v<0?"\u2212 ":"+ ") + Math.abs(v).toFixed(d);
 /* "epoch" ends in ch but is said with a /k/, so it takes -s; the general
-   rule cannot hear that, and lessons 4 and 9 both count epochs. */
+   rule cannot hear that, and lessons 4 and 10 both count epochs. */
 const IRREGULAR_PLURAL = { epoch:"epochs" };
 const plural = (n,word) => n + " " + (n === 1 ? word :
   IRREGULAR_PLURAL[word] || word + (/(s|x|ch|sh)$/.test(word) ? "es" : "s"));

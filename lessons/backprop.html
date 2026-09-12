@@ -329,39 +329,41 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
       <p>The second button is a different failure and a shorter one. Start every weight at zero and the two hidden units are identical; being identical, they receive identical blame; receiving identical blame, they take identical steps and stay identical for ever. The gradient is not wrong, and the network never moves. Random <a class="term" href="../glossary.html#weight-initialisation">initialisation</a> is not a convenience here, it is what breaks the symmetry.</p>
     </div>
     <div>
-      <p>What this experiment establishes is limited: some starting weights reach the chosen error threshold within the budget and others do not. It does not prove permanent failure for the others. Backpropagation made layered learning practical across many problems, without supplying a universal guarantee of a globally optimal result. The next lesson turns to another tradition, one that wrote its knowledge down as rules.</p>
+      <p>What this experiment establishes is limited: some starting weights reach the chosen error threshold within the budget and others do not. It does not prove permanent failure for the others. Backpropagation made layered learning practical across many problems, without supplying a universal guarantee of a globally optimal result. The next lesson takes it back to the pictures of lesson 2, where what failed was not the training but the shape of the machine being trained.</p>
       <p class="cite">David Rumelhart, Geoffrey Hinton and Ronald Williams, &ldquo;Learning Representations by Back-Propagating Errors,&rdquo; <em>Nature</em> 323 (1986), is the paper that made the method common property, and it is candid about the local minima. The rule itself had been arrived at before, by Seppo Linnainmaa (1970) as a general method for the accumulated rounding error of a composite function, and by Paul Werbos (1974) for exactly this purpose in a doctoral thesis that went largely unread.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> A training cutoff is an observation, not proof of a local minimum or permanent failure.</p>
 </section>
 
-<a class="nextup" href="mycin.html">
+<a class="nextup" href="conv.html">
   <div>
     <p class="lab">Next lesson</p>
-    <span class="ttl">A machine you can argue with</span>
-    <p class="say">The first four lessons stored what they learned as numbers. The next goes back to the 1970s, to a tradition that wrote its knowledge in sentences instead — and found a quite different way to fail.</p>
+    <span class="ttl">Looking for the same thing everywhere</span>
+    <p class="say">Lesson 2's classifier broke when the animal moved two pixels. The next lesson repairs it with a detector small enough to be tried at every position — and measures which half of the repair is doing the work.</p>
   </div>
   <svg viewBox="0 0 168 118" aria-hidden="true">
-      <g stroke="#D7D4C7" stroke-width="1">
-        <path d="M12 24H156M12 62H156M12 100H156"/>
-      </g>
-      <g stroke="#22262C" stroke-width="1.5" fill="none" stroke-linecap="round">
-        <path d="M84 30 50 56"/><path d="M50 68 30 94"/><path d="M50 68 70 94"/>
-      </g>
-      <g stroke="#C7C4B6" stroke-width="1.3" fill="none" stroke-linecap="round">
-        <path d="M84 30 118 56"/><path d="M118 68 100 94"/><path d="M118 68 140 94"/>
-      </g>
-      <g fill="#8A5206">
-        <rect x="79" y="19" width="10" height="10" rx="2"/>
-        <rect x="45" y="57" width="10" height="10" rx="2"/>
-        <rect x="25" y="95" width="10" height="10" rx="2"/>
-        <rect x="65" y="95" width="10" height="10" rx="2"/>
-      </g>
-      <g fill="#EFEDE5" stroke="#274B8F" stroke-width="2">
-        <circle cx="118" cy="62" r="5"/><circle cx="100" cy="99" r="4.5"/><circle cx="140" cy="99" r="4.5"/>
-      </g>
-    </svg>
+    <g fill="#D7D4C7">
+      <rect x="14" y="20" width="16" height="16"/><rect x="32" y="20" width="16" height="16"/>
+      <rect x="50" y="20" width="16" height="16"/><rect x="14" y="38" width="16" height="16"/>
+      <rect x="32" y="38" width="16" height="16"/><rect x="50" y="38" width="16" height="16"/>
+      <rect x="14" y="56" width="16" height="16"/><rect x="32" y="56" width="16" height="16"/>
+      <rect x="50" y="56" width="16" height="16"/><rect x="14" y="74" width="16" height="16"/>
+      <rect x="32" y="74" width="16" height="16"/><rect x="50" y="74" width="16" height="16"/>
+    </g>
+    <rect x="31" y="37" width="36" height="36" fill="none" stroke="#22262C" stroke-width="2.2"/>
+    <path d="M72 55H96" stroke="#22262C" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M90 49l6 6-6 6" fill="none" stroke="#22262C" stroke-width="1.6"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#EFEDE5" stroke="#C7C4B6" stroke-width="1">
+      <rect x="104" y="30" width="17" height="17"/><rect x="121" y="30" width="17" height="17"/>
+      <rect x="138" y="30" width="17" height="17"/><rect x="104" y="47" width="17" height="17"/>
+      <rect x="138" y="47" width="17" height="17"/><rect x="104" y="64" width="17" height="17"/>
+      <rect x="121" y="64" width="17" height="17"/><rect x="138" y="64" width="17" height="17"/>
+    </g>
+    <rect x="121" y="47" width="17" height="17" fill="#8A5206"/>
+    <circle cx="129.5" cy="55.5" r="12" fill="none" stroke="#22262C" stroke-width="1.6"/>
+  </svg>
 </a>
 
 <footer>

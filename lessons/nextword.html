@@ -52,7 +52,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
   <div class="hero-grid">
     <div class="hero-text">
     <div class="hero-intro">
-      <p class="kicker">lesson 7 · language models</p>
+      <p class="kicker">lesson 8 · language models</p>
       <h1>The next word</h1>
       <p class="lede">Every machine so far was given something along with its examples: a <a class="term" href="../glossary.html#label">label</a> on each one, a rule from an expert, a <a class="term" href="../glossary.html#reward">reward</a> at the end of a journey. This one is given a book — Kafka's <em>The Trial</em>, which travels with this page — and nothing else. No part of the book is marked right or wrong; it is simply what was written, one word after another. The machine's whole task is to answer one question: given the words so far, which word comes next? A machine that answers it is a <a class="term" href="../glossary.html#language-model">language model</a>, and this lesson builds the plainest one there is, out of counting.</p>
     </div>
@@ -296,7 +296,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
       <p class="msg" id="cl-say">It will look up your last three words, then two, then one, and continue from the first row it finds.</p>
     </div>
     <div class="stack">
-      <p>Hand it your own words and watch what failure looks like. When your last words occur in the novel, it continues fluently. When they do not, it drops context until something matches, trading away what you said for the ability to say anything at all. And when your final word is one the novel never uses, it produces nothing — not a poor guess, nothing. A table has no notion of a near miss. This is the cliff at the edge of the rules from lesson 5, reached from the other side: those rules were written and ended where the writing stopped, these counts were read and end where the reading stopped, and the <a class="term" href="../glossary.html#brittleness">brittleness</a> at the edge is the same.</p>
+      <p>Hand it your own words and watch what failure looks like. When your last words occur in the novel, it continues fluently. When they do not, it drops context until something matches, trading away what you said for the ability to say anything at all. And when your final word is one the novel never uses, it produces nothing — not a poor guess, nothing. A table has no notion of a near miss. This is the cliff at the edge of the rules from lesson 6, reached from the other side: those rules were written and ended where the writing stopped, these counts were read and end where the reading stopped, and the <a class="term" href="../glossary.html#brittleness">brittleness</a> at the edge is the same.</p>
       <p>The fix is the one that closed the last lesson. The table would have to become a function that guesses what follows a context it has never seen — one that has learned, from the contexts it did see, that &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; turn up in the same places, so that counting one teaches it a little about the other. The next lesson takes the first step: it counts, from these same nine chapters, which words keep the same company, and measures what that similarity buys back on chapter ten. A learned function trained on the next-word question, at a scale that deserves a lesson of its own, is what today's language models are.</p>
     </div>
   </div>

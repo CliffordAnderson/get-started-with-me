@@ -1,4 +1,4 @@
-/* getstartedwith.me — the corpus shared by lessons 7 and 8.
+/* getstartedwith.me — the corpus shared by lessons 8, 9 and 10.
    Franz Kafka, The Trial, translated by David Wyllie. Project Gutenberg
    ebook 7849; the translation is distributed under the Project Gutenberg
    License, and every page that uses this text carries the required

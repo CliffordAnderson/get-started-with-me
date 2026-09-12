@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Looking for the same thing everywhere — getstartedwith.me</title>
+<meta name="description" content="Lesson 2's template broke when the animal moved two pixels. A detector of nine weights, applied at every position, and the step that actually repairs the damage: discarding where it fired. Trained in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+/* this lesson's figures are a 12×12 picture, a 10×10 response map and a
+   3×3 filter, so all three are pixel grids at very different scales; the
+   painters come from animals.js and the sizes are set here */
+canvas.pic{aspect-ratio:1/1}
+canvas.map{aspect-ratio:1/1}
+canvas.filt{aspect-ratio:1/1;height:104px}
+canvas.curve{aspect-ratio:auto;height:250px}
+canvas.bank{aspect-ratio:auto;height:112px}
+.lamp{display:inline-grid;place-items:center;min-width:3.4em;padding:.1rem .5rem;margin-left:.55rem;
+  font-family:var(--mono);font-size:.86rem;border:1px solid var(--rule);border-radius:2px;background:var(--field)}
+.lamp.cat{background:var(--off);border-color:var(--off);color:var(--field)}
+.lamp.dog{background:var(--on);border-color:var(--on);color:var(--field)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.pair figcaption{margin-top:.4rem;font-size:.78rem}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+.nine{font-family:var(--mono);font-size:.8rem;border-collapse:collapse;margin:.3rem 0 0}
+.nine td{border:1px solid var(--rule);padding:.22rem .42rem;text-align:right;min-width:3.1em}
+.comp{overflow-x:auto}
+.comp table{border-collapse:collapse;font-family:var(--mono);font-size:.84rem;min-width:26rem}
+.comp caption{text-align:left;font-family:var(--sans);font-size:.85rem;color:var(--ink-2);padding:0 0 .45rem}
+.comp th,.comp td{border-bottom:1px solid rgba(199,196,182,.6);padding:.32rem .6rem;text-align:right;font-weight:400}
+.comp th[scope=row],.comp thead th:first-child{text-align:left}
+.comp thead th{color:var(--ink-2)}
+.comp tr.nudged td,.comp tr.nudged th{background:rgba(138,82,6,.14)}
+.count{font-family:var(--mono);font-size:.86rem;line-height:1.75;margin:.5rem 0 0;list-style:none;padding:0;max-width:23rem}
+.count li{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid rgba(199,196,182,.5);padding:.1rem 0}
+.count .v{color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+
+<div class="topbar">
+  <a class="wordmark" href="../index.html">getstartedwith.me</a>
+  <nav>
+    <a class="away" href="../glossary.html" target="_blank" rel="noopener" title="Open the full glossary in a new tab">Glossary</a>
+    <a class="away" href="../index.html">All lessons</a>
+    <a class="away" href="../about.html">About</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+    <div class="hero-intro">
+      <p class="kicker">lesson 5 · convolution</p>
+      <h1>Looking for the same thing everywhere</h1>
+      <p class="lede">Lesson 2 ended with a complaint: no setting of 144 <a class="term" href="../glossary.html#weight">weights</a> says <em>pointed ears, wherever they are</em>. A weight belongs to a <a class="term" href="../glossary.html#pixel">pixel</a> position, so the evidence it carries is evidence about that position, and moving the animal two pixels took the picture off the template. This lesson builds the standard repair. It has two parts, and the famous one turns out not to be the part that does the work.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="readout" id="hero-read">strongest response at row <b>—</b>, column <b>—</b></p>
+      <p class="msg" id="hero-msg">Move the animal. The bright spot in the map moves with it.</p>
+      <div class="row">
+        <label for="hero-dx">Across</label>
+        <input type="range" id="hero-dx" min="-3" max="3" step="1" value="0">
+        <label for="hero-dy">Down</label>
+        <input type="range" id="hero-dy" min="-3" max="3" step="1" value="0">
+      </div>
+      <div class="row"><button class="btn" id="hero-next" type="button">Another picture</button></div>
+    </div>
+    </div>
+    <figure class="hero-fig">
+      <div class="pair">
+        <div class="window"><canvas id="hero-pic" class="pic" role="img"
+          aria-label="A twelve by twelve grayscale drawing of an animal, which moves when the two sliders are changed."></canvas></div>
+        <div class="window"><canvas id="hero-map" class="map" role="img"
+          aria-label="A ten by ten map of how strongly one nine-weight detector responded at each position in the picture. The brightest cell moves as the animal moves."></canvas></div>
+      </div>
+      <figcaption>Left, the picture. Right, one detector of nine weights tried at all 100 positions, and how strongly it answered at each. Both are computed in your browser from the numbers beside them.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div id="rail-top"></div>
+<div class="rail" id="rail" role="tablist" aria-label="Sections"></div>
+
+<section id="patch" class="panel" role="tabpanel" aria-labelledby="tab-patch">
+  <p class="experiment-prompt"><strong>Before you try:</strong> A detector that reads nine pixels can be shown any nine pixels in the picture. What would you want it to look for?</p>
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div>
+      <h2>A detector that reads nine pixels</h2>
+      <p>Instead of one weight per pixel across the whole picture, take nine weights arranged in a three-by-three square. Lay that square over some part of the picture, multiply each weight by the brightness underneath it, and add the nine products up. The result is a single number: how strongly this arrangement of nine weights answers to what is under it right now. The square is called a <a class="term" href="../glossary.html#filter">filter</a>, and the sum is the same sum as every other lesson — <span class="formula" style="display:inline-block;padding:.1rem .35rem">w₁x₁ + ⋯ + w₉x₉ + b</span> — with nine terms instead of 144 or two.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="p-pic" class="pic drag-canvas" tabindex="0" role="img"
+        aria-label="The twelve by twelve picture with a three by three box drawn on it. Click or use the arrow keys to move the box."></canvas></div>
+      <figcaption id="p-cap">Click a spot, or use the arrow keys, to move the box.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="row">
+        <label class="vh" for="p-kind">Filter</label>
+        <select id="p-kind">
+          <option value="0">bright above, dark below</option>
+          <option value="1">bright left, dark right</option>
+          <option value="2">a bright spot in a dark surround</option>
+          <option value="3">a bright edge leaning up to the right</option>
+        </select>
+        <button class="btn" id="p-new" type="button">Another picture</button>
+      </div>
+
+      <div class="pair">
+        <figure>
+          <div class="window"><canvas id="p-filt" class="filt" role="img"
+            aria-label="The nine filter weights drawn as a three by three image, brown for positive and blue for negative."></canvas></div>
+          <figcaption>The nine weights. Brown is positive, blue negative.</figcaption>
+        </figure>
+        <div>
+          <p class="grouped" style="margin:0 0 .3rem">under the box</p>
+          <table class="nine" id="p-patch"><tbody></tbody></table>
+        </div>
+      </div>
+
+      <p class="readout" id="p-read">response here <b>—</b></p>
+      <p class="msg" id="p-msg">The nine products, added up.</p>
+
+      <p class="note">One point about the drawing before going on. A pixel's value is its brightness, and these pages draw a brighter pixel with more ink, exactly as lesson 2 does, so the animal is the dark shape on the page. A filter named for what is bright is named for where the numbers are high, which is where the page looks darkest.</p>
+
+      <p class="note">These are the same nine weights wherever you put the box. That is the whole of the idea so far: the detector is a small thing that can be asked about any part of the picture, rather than a large thing tied to all of it. Nothing has been learned yet — these four filters are set by hand, as the weights in lesson 3 were, and section 4 throws them away and finds its own.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A filter is a small set of weights that can be applied to any position in the picture.</p>
+</section>
+
+<section id="slide" class="panel" role="tabpanel" aria-labelledby="tab-slide">
+  <p class="experiment-prompt"><strong>Before you try:</strong> If the picture moves two pixels to the right, what happens to the map of responses?</p>
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div>
+      <h2>Nine weights, a hundred positions</h2>
+      <p>Now stop choosing a position and use every one. A three-by-three box fits into a twelve-by-twelve picture in 100 places, so the filter can be asked 100 questions and give 100 answers. Arrange those answers in the same layout as the positions they came from and you have a picture of your own: a map of where in the image this detector found what it was looking for. This is a <a class="term" href="../glossary.html#convolution">convolution</a>, and the map it produces is called a feature map.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="pair">
+        <div class="window"><canvas id="s-pic" class="pic" role="img"
+          aria-label="The twelve by twelve picture, shifted by the amount set on the sliders."></canvas></div>
+        <div class="window"><canvas id="s-map" class="map" role="img"
+          aria-label="The ten by ten map of filter responses for the picture beside it."></canvas></div>
+      </div>
+      <figcaption>The picture and its map of responses. Shift the picture and the map shifts the same way.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="row">
+        <label class="vh" for="s-kind">Filter</label>
+        <select id="s-kind">
+          <option value="0">bright above, dark below</option>
+          <option value="1">bright left, dark right</option>
+          <option value="2">a bright spot in a dark surround</option>
+          <option value="3">a bright edge leaning up to the right</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="s-dx">Across</label>
+        <input type="range" id="s-dx" min="-3" max="3" step="1" value="0">
+        <label for="s-dy">Down</label>
+        <input type="range" id="s-dy" min="-3" max="3" step="1" value="0">
+        <button class="btn" id="s-reset" type="button">Centre it</button>
+      </div>
+
+      <p class="readout" id="s-read">shifted 0 across, 0 down</p>
+      <p class="msg" id="s-msg">The map carries the shift with it.</p>
+
+      <ul class="count">
+        <li><span>weights in lesson 2's template</span><span class="v">144</span></li>
+        <li><span>weights in this filter</span><span class="v">9</span></li>
+        <li><span>positions it is applied to</span><span class="v">100</span></li>
+        <li><span>weights that involves</span><span class="v">9</span></li>
+      </ul>
+
+      <p class="note">Applying the filter at 100 positions does not cost 100 filters. There is one set of nine numbers and it is reused at every position, which is what <a class="term" href="../glossary.html#weight-sharing">weight sharing</a> means. The saving is real, but it is not the point, and section 5 measures what it is worth on its own. The interesting property is on the screen: the map moved with the picture. A template cannot do that, because a template has no map — it collapses everything to one number immediately.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> One filter applied everywhere turns a picture into a map of where it responded, and that map shifts when the picture does.</p>
+</section>
+
+<section id="pool" class="panel" role="tabpanel" aria-labelledby="tab-pool">
+  <p class="experiment-prompt"><strong>Before you try:</strong> To answer <em>is there a pointed ear anywhere in this picture</em>, which do you need: the map, or one number taken from it?</p>
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div>
+      <h2>Keeping that it fired, not where</h2>
+      <p>The map still has a position for every answer, so a layer that reads the map position by position is back to caring where things are. The repair is to read it in a way that cannot tell. Take the largest value in the whole map and keep only that. The result says how strongly this detector responded anywhere in the picture, and says nothing whatever about where. This is <a class="term" href="../glossary.html#pooling">pooling</a>, and it is the step that buys the property lesson 2 lacked.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="pair">
+        <div class="window"><canvas id="m-pic" class="pic" role="img"
+          aria-label="The twelve by twelve picture, shifted by the amount set on the sliders."></canvas></div>
+        <div class="window"><canvas id="m-map" class="map" role="img"
+          aria-label="The ten by ten response map with a marker on its single largest cell."></canvas></div>
+      </div>
+      <figcaption>The marker sits on the largest cell in the map. Shift the picture and watch which of the two numbers below changes.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="row">
+        <label class="vh" for="m-kind">Filter</label>
+        <select id="m-kind">
+          <option value="0">bright above, dark below</option>
+          <option value="1">bright left, dark right</option>
+          <option value="2">a bright spot in a dark surround</option>
+          <option value="3">a bright edge leaning up to the right</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="m-dx">Across</label>
+        <input type="range" id="m-dx" min="-3" max="3" step="1" value="0">
+        <label for="m-dy">Down</label>
+        <input type="range" id="m-dy" min="-3" max="3" step="1" value="0">
+        <button class="btn" id="m-reset" type="button">Centre it</button>
+      </div>
+
+      <ul class="count">
+        <li><span>largest response in the map</span><span class="v" id="m-val">—</span></li>
+        <li><span>where that response was</span><span class="v" id="m-pos">—</span></li>
+        <li><span>largest response before shifting</span><span class="v" id="m-val0">—</span></li>
+        <li><span>change in it</span><span class="v" id="m-drift">—</span></li>
+      </ul>
+      <p class="msg" id="m-msg">Shift the picture and compare the first number with the third.</p>
+
+      <p class="note">The position runs through its whole range as you move the slider and the value barely moves. That is the property being manufactured, and it is manufactured by throwing information away: after the maximum is taken, nothing downstream can recover where the detector fired, or whether it fired twice. Section 6 returns to what that costs.</p>
+
+      <p class="cite">Kunihiko Fukushima, &ldquo;Neocognitron: A Self-organizing Neural Network Model for a Mechanism of Pattern Recognition Unaffected by Shift in Position,&rdquo; <em>Biological Cybernetics</em> 36 (1980), separates the two jobs into two kinds of cell: S-cells that apply the same detector at many positions, and C-cells above them that tolerate a shift in where the S-cells responded. The title names the property this section is after, and the architecture keeps the two ingredients apart, which is the distinction section 5 measures.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Taking the largest response discards where the detector fired, which is what makes the answer survive a shift.</p>
+</section>
+
+<section id="train" class="panel" role="tabpanel" aria-labelledby="tab-train">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The four filters start as small random numbers. What should they end up looking for, given that the ears are the only thing telling these animals apart?</p>
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div>
+      <h2>Filling the filters in</h2>
+      <p>The four filters in the previous sections were set by hand. They do not have to be. A filter is a short list of weights, the maximum is a function of those weights, and the verdict is a function of the maximum, so there is a chain from the error back to every one of the nine numbers — which is exactly what lesson 4 built. <a class="term" href="../glossary.html#backpropagation">Backpropagation</a> runs through a shared filter the same way it runs through anything else, with one difference: a weight used at 100 positions collects blame from all 100, so the corrections are added up before the weight moves.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <div class="stack">
+      <figure>
+        <div class="window"><canvas id="t-bank" class="bank" role="img"
+          aria-label="Four three-by-three filters drawn side by side, brown for positive weights and blue for negative."></canvas></div>
+        <figcaption>The four filters as they stand. Brown positive, blue negative, scaled to the largest weight in each.</figcaption>
+      </figure>
+      <figure>
+        <div class="window"><canvas id="t-curve" class="curve" role="img"
+          aria-label="A curve of total error against epoch for the training run."></canvas></div>
+        <figcaption>Total squared error over the 16 training pictures, after each pass.</figcaption>
+      </figure>
+    </div>
+
+    <div class="stack">
+      <div class="row">
+        <button class="btn" id="t-go" type="button">Train the network</button>
+        <button class="btn" id="t-more" type="button">100 more epochs</button>
+        <button class="btn" id="t-clear" type="button">Start over</button>
+      </div>
+
+      <p class="readout" id="t-read">untrained</p>
+      <p class="msg" id="t-msg">Trains on the same 16 pictures lesson 2 used, and no others.</p>
+
+      <ul class="count">
+        <li><span>filters</span><span class="v">4</span></li>
+        <li><span>weights in each</span><span class="v">9 and a bias</span></li>
+        <li><span>weights reading the four maxima</span><span class="v">4 and a bias</span></li>
+        <li><span>weights in total</span><span class="v">45</span></li>
+        <li><span>weights in lesson 2's template</span><span class="v">145</span></li>
+      </ul>
+
+      <p class="note">Forty-five numbers against lesson 2's 145, trained on the same 16 pictures. Watch the four filters as the error falls: they do not arrive at anything as tidy as the hand-set ones, and several runs produce filters that look like nothing in particular while still scoring well. A filter is not required to be interpretable, and reading one as though it detects a namable thing is a guess about a picture, not a fact about the weights.</p>
+
+      <p class="cite">Yann LeCun, Bernhard Boser, John Denker, Donnie Henderson, Richard Howard, Wayne Hubbard and Lawrence Jackel, &ldquo;Backpropagation Applied to Handwritten Zip Code Recognition,&rdquo; <em>Neural Computation</em> 1 (1989), trained shared filters by backpropagation on real handwritten digits, which is the combination this section runs: Fukushima's architecture with lesson 4's learning rule. Their network read 16×16 digits and was trained on thousands of them, not sixteen.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> A shared filter is trained like any other weight, with the corrections from every position it was used at added together.</p>
+</section>
+
+<section id="nudge" class="panel" role="tabpanel" aria-labelledby="tab-nudge">
+  <p class="experiment-prompt"><strong>Before you try:</strong> Two ingredients went into this: sharing one filter across all positions, and discarding where it fired. Which of the two do you think repairs lesson 2's failure?</p>
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div>
+      <h2>The nudge from lesson 2</h2>
+      <p>Lesson 2 broke its classifier by moving the animal two pixels. Here is the same nudge, applied to three machines trained on the same 16 pictures and tested on 80 they never saw. The first is lesson 2's template. The second is this lesson's network. The third is the one that settles the question: it has the shared filters and the feature maps, and it reads those maps position by position instead of taking the maximum. It is convolution with the pooling left out.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="window"><canvas id="c-plot" class="curve" role="img"
+        aria-label="Accuracy on held-out pictures plotted against how far the picture was shifted, for three machines: lesson 2's template, this lesson's network, and the same network with pooling removed."></canvas></div>
+      <figcaption>Accuracy against shift distance, measured on 80 held-out pictures, at six offsets for each distance beyond zero. The dashed line is what guessing gives.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="row">
+        <button class="btn" id="c-go" type="button">Run the comparison</button>
+      </div>
+      <p class="readout" id="c-read">not run yet</p>
+      <p class="msg" id="c-msg">Trains all three machines here, then measures each one at every shift.</p>
+
+      <div class="comp"><table id="c-tab">
+        <caption>Accuracy on held-out pictures, by how far the picture was moved.</caption>
+        <thead><tr><th scope="col">shift</th><th scope="col">template</th><th scope="col">this lesson</th><th scope="col">sharing only</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+
+      <p>Read the last column against the first. The machine with shared filters and no pooling has all the machinery this lesson is named for, and at a two-pixel shift it scores what lesson 2's template scores. Sharing the weights saved a great many parameters and bought almost no tolerance to movement. What bought the tolerance was the maximum — the step that makes the answer unable to depend on position, because it has discarded position.</p>
+
+      <p class="note">This is one experiment on one kind of picture, and a single run is not the finding. Over twelve starting seeds the pooled network averaged 0.907 at a two-pixel shift, with runs between 0.823 and 0.944; the same network without pooling averaged 0.611, with runs between 0.525 and 0.692; lesson 2's template, which has no random start to vary, scores 0.610. The two ranges do not overlap at any seed, and the unpooled network's average finishes 0.001 above the template it was supposed to improve on.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Weight sharing saves parameters; discarding position is what survives the shift. They are separate ideas and only one of them repairs lesson 2.</p>
+</section>
+
+<section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
+  <p class="experiment-prompt"><strong>Before you try:</strong> The network is now indifferent to where the animal is. Name a question about these pictures it has therefore made itself unable to answer.</p>
+  <div class="sec-head">
+    <div class="sec-num">6</div>
+    <div>
+      <h2>What it does not give you</h2>
+      <p>Shifting is one transformation out of many, and the previous section bought tolerance to exactly that one and no other. Everything lesson 2 did to its classifier can be done here, and most of it still works.</p>
+    </div>
+  </div>
+
+  <div class="split wide-left">
+    <figure>
+      <div class="pair">
+        <div class="window"><canvas id="x-pic" class="pic" role="img"
+          aria-label="A held-out picture with the chosen transformations applied to it."></canvas></div>
+        <div class="window"><canvas id="x-map" class="map" role="img"
+          aria-label="The strongest of the four learned feature maps for the picture beside it."></canvas></div>
+      </div>
+      <figcaption id="x-cap">A held-out picture and the strongest of the four learned maps.</figcaption>
+    </figure>
+
+    <div class="stack">
+      <div class="row">
+        <label for="x-dx">Across</label>
+        <input type="range" id="x-dx" min="-3" max="3" step="1" value="0">
+        <label for="x-dy">Down</label>
+        <input type="range" id="x-dy" min="-3" max="3" step="1" value="0">
+      </div>
+      <div class="row">
+        <label for="x-br">Brightness</label>
+        <input type="range" id="x-br" min="0.3" max="1.6" step="0.1" value="1">
+        <button class="btn" id="x-mir" type="button">Mirror</button>
+        <button class="btn" id="x-inv" type="button">Invert</button>
+        <button class="btn" id="x-reset" type="button">Reset</button>
+      </div>
+
+      <p class="readout" id="x-read">score on 80 held-out pictures <b>—</b></p>
+      <p class="msg" id="x-msg">Train the network in section 4 first.</p>
+
+      <p>Mirroring and inverting are not shifts, and nothing in this architecture was built to absorb them. Inverting is the worst of the three for the same reason it was in lesson 2: it flips the sign of every contribution, so a machine that was reliably right becomes reliably wrong. A convolutional network is not generally tolerant of change; it is tolerant of the one transformation that pooling was arranged to discard.</p>
+
+      <p>Then the cost of the repair itself. The maximum keeps whether a detector fired and drops where, so any question whose answer depends on where has been made unanswerable by construction. <em>Are the ears above the eyes or beside them</em> is such a question, and it happens to be the distinction these two classes are built on. This network gets that right because each filter looks at a patch big enough to contain the answer locally, not because the architecture preserved the arrangement. A single pooled layer taking the maximum over the entire picture is the most extreme version of the trade; real networks pool over small windows and stack several layers, keeping coarse position while discarding fine position, which is a compromise this page does not demonstrate.</p>
+
+      <p>Last, the scale note. Four filters of nine weights on a twelve-by-twelve grid, trained on sixteen generated drawings, is not a small version of a modern vision model. The pictures are drawings this page generated, with the ears carrying all the information by construction, so a high score here is evidence about these drawings and not about photographs. What carries over is the pair of ideas and the order of their importance, which is what the previous section measured.</p>
+    </div>
+  </div>
+  <p class="takeaway"><strong>Takeaway:</strong> Tolerance to shifting was bought deliberately, applies to shifting alone, and is paid for by discarding the position it discards.</p>
+</section>
+
+<a class="nextup" href="mycin.html">
+  <div>
+    <p class="lab">Next lesson</p>
+    <span class="ttl">A machine you can argue with</span>
+    <p class="say">The first five lessons stored what they learned as numbers. The next goes back to the 1970s, to a tradition that wrote its knowledge in sentences instead — and found a quite different way to fail.</p>
+  </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+      <g stroke="#D7D4C7" stroke-width="1">
+        <path d="M12 24H156M12 62H156M12 100H156"/>
+      </g>
+      <g stroke="#22262C" stroke-width="1.5" fill="none" stroke-linecap="round">
+        <path d="M84 30 50 56"/><path d="M50 68 30 94"/><path d="M50 68 70 94"/>
+      </g>
+      <g stroke="#C7C4B6" stroke-width="1.3" fill="none" stroke-linecap="round">
+        <path d="M84 30 118 56"/><path d="M118 68 100 94"/><path d="M118 68 140 94"/>
+      </g>
+      <g fill="#8A5206">
+        <circle cx="84" cy="24" r="6"/><circle cx="30" cy="100" r="6"/><circle cx="70" cy="100" r="6"/>
+      </g>
+      <g fill="#C7C4B6">
+        <circle cx="118" cy="62" r="6"/><circle cx="100" cy="100" r="6"/><circle cx="140" cy="100" r="6"/>
+      </g>
+      <circle cx="50" cy="62" r="6" fill="#274B8F"/>
+  </svg>
+</a>
+
+<footer>
+  <p>Every picture on this page is generated in your browser and every response, map and maximum is computed from it. The three machines in section 5 are trained here, on the spot, from the same sixteen pictures lesson 2 used, and the accuracies are counted rather than quoted.</p>
+</footer>
+
+</main>
+<script src="../assets/glossary-data.js"></script>
+<script src="../assets/lesson.js"></script>
+<script src="../assets/animals.js"></script>
+<script>
+"use strict";
+
+/* N, NP, BG, draw, makeSet, shift, mirror, expose, invert, paint, paintOne,
+   shade, diverge and peak all come from animals.js, which lesson 2 shares. */
+
+const F = 3, P = N - F + 1;       /* a 3×3 filter fits a 12×12 picture 100 ways */
+const K = 4;                      /* filters in the trained network */
+const LR = 0.5, EPOCHS = 300;
+
+/* ---------------- the four hand-set filters ---------------- */
+
+/* scaled so the nine magnitudes sum to one, which puts all four responses
+   on the same footing and keeps the numbers readable */
+function norm(a){
+  let s = 0;
+  for(const v of a) s += Math.abs(v);
+  return Float64Array.from(a, v => v/s);
+}
+const HAND = [
+  { name:"bright above, dark below",          w: norm([ 1, 1, 1,  0, 0, 0, -1,-1,-1]) },
+  { name:"bright left, dark right",           w: norm([ 1, 0,-1,  1, 0,-1,  1, 0,-1]) },
+  { name:"a bright spot in a dark surround",  w: norm([-1,-1,-1, -1, 8,-1, -1,-1,-1]) },
+  { name:"a bright edge leaning up to the right", w: norm([ 0, 1, 1, -1, 0, 1, -1,-1, 0]) }
+];
+
+/* the filter laid over the picture at (i,j), nine products added up */
+function respond(px, w, b, i, j){
+  let s = b || 0;
+  for(let di=0;di<F;di++) for(let dj=0;dj<F;dj++)
+    s += w[di*F+dj] * px[(i+di)*N + (j+dj)];
+  return s;
+}
+
+/* every position, arranged in the layout of the positions it came from */
+function convolve(px, w, b){
+  const m = new Float64Array(P*P);
+  for(let i=0;i<P;i++) for(let j=0;j<P;j++) m[i*P+j] = respond(px, w, b, i, j);
+  return m;
+}
+
+function largest(m){
+  let v = -Infinity, at = 0;
+  for(let k=0;k<m.length;k++) if(m[k] > v){ v = m[k]; at = k; }
+  return { v:v, i:(at/P)|0, j:at%P, at:at };
+}
+
+/* ---------------- the network ---------------- */
+
+/* sig, the logistic squash of lesson 4, comes from lesson.js */
+
+/* mode "max" pools; mode "pos" reads the maps position by position, which is
+   this lesson's machinery with the pooling step removed */
+function makeNet(seed, mode){
+  const r = rng(seed);
+  return {
+    mode: mode || "max",
+    f:  Array.from({length:K}, () => Float64Array.from({length:F*F}, () => (r()-0.5)*1.2)),
+    fb: new Float64Array(K),
+    v:  mode === "pos" ? Float64Array.from({length:K*P*P}, () => (r()-0.5)*0.4)
+                       : Float64Array.from({length:K},     () => (r()-0.5)*1.2),
+    b: 0, epochs: 0, trace: [], trained: false
+  };
+}
+
+function forward(net, x){
+  const act = [];
+  for(let k=0;k<K;k++){
+    const a = new Float64Array(P*P);
+    for(let i=0;i<P;i++) for(let j=0;j<P;j++) a[i*P+j] = sig(respond(x, net.f[k], net.fb[k], i, j));
+    act.push(a);
+  }
+  let z = net.b;
+  const pool = new Float64Array(K), arg = new Int32Array(K);
+  if(net.mode === "pos"){
+    for(let k=0;k<K;k++) for(let q=0;q<P*P;q++) z += net.v[k*P*P+q]*act[k][q];
+  } else {
+    for(let k=0;k<K;k++){
+      const top = largest(act[k]);
+      pool[k] = top.v; arg[k] = top.at;
+      z += net.v[k]*pool[k];
+    }
+  }
+  return { act:act, pool:pool, arg:arg, z:z, y:sig(z) };
+}
+
+const says = (net, x) => forward(net, x).y >= 0.5 ? 1 : 0;
+
+/* one example, one correction; the shared weights collect blame from every
+   position they were used at before they move */
+function learn(net, x, t, lr){
+  const o = forward(net, x);
+  const dz = (o.y - t) * o.y * (1-o.y);
+  const dAct = Array.from({length:K}, () => new Float64Array(P*P));
+  if(net.mode === "pos"){
+    for(let k=0;k<K;k++) for(let q=0;q<P*P;q++){
+      dAct[k][q] = dz*net.v[k*P*P+q];
+      net.v[k*P*P+q] -= lr*dz*o.act[k][q];
+    }
+  } else {
+    for(let k=0;k<K;k++){
+      dAct[k][o.arg[k]] = dz*net.v[k];        /* only the winning position */
+      net.v[k] -= lr*dz*o.pool[k];
+    }
+  }
+  net.b -= lr*dz;
+  for(let k=0;k<K;k++){
+    const g = new Float64Array(F*F);
+    let gb = 0;
+    for(let q=0;q<P*P;q++){
+      const d = dAct[k][q];
+      if(d === 0) continue;
+      const a = o.act[k][q], ds = d*a*(1-a);
+      const i = (q/P)|0, j = q%P;
+      for(let di=0;di<F;di++) for(let dj=0;dj<F;dj++) g[di*F+dj] += ds*x[(i+di)*N+(j+dj)];
+      gb += ds;
+    }
+    for(let q=0;q<F*F;q++) net.f[k][q] -= lr*g[q];
+    net.fb[k] -= lr*gb;
+  }
+  return (o.y-t)*(o.y-t);
+}
+
+function epoch(net, set, lr){
+  let e = 0;
+  for(const d of set) e += learn(net, d.x, d.y, lr);
+  net.epochs++;
+  net.trace.push(e);
+  net.trained = true;
+  return e;
+}
+
+/* ---------------- lesson 2's machine, for the comparison ---------------- */
+
+/* the rule from lesson 1, restated here so section 5 can measure the same
+   template lesson 2 trains; scripts/test-math.cjs checks the two agree */
+const TLR = 0.08;
+function trainTemplate(set){
+  const w = new Float64Array(NP);
+  let b = 0;
+  for(let pass=0; pass<400; pass++){
+    let errs = 0;
+    for(const d of set){
+      let s = b;
+      for(let k=0;k<NP;k++) s += w[k]*d.x[k];
+      const y = s >= 0 ? 1 : 0;
+      if(y === d.y) continue;
+      const e = d.y - y;
+      for(let k=0;k<NP;k++) w[k] += TLR*e*d.x[k];
+      b += TLR*e;
+      errs++;
+    }
+    if(errs === 0) break;
+  }
+  return { w:w, b:b };
+}
+function templateSays(t, x){
+  let s = t.b;
+  for(let k=0;k<NP;k++) s += t.w[k]*x[k];
+  return s >= 0 ? 1 : 0;
+}
+
+/* ---------------- the data ---------------- */
+
+/* lesson 2's own sixteen training pictures, from the same seeds, so the
+   two lessons are comparing architectures and not datasets */
+const TRAIN = makeSet(8, 1);
+const TEST  = makeSet(40, 9000);          /* held out: a disjoint seed range */
+
+/* six offsets at each distance, so no single direction decides the result */
+const OFFSETS = d => d === 0 ? [[0,0]] : [[d,0],[-d,0],[0,d],[0,-d],[d,d],[-d,-d]];
+
+function scoreAt(judge, d){
+  const offs = OFFSETS(d);
+  let n = 0;
+  for(const [dx,dy] of offs) for(const t of TEST) if(judge(shift(t.x,dx,dy)) === t.y) n++;
+  return n/(offs.length*TEST.length);
+}
+
+const MODEL = makeNet(1, "max");
+
+/* ---------------- painting ---------------- */
+
+const el = id => document.getElementById(id);
+
+/* any square grid of numbers, signed or not, filling a box */
+function cells(g, a, n, x0, y0, side, opts){
+  opts = opts || {};
+  const c = side/n, sc = opts.signed ? peak(a) : 1;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+    g.fillStyle = opts.signed ? diverge(a[i*n+j]/sc) : shade(a[i*n+j]);
+    g.fillRect(x0 + j*c, y0 + i*c, Math.ceil(c)+0.5, Math.ceil(c)+0.5);
+  }
+  if(opts.grid !== false && c > 7){
+    g.strokeStyle = "rgba(34,38,44,.10)"; g.lineWidth = 1;
+    g.beginPath();
+    for(let k=1;k<n;k++){
+      g.moveTo(Math.round(x0+k*c)+.5, y0); g.lineTo(Math.round(x0+k*c)+.5, y0+side);
+      g.moveTo(x0, Math.round(y0+k*c)+.5); g.lineTo(x0+side, Math.round(y0+k*c)+.5);
+    }
+    g.stroke();
+  }
+  g.strokeStyle = C.rule; g.lineWidth = 1;
+  g.strokeRect(x0+.5, y0+.5, side-1, side-1);
+}
+
+/* one grid centred in its own canvas, like paintOne but for any size */
+function gridOne(p, a, n, opts){
+  const g = p.ctx;
+  g.clearRect(0,0,p.w,p.h);
+  g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+  const pad = 10, side = Math.min(p.w, p.h) - 2*pad;
+  /* a canvas in a hidden panel measures zero, which would make every
+     length here negative; draw nothing and let the panelshow redraw do it */
+  if(side < n) return { x0:0, y0:0, side:0, c:0 };
+  const x0 = (p.w-side)/2, y0 = (p.h-side)/2;
+  cells(g, a, n, x0, y0, side, opts);
+  return { x0:x0, y0:y0, side:side, c:side/n };
+}
+
+/* the box showing which nine pixels the filter is reading */
+function outline(g, box, i, j, span){
+  if(box.c <= 0) return;
+  g.strokeStyle = C.ink; g.lineWidth = 2;
+  g.strokeRect(box.x0 + j*box.c + 1, box.y0 + i*box.c + 1, span*box.c - 2, span*box.c - 2);
+  g.strokeStyle = C.field; g.lineWidth = 1;
+  g.strokeRect(box.x0 + j*box.c + 2.5, box.y0 + i*box.c + 2.5, span*box.c - 5, span*box.c - 5);
+}
+
+/* a ring on the winning cell of a response map */
+function marker(g, box, i, j){
+  if(box.c <= 0) return;
+  const x = box.x0 + (j+0.5)*box.c, y = box.y0 + (i+0.5)*box.c;
+  g.strokeStyle = C.ink; g.lineWidth = 2;
+  g.beginPath(); g.arc(x, y, box.c*0.62, 0, 6.284); g.stroke();
+  g.strokeStyle = C.field; g.lineWidth = 1;
+  g.beginPath(); g.arc(x, y, box.c*0.62, 0, 6.284); g.stroke();
+}
+
+/* the four filters in a row */
+function paintBank(p, net){
+  const g = p.ctx;
+  g.clearRect(0,0,p.w,p.h);
+  g.fillStyle = C.field; g.fillRect(0,0,p.w,p.h);
+  const gap = 16, pad = 10;
+  const side = Math.min((p.w - 2*pad - (K-1)*gap)/K, p.h - 2*pad - 16);
+  if(side < F) return;                       /* hidden panel: nothing to measure yet */
+  const ox = (p.w - (K*side + (K-1)*gap))/2, oy = (p.h - side - 16)/2;
+  g.font = '400 10px "IBM Plex Mono", monospace';
+  g.textAlign = "center"; g.textBaseline = "top";
+  for(let k=0;k<K;k++){
+    const x = ox + k*(side+gap);
+    cells(g, net.f[k], F, x, oy, side, { signed:true });
+    g.fillStyle = C.ink2;
+    g.fillText("filter " + (k+1), x + side/2, oy + side + 4);
+  }
+}
+
+function setLamp(elm, cls){
+  elm.className = "lamp " + (cls === 1 ? "dog" : "cat");
+  elm.textContent = cls === 1 ? "dog" : "cat";
+}
+
+/* ============================ hero ============================ */
+
+(function hero(){
+  const pp = Plot(el("hero-pic"), [0,1,0,1]), pm = Plot(el("hero-map"), [0,1,0,1]);
+  const read = el("hero-read"), msg = el("hero-msg");
+  const dx = el("hero-dx"), dy = el("hero-dy");
+  let seed = 31000, base = draw(1, seed);
+
+  function render(){
+    const x = shift(base, +dx.value, +dy.value);
+    const m = convolve(x, HAND[0].w, 0);
+    const top = largest(m);
+    paintOne(pp, x);
+    const box = gridOne(pm, m, P, { signed:true });
+    marker(pm.ctx, box, top.i, top.j);
+    read.innerHTML = "strongest response at row <b>" + (top.i+1) + "</b>, column <b>" + (top.j+1) + "</b>";
+    const moved = (+dx.value !== 0 || +dy.value !== 0);
+    msg.textContent = moved
+      ? "The animal moved and the bright cell moved with it, by the same amount."
+      : "Move the animal. The bright spot in the map moves with it.";
+  }
+
+  [dx,dy].forEach(s => s.addEventListener("input", render));
+  el("hero-next").addEventListener("click", () => {
+    seed += 13;
+    base = draw(seed % 2, seed);
+    render();
+  });
+
+  redraws.push(() => { pp.fit(); pm.fit(); render(); });
+  render();
+})();
+
+/* ==================== 1 · a detector of nine pixels ==================== */
+
+(function patch(){
+  const pp = Plot(el("p-pic"), [0,1,0,1]), pf = Plot(el("p-filt"), [0,1,0,1]);
+  const kind = el("p-kind"), read = el("p-read"), msg = el("p-msg");
+  const cap = el("p-cap"), body = el("p-patch").querySelector("tbody");
+  let seed = 21000, px = draw(0, seed), i = 4, j = 4;
+
+  function render(){
+    const w = HAND[+kind.value].w;
+    const box = gridOne(pp, px, N);
+    outline(pp.ctx, box, i, j, F);
+    gridOne(pf, w, F, { signed:true });
+
+    const rows = [];
+    for(let a=0;a<F;a++){
+      const tds = [];
+      for(let b=0;b<F;b++) tds.push("<td>" + num(px[(i+a)*N + (j+b)], 2) + "</td>");
+      rows.push("<tr>" + tds.join("") + "</tr>");
+    }
+    body.innerHTML = rows.join("");
+
+    const r = respond(px, w, 0, i, j);
+    read.innerHTML = "response here <b>" + num(r, 3) + "</b>";
+    msg.textContent = r > 0.12 ? "A strong answer: what is under the box looks like what the filter is looking for."
+      : r < -0.12 ? "Strongly negative: what is under the box is the opposite arrangement."
+      : "Close to zero. The filter has little to say about this patch.";
+    msg.classList.add("hit");
+    cap.textContent = "Reading the nine pixels at row " + (i+1) + ", column " + (j+1) + ".";
+  }
+
+  el("p-pic").addEventListener("click", ev => {
+    const box = gridOne(pp, px, N);
+    const r = el("p-pic").getBoundingClientRect();
+    const cx = (ev.clientX - r.left) * (pp.w/r.width), cy = (ev.clientY - r.top) * (pp.h/r.height);
+    j = clamp(Math.floor((cx - box.x0)/box.c), 0, P-1);
+    i = clamp(Math.floor((cy - box.y0)/box.c), 0, P-1);
+    render();
+  });
+  el("p-pic").addEventListener("keydown", ev => {
+    const d = { ArrowLeft:[0,-1], ArrowRight:[0,1], ArrowUp:[-1,0], ArrowDown:[1,0] }[ev.key];
+    if(!d) return;
+    ev.preventDefault();
+    i = clamp(i + d[0], 0, P-1); j = clamp(j + d[1], 0, P-1);
+    render();
+  });
+  kind.addEventListener("change", render);
+  el("p-new").addEventListener("click", () => {
+    seed += 11; px = draw(seed % 2, seed); render();
+  });
+
+  redraws.push(() => { pp.fit(); pf.fit(); render(); });
+  render();
+})();
+
+/* ==================== 2 · a hundred positions ==================== */
+
+(function slide(){
+  const pp = Plot(el("s-pic"), [0,1,0,1]), pm = Plot(el("s-map"), [0,1,0,1]);
+  const kind = el("s-kind"), dx = el("s-dx"), dy = el("s-dy");
+  const read = el("s-read"), msg = el("s-msg");
+  const base = draw(0, 22000);
+
+  function render(){
+    const x = shift(base, +dx.value, +dy.value);
+    const m = convolve(x, HAND[+kind.value].w, 0);
+    paintOne(pp, x);
+    gridOne(pm, m, P, { signed:true });
+    read.textContent = "shifted " + (+dx.value) + " across, " + (+dy.value) + " down";
+    const moved = (+dx.value !== 0 || +dy.value !== 0);
+    msg.textContent = moved
+      ? "Every response in the map is the same number as before, computed at a position that moved with the picture."
+      : "The map carries the shift with it.";
+    msg.classList.add("hit");
+  }
+
+  [kind,dx,dy].forEach(s => s.addEventListener("input", render));
+  el("s-reset").addEventListener("click", () => { dx.value = 0; dy.value = 0; render(); });
+
+  redraws.push(() => { pp.fit(); pm.fit(); render(); });
+  render();
+})();
+
+/* ==================== 3 · keeping that it fired ==================== */
+
+(function pool(){
+  const pp = Plot(el("m-pic"), [0,1,0,1]), pm = Plot(el("m-map"), [0,1,0,1]);
+  const kind = el("m-kind"), dx = el("m-dx"), dy = el("m-dy");
+  const base = draw(0, 23000);
+
+  function render(){
+    const w = HAND[+kind.value].w;
+    const x = shift(base, +dx.value, +dy.value);
+    const m = convolve(x, w, 0);
+    const top = largest(m), home = largest(convolve(base, w, 0));
+    paintOne(pp, x);
+    const box = gridOne(pm, m, P, { signed:true });
+    marker(pm.ctx, box, top.i, top.j);
+
+    el("m-val").textContent = num(top.v, 3);
+    el("m-pos").textContent = "row " + (top.i+1) + ", column " + (top.j+1);
+    el("m-val0").textContent = num(home.v, 3);
+    const drift = top.v - home.v;
+    el("m-drift").textContent = signed(drift, 3);
+    const moved = (+dx.value !== 0 || +dy.value !== 0);
+    const jump = (top.i !== home.i || top.j !== home.j);
+    el("m-msg").textContent = !moved ? "Shift the picture and compare the first number with the third."
+      : jump && Math.abs(drift) < 0.02
+        ? "The position moved and the value did not. That is the whole of what pooling provides."
+      : jump ? "The position moved and the value moved a little: near the edge some of the picture is shifted out of the frame."
+      : "The largest response is still in the same place; this shift did not move the part of the picture it was answering to.";
+    el("m-msg").classList.add("hit");
+  }
+
+  [kind,dx,dy].forEach(s => s.addEventListener("input", render));
+  el("m-reset").addEventListener("click", () => { dx.value = 0; dy.value = 0; render(); });
+
+  redraws.push(() => { pp.fit(); pm.fit(); render(); });
+  render();
+})();
+
+/* ==================== 4 · filling the filters in ==================== */
+
+(function train(){
+  const pb = Plot(el("t-bank"), [0,1,0,1]), pc = Plot(el("t-curve"), [0,1,0,1]);
+  const read = el("t-read"), msg = el("t-msg"), section = el("train");
+  const seed = batchControls("train", 1);
+
+  function curve(){
+    const t = MODEL.trace;
+    const p = pc;
+    const hi = t.length ? Math.max(...t) : 4;
+    p.view = [0, Math.max(t.length, 10), 0, Math.max(hi, 0.5)];
+    p.fit();
+    field(p, "epoch", "total squared error");
+    if(t.length < 2) return;
+    const g = p.ctx;
+    g.strokeStyle = C.on; g.lineWidth = 1.8;
+    g.beginPath();
+    t.forEach((v,k) => k ? g.lineTo(p.X(k), p.Y(v)) : g.moveTo(p.X(k), p.Y(v)));
+    g.stroke();
+  }
+
+  function render(){
+    paintBank(pb, MODEL);
+    curve();
+    if(!MODEL.trained){
+      read.textContent = "untrained";
+      msg.textContent = "Trains on the same 16 pictures lesson 2 used, and no others.";
+      return;
+    }
+    let n = 0;
+    for(const d of TRAIN) if(says(MODEL, d.x) === d.y) n++;
+    let h = 0;
+    for(const d of TEST) if(says(MODEL, d.x) === d.y) h++;
+    read.textContent = MODEL.epochs + " epochs · " + n + " of 16 training pictures right · "
+      + h + " of " + TEST.length + " held out";
+    msg.textContent = MODEL.trace[MODEL.trace.length-1] < 0.1
+      ? "The error is near zero and the filters have stopped changing much."
+      : "Still moving. More epochs will lower the error further.";
+    msg.classList.add("hit");
+    figureTable("t-curve", "Total squared error over the 16 training pictures, by epoch.",
+      ["epoch","total squared error"],
+      MODEL.trace.map((v,k) => [k+1, num(v,3)]).filter((r,k) =>
+        k % Math.max(1, Math.ceil(MODEL.trace.length/40)) === 0));
+  }
+
+  async function run(count, fresh){
+    const s = seed.get();
+    if(s === null) return;
+    if(fresh){
+      const n = makeNet(s, "max");
+      MODEL.f = n.f; MODEL.fb = n.fb; MODEL.v = n.v; MODEL.b = n.b;
+      MODEL.epochs = 0; MODEL.trace = []; MODEL.trained = false;
+    }
+    await runChunks(section, count, () => epoch(MODEL, TRAIN, LR), () => {});
+    render();
+    announce("Training finished at " + MODEL.epochs + " epochs.");
+  }
+
+  el("t-go").addEventListener("click", () => run(EPOCHS, true));
+  el("t-more").addEventListener("click", () => run(100, !MODEL.trained));
+  el("t-clear").addEventListener("click", () => {
+    const n = makeNet(seed.get() || 1, "max");
+    MODEL.f = n.f; MODEL.fb = n.fb; MODEL.v = n.v; MODEL.b = n.b;
+    MODEL.epochs = 0; MODEL.trace = []; MODEL.trained = false;
+    render();
+  });
+
+  redraws.push(() => { pb.fit(); render(); });
+  render();
+})();
+
+/* ==================== 5 · the nudge from lesson 2 ==================== */
+
+(function nudge(){
+  const p = Plot(el("c-plot"), [0,3,0.30,1.12]);   /* headroom above and below for labels */
+  const read = el("c-read"), msg = el("c-msg"), section = el("nudge");
+  const body = el("c-tab").querySelector("tbody");
+  const DIST = [0,1,2,3];
+  /* this section trains its own three machines rather than borrowing
+     section 4's, so all three get the same pictures, the same seed and the
+     same number of epochs, and the only difference left is the architecture */
+  let rows = null;
+
+  const STYLE = [
+    { name:"lesson 2's template", color:C.ink2, dash:[5,4] },
+    { name:"this lesson",         color:C.on,   dash:[] },
+    { name:"sharing only",        color:C.off,  dash:[2,3] }
+  ];
+
+  function render(){
+    p.fit();
+    field(p, "px", "accuracy");   /* field draws xlab in 26px; the figcaption carries the rest */
+    const g = p.ctx;
+    g.save();
+    g.setLineDash([3,3]); g.strokeStyle = C.grid; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(p.X(0), p.Y(0.5)); g.lineTo(p.X(3), p.Y(0.5)); g.stroke();
+    g.restore();
+    g.font = '400 10px "IBM Plex Mono", monospace';
+    g.fillStyle = C.ink2; g.textAlign = "left"; g.textBaseline = "middle";
+    g.fillText("guessing", p.X(0.06), p.Y(0.5) - 9);   /* left: every curve is high here */
+    if(!rows) return;
+    STYLE.forEach((st, s) => {
+      g.save();
+      g.strokeStyle = st.color; g.lineWidth = s === 1 ? 2.4 : 1.6; g.setLineDash(st.dash);
+      g.beginPath();
+      DIST.forEach((d,k) => k ? g.lineTo(p.X(d), p.Y(rows[k][s])) : g.moveTo(p.X(d), p.Y(rows[k][s])));
+      g.stroke();
+      g.restore();
+      DIST.forEach((d,k) => {
+        g.fillStyle = st.color;
+        g.beginPath(); g.arc(p.X(d), p.Y(rows[k][s]), 3, 0, 6.284); g.fill();
+      });
+    });
+    /* legend in the lower left, which no curve reaches */
+    g.textAlign = "left"; g.textBaseline = "middle";
+    STYLE.forEach((st, s) => {
+      const y = p.Y(0.345) - (STYLE.length-1-s)*15, x = p.X(0.1);
+      g.save();
+      g.strokeStyle = st.color; g.lineWidth = s === 1 ? 2.4 : 1.6; g.setLineDash(st.dash);
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x+26, y); g.stroke();
+      g.restore();
+      g.fillStyle = st.color;
+      g.fillText(st.name, x+32, y);
+    });
+  }
+
+  async function run(){
+    const netMax = makeNet(7, "max"), netPos = makeNet(7, "pos");
+    let tpl = null;
+    read.textContent = "training three machines";
+    const ok = await runChunks(section, EPOCHS*2 + 1, i => {
+      if(i === 0) tpl = trainTemplate(TRAIN);
+      else if(i <= EPOCHS) epoch(netMax, TRAIN, LR);
+      else epoch(netPos, TRAIN, LR);
+    }, (done,count) => { read.textContent = "training three machines · " + Math.round(100*done/count) + "%"; });
+    if(!ok) return;
+    read.textContent = "measuring";
+    rows = DIST.map(d => [
+      scoreAt(x => templateSays(tpl, x), d),
+      scoreAt(x => says(netMax, x), d),
+      scoreAt(x => says(netPos, x), d)
+    ]);
+    body.innerHTML = DIST.map((d,k) =>
+      "<tr" + (d === 2 ? ' class="nudged"' : "") + "><th scope=\"row\">" + d + " px</th>"
+      + rows[k].map(v => "<td>" + num(v,3) + "</td>").join("") + "</tr>").join("");
+    figureTable("c-plot", "Accuracy on 80 held-out pictures, by shift distance.",
+      ["shift","lesson 2's template","this lesson","sharing only"],
+      DIST.map((d,k) => [d + " px"].concat(rows[k].map(v => num(v,3)))));
+    const gap = rows[2][1] - rows[2][2];
+    read.textContent = "at two pixels: template " + num(rows[2][0],3)
+      + ", this lesson " + num(rows[2][1],3) + ", sharing only " + num(rows[2][2],3);
+    msg.textContent = gap > 0.15
+      ? "Pooling is worth " + num(gap,3) + " at two pixels. Sharing the filters, on its own, is worth "
+        + num(rows[2][2] - rows[2][0],3) + "."
+      : "This run came out closer than usual; run it again, or read the note below on how much these numbers move.";
+    msg.classList.add("hit");
+    render();
+    announce("Comparison finished.");
+  }
+
+  el("c-go").addEventListener("click", run);
+  redraws.push(render);
+  render();
+})();
+
+/* ==================== 6 · what it does not give you ==================== */
+
+(function limits(){
+  const pp = Plot(el("x-pic"), [0,1,0,1]), pm = Plot(el("x-map"), [0,1,0,1]);
+  const dx = el("x-dx"), dy = el("x-dy"), br = el("x-br");
+  const read = el("x-read"), msg = el("x-msg"), cap = el("x-cap");
+  let mirOn = false, invOn = false, seed = 24000, cls = 0;
+  let base = draw(cls, seed);
+
+  const apply = px => {
+    let o = shift(px, +dx.value, +dy.value);
+    if(mirOn) o = mirror(o);
+    if(invOn) o = invert(o);
+    if(+br.value !== 1) o = expose(o, +br.value);
+    return o;
+  };
+
+  function render(){
+    const x = apply(base);
+    paintOne(pp, x);
+    if(!MODEL.trained){
+      gridOne(pm, new Float64Array(P*P), P, { signed:true });
+      read.innerHTML = "score on 80 held-out pictures <b>—</b>";
+      msg.textContent = "Train the network in section 4 first; there is nothing to measure until then.";
+      cap.textContent = "The network is untrained, so its maps are empty.";
+      return;
+    }
+    const o = forward(MODEL, x);
+    let best = 0;
+    for(let k=1;k<K;k++) if(o.pool[k] > o.pool[best]) best = k;
+    const box = gridOne(pm, o.act[best], P, { signed:true });
+    marker(pm.ctx, box, (o.arg[best]/P)|0, o.arg[best]%P);
+
+    let n = 0;
+    for(const d of TEST) if(says(MODEL, apply(d.x)) === d.y) n++;
+    const acc = n/TEST.length;
+    read.innerHTML = "score on 80 held-out pictures <b>" + n + "</b> of " + TEST.length;
+    const touched = (+dx.value !== 0 || +dy.value !== 0 || mirOn || invOn || +br.value !== 1);
+    const onlyShift = touched && !mirOn && !invOn && +br.value === 1;
+    msg.textContent =
+      invOn ? "Inverting flips the sign of every contribution, so the machine is now reliably wrong rather than merely confused." :
+      !touched ? "Nothing changed yet." :
+      onlyShift && acc >= 0.85 ? "Moved, and it barely noticed. This is the one transformation the architecture was arranged to absorb." :
+      acc >= 0.85 ? "This one it survives, though nothing in the architecture guaranteed that it would." :
+      acc >= 0.65 ? "Slipping. Pooling has nothing to say about this transformation." :
+      "Down to roughly what guessing would give you, on pictures that are still perfectly legible to you.";
+    msg.classList.add("hit");
+    cap.textContent = "Filter " + (best+1) + " answered most strongly; the ring marks where.";
+  }
+
+  [dx,dy,br].forEach(s => s.addEventListener("input", render));
+  el("x-mir").addEventListener("click", () => { mirOn = !mirOn; render(); });
+  el("x-inv").addEventListener("click", () => { invOn = !invOn; render(); });
+  el("x-reset").addEventListener("click", () => {
+    dx.value = 0; dy.value = 0; br.value = 1; mirOn = false; invOn = false; render();
+  });
+  document.addEventListener("panelshow", e => { if(e.detail === "limits") render(); });
+
+  redraws.push(() => { pp.fit(); pm.fit(); render(); });
+  render();
+})();
+
+initPanels([
+  ["patch","A detector of nine pixels"], ["slide","A hundred positions"],
+  ["pool","Throwing away where"], ["train","Learning the filters"],
+  ["nudge","The nudge from lesson 2"], ["limits","What it does not give"]
+]);
+</script>
+</body>
+</html>

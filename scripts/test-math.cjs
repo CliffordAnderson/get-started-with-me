@@ -309,3 +309,73 @@ assert.ok(run.hist.some((h,i)=>i>0&&h.held>run.hist[i-1].held),'held surprise sh
  assert.deepEqual(Array.from(a.net.E),Array.from(b.net.E),'seeded training must reproduce');
  assert.notDeepEqual(Array.from(a.net.E),Array.from(trainRun(4,1).net.E),'a different seed must differ');}
 console.log('PASS: vocabulary coverage, weight counts, every gradient of a small network against numerical derivatives, the quoted training run, the held-out comparison, quoted neighbours, and seed reproducibility.');
+
+// Lesson 5: convolution. The lesson's claim is that the two ingredients are not
+// equally responsible — pooling survives a shift and weight sharing alone does
+// not — so both halves are trained and measured, not just the finished network.
+const animalsSrc=readFileSync(path.join(root,'assets/animals.js'),'utf8')
+  .split('"use strict";')[1].split('/* ---------------- painting a 12×12 grid')[0];
+const cvSource=readFileSync(path.join(root,'lessons/conv.html'),'utf8')
+  .split('"use strict";')[1].split('/* ---------------- painting')[0];
+const cvContext=vm.createContext({Math,sig:z=>1/(1+Math.exp(-z)),step:z=>z>=0?1:0,
+  clamp:(v,a,b)=>Math.min(b,Math.max(a,v)),lerp:(a,b,t)=>a+(b-a)*t});
+vm.runInContext(animalsSrc+cvSource+'\nglobalThis.cv={N,NP,F,P,K,LR,EPOCHS,HAND,makeNet,epoch,says,'
+  +'trainTemplate,templateSays,TRAIN,TEST,scoreAt,convolve,largest,draw,shift};',cvContext);
+const cv=cvContext.cv;
+
+// the weight counts section 4 lists
+assert.equal(cv.K*(cv.F*cv.F+1)+cv.K+1,45,'45 weights in the network');
+assert.equal(cv.NP+1,145,"145 weights in lesson 2's template");
+assert.equal(cv.P*cv.P,100,'100 positions for a 3x3 filter on a 12x12 picture');
+assert.equal(cv.TRAIN.length,16);
+assert.equal(cv.TEST.length,80);
+
+// the two lessons must train the same template on the same pictures, or section 5
+// is comparing this page's reimplementation against lesson 2 rather than lesson 2
+// images.html draws its pictures from animals.js now, so it needs the same
+// two-part load as conv.html rather than the single-file engine() helper
+const imSource=readFileSync(path.join(root,'lessons/images.html'),'utf8')
+  .split('"use strict";')[1].split('/* ---------------- painting')[0];
+const imContext=vm.createContext({Math,sig:z=>1/(1+Math.exp(-z)),step:z=>z>=0?1:0,
+  clamp:(v,a,b)=>Math.min(b,Math.max(a,v)),lerp:(a,b,t)=>a+(b-a)*t});
+vm.runInContext(animalsSrc+imSource+'\nglobalThis.im={MODEL,TRAIN,accuracy};',imContext);
+const im=imContext.im;
+const tpl=cv.trainTemplate(cv.TRAIN);
+{let d=0;
+ assert.equal(cv.TRAIN.length,im.TRAIN.length,'both lessons must train on the same number of pictures');
+ for(let i=0;i<cv.TRAIN.length;i++){
+   assert.equal(cv.TRAIN[i].y,im.TRAIN[i].y,'labels must agree');
+   for(let k=0;k<cv.NP;k++) if(cv.TRAIN[i].x[k]!==im.TRAIN[i].x[k]) d++;}
+ assert.equal(d,0,'both lessons must train on identical pictures');}
+assert.deepEqual(Array.from(tpl.w),Array.from(im.MODEL.w),"lesson 5's template must match lesson 2's");
+assert.equal(tpl.b,im.MODEL.b,"lesson 5's template bias must match lesson 2's");
+
+// pooling is invariant to a shift by construction; the filter response at a
+// shifted position is the identical number, so the maximum over all of them moves
+// with the picture rather than changing
+{const px=cv.draw(0,23000),w=cv.HAND[0].w;
+ const home=cv.largest(cv.convolve(px,w,0)),moved=cv.largest(cv.convolve(cv.shift(px,1,0),w,0));
+ assert.ok(Math.abs(home.v-moved.v)<1e-12,'a one-pixel shift must not change the pooled value');
+ assert.equal(moved.j,home.j+1,'the winning position must move with the picture');}
+
+// the numbers section 5's note quotes, over the twelve seeds it names
+const shiftAt=(mode,d)=>[1,2,3,4,5,6,7,8,9,10,11,12].map(seed=>{
+  const n=cv.makeNet(seed,mode);
+  for(let e=0;e<cv.EPOCHS;e++) cv.epoch(n,cv.TRAIN,cv.LR);
+  return cv.scoreAt(x=>cv.says(n,x),d);
+});
+const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
+const pooled=shiftAt('max',2),shared=shiftAt('pos',2);
+const tplAt2=cv.scoreAt(x=>cv.templateSays(tpl,x),2);
+assert.equal(tplAt2.toFixed(3),'0.610',"the template's two-pixel score");
+assert.equal(mean(pooled).toFixed(3),'0.907','pooled mean at two pixels');
+assert.equal(mean(shared).toFixed(3),'0.611','sharing-only mean at two pixels');
+assert.equal(Math.min(...pooled).toFixed(3),'0.823','pooled worst seed at two pixels');
+assert.equal(Math.max(...pooled).toFixed(3),'0.944','pooled best seed at two pixels');
+assert.equal(Math.min(...shared).toFixed(3),'0.525','sharing-only worst seed at two pixels');
+assert.equal(Math.max(...shared).toFixed(3),'0.692','sharing-only best seed at two pixels');
+// the note claims the two ranges do not overlap at any seed
+assert.ok(Math.min(...pooled)>Math.max(...shared),'the two ranges must not overlap');
+// and that sharing alone lands within a thousandth of the template it should beat
+assert.equal((mean(shared)-tplAt2).toFixed(3),'0.001','sharing alone must not measurably beat the template');
+console.log('PASS: lesson 5 weight counts, the shared template matching lesson 2, pooled shift invariance, and the quoted twelve-seed comparison.');

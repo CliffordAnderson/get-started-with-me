@@ -129,8 +129,39 @@
     </svg>
   </a>
 
-  <a class="entry" href="lessons/mycin.html">
+  <a class="entry" href="lessons/conv.html">
     <div class="entry-num">5</div>
+    <div>
+      <span class="entry-title">convolution</span>
+      <p class="entry-say">Lesson 2's template broke when the animal moved two pixels. The standard repair has two parts — one detector of nine weights applied at every position, and a step that keeps whether it responded while discarding where. Only one of the two survives the nudge, and the lesson measures which.</p>
+      <p class="entry-meta">Roughly 15 minutes. You slide a detector by hand, then train four of them and race the result against lesson 2 at every shift.</p>
+    </div>
+  <svg viewBox="0 0 168 118" aria-hidden="true">
+      <g fill="#D7D4C7">
+        <rect x="14" y="20" width="16" height="16"/><rect x="32" y="20" width="16" height="16"/>
+        <rect x="50" y="20" width="16" height="16"/><rect x="14" y="38" width="16" height="16"/>
+        <rect x="32" y="38" width="16" height="16"/><rect x="50" y="38" width="16" height="16"/>
+        <rect x="14" y="56" width="16" height="16"/><rect x="32" y="56" width="16" height="16"/>
+        <rect x="50" y="56" width="16" height="16"/><rect x="14" y="74" width="16" height="16"/>
+        <rect x="32" y="74" width="16" height="16"/><rect x="50" y="74" width="16" height="16"/>
+      </g>
+      <rect x="31" y="37" width="36" height="36" fill="none" stroke="#22262C" stroke-width="2.2"/>
+      <path d="M72 55H96" stroke="#22262C" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M90 49l6 6-6 6" fill="none" stroke="#22262C" stroke-width="1.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="#EFEDE5" stroke="#C7C4B6" stroke-width="1">
+        <rect x="104" y="30" width="17" height="17"/><rect x="121" y="30" width="17" height="17"/>
+        <rect x="138" y="30" width="17" height="17"/><rect x="104" y="47" width="17" height="17"/>
+        <rect x="138" y="47" width="17" height="17"/><rect x="104" y="64" width="17" height="17"/>
+        <rect x="121" y="64" width="17" height="17"/><rect x="138" y="64" width="17" height="17"/>
+      </g>
+      <rect x="121" y="47" width="17" height="17" fill="#8A5206"/>
+      <circle cx="129.5" cy="55.5" r="12" fill="none" stroke="#22262C" stroke-width="1.6"/>
+    </svg>
+  </a>
+
+  <a class="entry" href="lessons/mycin.html">
+    <div class="entry-num">6</div>
     <div>
       <span class="entry-title">expert systems</span>
       <p class="entry-say">A machine whose knowledge is a list of sentences you can read, disagree with and correct — the road the field took while the perceptron was out of favour. It works backwards from the question, attaches a certainty to its answer, shows its derivation on request, and falls off a cliff at the edge of what it was told.</p>
@@ -159,7 +190,7 @@
   </a>
 
   <a class="entry" href="lessons/rl.html">
-    <div class="entry-num">6</div>
+    <div class="entry-num">7</div>
     <div>
       <span class="entry-title">reinforcement learning</span>
       <p class="entry-say">A machine given no labelled examples and no rules — only a number that arrives at the end of a journey, saying nothing about which of the moves before it earned the credit. It learns a route anyway, and then walks past something twice as good, one step away, for ever.</p>
@@ -193,7 +224,7 @@
   </a>
 
   <a class="entry" href="lessons/nextword.html">
-    <div class="entry-num">7</div>
+    <div class="entry-num">8</div>
     <div>
       <span class="entry-title">language models</span>
       <p class="entry-say">A machine that learns from nothing but text — no labels, no rules, no reward — by counting which word follows which in one novel, Kafka's The Trial. What the counts can write, when writing becomes quoting, and what they can say about the one chapter they never read.</p>
@@ -216,7 +247,7 @@
   </a>
 
   <a class="entry" href="lessons/vectors.html">
-    <div class="entry-num">8</div>
+    <div class="entry-num">9</div>
     <div>
       <span class="entry-title">word vectors</span>
       <p class="entry-say">Where the last lesson's table fell silent, this one builds the missing idea of a near miss. Every word in the novel gets a profile of the company it keeps, profiles become points, and the vocabulary arranges itself into families — people, rooms, ways of saying — that nobody labelled. Then the silent table borrows its neighbours' counts, and the gain is measured.</p>
@@ -242,7 +273,7 @@
 
 
   <a class="entry" href="lessons/embeddings.html">
-    <div class="entry-num">9</div>
+    <div class="entry-num">10</div>
     <div>
       <span class="entry-title">learned word vectors</span>
       <p class="entry-say">A word reaches a network as 600 slots with a single one in it, which says that every word is unrelated to every other. That makes the first weight matrix a table with one row per word, and the rows are weights like any others. The network is trained on the next-word question in the page, and then the table is read to see what training put in it.</p>

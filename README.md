@@ -10,15 +10,17 @@ lessons/perceptron.html lesson 1 — one unit, two inputs
 lessons/images.html     lesson 2 — one unit, 144 pixel inputs
 lessons/xor.html        lesson 3 — where one unit runs out
 lessons/backprop.html   lesson 4 — where the weights come from
-lessons/mycin.html      lesson 5 — knowledge written down instead of learned
-lessons/rl.html         lesson 6 — learning from delayed rewards
-lessons/nextword.html   lesson 7 — a language model built from counting
-lessons/vectors.html    lesson 8 — words as points, from the same novel
-lessons/embeddings.html lesson 9 — where those points come from when they are learned
+lessons/conv.html       lesson 5 — one detector, looked for everywhere
+lessons/mycin.html      lesson 6 — knowledge written down instead of learned
+lessons/rl.html         lesson 7 — learning from delayed rewards
+lessons/nextword.html   lesson 8 — a language model built from counting
+lessons/vectors.html    lesson 9 — words as points, from the same novel
+lessons/embeddings.html lesson 10 — where those points come from when they are learned
 assets/site.css         all shared styling
 assets/lesson.js        shared plotting, panels and reading/experiment tools
 assets/glossary-data.js generated offline definitions
-assets/corpus-trial.js  the fixed corpus shared by lessons 7, 8 and 9
+assets/corpus-trial.js  the fixed corpus shared by lessons 8, 9 and 10
+assets/animals.js       the 12×12 animals shared by lessons 2 and 5
 scripts/               dependency-free source and numerical checks
 ```
 
@@ -127,14 +129,15 @@ so a plot that does not register will render one pixel wide when its panel opens
 - `prefers-reduced-motion` is respected: page-load animations jump to their end state.
 - Sample data is generated from a seeded PRNG rather than checked in, so a lesson can draw
   as many fresh examples as it needs and a held-out set is genuinely held out. `images.html`
-  keeps its picture generator and its 12×12 canvas painters inline, since nothing else uses
-  them; only machinery shared by more than one lesson belongs in `assets/lesson.js`.
-  Lessons 7, 8 and 9 are the one place raw data ships with a page: their corpus is a fixed
+  and `conv.html` share one generator in `assets/animals.js`, because lesson 5 compares its
+  network against lesson 2's template and the comparison is only meaningful if both lessons
+  draw the same animals; painters used by one lesson alone stay in that lesson.
+  Lessons 8, 9 and 10 are the one place raw data ships with a page: their corpus is a fixed
   novel (*The Trial*, Wyllie translation, Project Gutenberg ebook 7849), held in
   `assets/corpus-trial.js` as two string constants because three lessons share it. Every
   table, every profile and every training position is derived from `CORPUS_TRAIN` in the
   browser; `CORPUS_HELD` is chapter ten, read only to measure predictions, never to make
-  them, so it stays held out. Lesson 9 trains its network in the page from small random
+  them, so it stays held out. Lesson 10 trains its network in the page from small random
   numbers — no weights are shipped. The Gutenberg attribution in all three lessons'
   footers is a license condition; keep it.
 - One trained model per lesson, in a single mutable object the panels all read. A panel that
@@ -172,8 +175,8 @@ for every visualisation. Result announcements are debounced to avoid reading eve
 
 ## Repeatable experiments
 
-The backpropagation restart batch, the reinforcement-learning batches and lesson 9's
-training run have an editable **Experiment seed**. Lesson 9 derives both the initial weights
+The backpropagation restart batch, the reinforcement-learning batches and lesson 10's
+training run have an editable **Experiment seed**. Lesson 10 derives both the initial weights
 and the shuffling order from it, so the same seed repeats a run exactly; **Train three more
 epochs** continues the same network rather than starting a new one, and its result therefore
 depends on the sequence of buttons pressed. Sections 4 and 5 read whatever state section 3
@@ -212,13 +215,17 @@ components against numerical derivatives, late training successes, zero-weight s
 seed reproducibility, the eight-move route, its discounted value and the distinction between
 an untried action and a tried action still valued at zero. It also checks that hidden-grid geometry
 never supplies a negative canvas radius or prevents the following visible-grid redraw. For
-lesson 7 it verifies the corpus split and every number the prose quotes — table sizes,
+lesson 8 it verifies the corpus split and every number the prose quotes — table sizes,
 forced-continuation shares, verbatim-quotation shares at fixed seeds, the collapse of
 prediction accuracy on the held-out chapter, and the hero caption's claim that every
 three-word run of a generated passage occurs in the novel.
 
-Lesson 9's checks train the shipped network for six epochs over all 47,782 positions, so
-`test-math.cjs` now takes about forty seconds rather than three. That run reproduces the
+Lesson 5's checks train twenty-four small convolutional networks — twelve with pooling and
+twelve without — to reproduce the twelve-seed comparison its prose quotes, and confirm that its
+reimplementation of lesson 2's rule produces exactly lesson 2's weights on exactly lesson 2's
+pictures, so the comparison in its fifth section is against lesson 2 rather than against a copy
+that has drifted. Lesson 10's checks train the shipped next-word network for six epochs over all
+47,782 positions, so `test-math.cjs` takes about forty-five seconds rather than three. That run reproduces the
 numbers the lesson's prose quotes — 6.00 and 6.25 bits of surprise, 187 of 1,102 held-out
 words, and the 873 / 150 / 148 / 229 / 39 split against the count table — and a gradient
 check on a small network compares every analytic derivative the shipped `learn` uses with a

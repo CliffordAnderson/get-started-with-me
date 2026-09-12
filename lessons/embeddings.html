@@ -14,7 +14,7 @@
 <style>
 /* this lesson's signature figures are the sparse input vector and the
    dense table behind it, so both get a canvas; the listings borrow
-   lesson 8's tally so the two lessons' neighbour lists read alike */
+   lesson 9's tally so the two lessons' neighbour lists read alike */
 input[type=text]{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--rule);
   border-radius:3px;min-height:2.5rem;padding:.3rem .6rem;flex:1;min-width:11rem;max-width:24rem}
 .tally{font-family:var(--mono);font-size:.86rem;line-height:1.75;margin:.5rem 0 0;
@@ -57,9 +57,9 @@ canvas.curve{aspect-ratio:auto;height:270px}
   <div class="hero-grid">
     <div class="hero-text">
     <div class="hero-intro">
-      <p class="kicker">lesson 9 · learned word vectors</p>
+      <p class="kicker">lesson 10 · learned word vectors</p>
       <h1>A column for every word</h1>
-      <p class="lede">The last lesson counted a profile for every word and found that nearness between profiles does work a table of counts cannot. Those profiles were counted once and then fixed. This lesson gets word vectors the other way: it hands the network from lesson 4 the next-word question from lesson 7, and lets <a class="term" href="../glossary.html#backpropagation">backpropagation</a> decide what the numbers should be. The first thing to settle is how a word gets into a machine that only multiplies numbers.</p>
+      <p class="lede">The last lesson counted a profile for every word and found that nearness between profiles does work a table of counts cannot. Those profiles were counted once and then fixed. This lesson gets word vectors the other way: it hands the network from lesson 4 the next-word question from lesson 8, and lets <a class="term" href="../glossary.html#backpropagation">backpropagation</a> decide what the numbers should be. The first thing to settle is how a word gets into a machine that only multiplies numbers.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">slot <b>—</b> of 600</p>
@@ -125,8 +125,8 @@ canvas.curve{aspect-ratio:auto;height:270px}
       <p class="msg" id="o-msg">Every pair of different words gives the same three numbers.</p>
     </div>
     <div class="stack">
-      <p>Give each word a slot. The vocabulary here is the 600 words used most often in chapters one to nine of Kafka's <em>The Trial</em>, the novel lessons 7 and 8 counted from, so a word is a list of 600 numbers: one in its own slot, zero everywhere else. Nothing has been decided about the word by doing this. The slot numbers come from an alphabetical or a frequency ordering, and neither carries meaning; only the position matters, and only because it differs from every other position.</p>
-      <p>That is the consequence. Two different words never fill the same slot, so the product of their two lists is always zero and the distance between them is always the square root of two. &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; are exactly as far apart as &ldquo;lawyer&rdquo; and &ldquo;the&rdquo;. The encoding asserts that all 600 words are mutually unrelated, in equal measure, and it asserts this before any text has been read. Lesson 8 described the count table's words as islands; this is that island written as a vector.</p>
+      <p>Give each word a slot. The vocabulary here is the 600 words used most often in chapters one to nine of Kafka's <em>The Trial</em>, the novel lessons 8 and 9 counted from, so a word is a list of 600 numbers: one in its own slot, zero everywhere else. Nothing has been decided about the word by doing this. The slot numbers come from an alphabetical or a frequency ordering, and neither carries meaning; only the position matters, and only because it differs from every other position.</p>
+      <p>That is the consequence. Two different words never fill the same slot, so the product of their two lists is always zero and the distance between them is always the square root of two. &ldquo;lawyer&rdquo; and &ldquo;painter&rdquo; are exactly as far apart as &ldquo;lawyer&rdquo; and &ldquo;the&rdquo;. The encoding asserts that all 600 words are mutually unrelated, in equal measure, and it asserts this before any text has been read. Lesson 9 described the count table's words as islands; this is that island written as a vector.</p>
       <p>Two limits are being set here rather than discovered, and both come back in section 6. A vocabulary of 600 is a choice: the novel uses 5,082 distinct words, and every one of the other 4,482 has no slot at all, so it cannot be presented to this network in any form. And the vector says nothing, which means everything the network ends up knowing about a word has to be learned and stored somewhere else.</p>
     </div>
   </div>
@@ -164,7 +164,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
     </div>
     <div class="stack">
       <p>Multiply a one-hot vector by a matrix and you are adding up 600 rows, 599 of which have been multiplied by zero. The answer is the remaining row, unchanged. So the matrix has one row per word, sixteen numbers wide, and passing a word through the first layer is a table lookup wearing the clothes of a multiplication. Nothing about it is a special mechanism; it is the ordinary <a class="term" href="../glossary.html#artificial-neuron">layer of weights</a> from lesson 1 with a very sparse input.</p>
-      <p>The consequence is the point of this lesson. Those sixteen numbers are weights, and weights are what <a class="term" href="../glossary.html#gradient-descent">gradient descent</a> adjusts. Lesson 8's profiles were counted from the text and then left alone; these are parameters, and the same rule that moved the hidden weights in lesson 4 moves them. Whatever a word ends up meaning to this network is written in its row, and it is written there by training, not by counting.</p>
+      <p>The consequence is the point of this lesson. Those sixteen numbers are weights, and weights are what <a class="term" href="../glossary.html#gradient-descent">gradient descent</a> adjusts. Lesson 9's profiles were counted from the text and then left alone; these are parameters, and the same rule that moved the hidden weights in lesson 4 moves them. Whatever a word ends up meaning to this network is written in its row, and it is written there by training, not by counting.</p>
       <p>Until section 3 has run, the picture above is of the small random numbers the network was initialised with, and no two of them mean anything; the line under it says which of the two states you are looking at. What section 3 does is run <a class="term" href="../glossary.html#backpropagation">backpropagation</a> against a question, and what section 4 does is come back and read this same table afterwards.</p>
     </div>
   </div>
@@ -177,7 +177,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
     <div class="sec-num">3</div>
     <div>
       <h2>Filling the table in</h2>
-      <p>The table has to be filled by training, and training needs a question. Lesson 7 has one: given the two words just read, which word comes next. It asked that question of a table of counts. Asking it of a network is what this section does, and the rows of section 2 are among the weights that move as a result.</p>
+      <p>The table has to be filled by training, and training needs a question. Lesson 8 has one: given the two words just read, which word comes next. It asked that question of a table of counts. Asking it of a network is what this section does, and the rows of section 2 are among the weights that move as a result.</p>
     </div>
   </div>
 
@@ -202,7 +202,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
     </div>
     <div class="stack">
       <p>The network is the one from lesson 4 with its ends widened. Two words come in, each as 600 slots with a single one; each selects its sixteen-number row; the 32 numbers that result feed 32 <a class="term" href="../glossary.html#sigmoid">sigmoid</a> <a class="term" href="../glossary.html#hidden-layer">hidden units</a>; those feed 600 output scores, one per word the network could say. The <a class="term" href="../glossary.html#softmax">softmax</a> turns the scores into probabilities. Then the true next word is revealed, the surprise is measured, and backpropagation walks the blame back through every weight it passed on the way forward — including the two selected rows, which are the only part of the table that moves for this position.</p>
-      <p>That last clause is the whole mechanism. A word's row is nudged only when the word appears, and it is nudged towards whatever makes the words that actually followed more likely. Two words that are followed by similar things receive similar nudges, thousands of times over, and drift towards similar rows. Nothing compares one row with another at any point, which is what lesson 8's table could never do — but here the comparison does not need to happen, because a shared consequence is enough.</p>
+      <p>That last clause is the whole mechanism. A word's row is nudged only when the word appears, and it is nudged towards whatever makes the words that actually followed more likely. Two words that are followed by similar things receive similar nudges, thousands of times over, and drift towards similar rows. Nothing compares one row with another at any point, which is what lesson 9's table could never do — but here the comparison does not need to happen, because a shared consequence is enough.</p>
       <p>There are 30,456 weights in total: 9,600 of them in the table of word rows, the remaining 20,856 in the two layers above it. The training positions are the 47,782 places in chapters one to nine where all three words — the two of context and the one to predict — are among the 600. Everything below is computed while you watch; nothing on this page was trained in advance.</p>
       <p class="note">Watch the two lines separate. The brown line keeps falling because the network is still improving on text it has already read; the blue line flattens, because that is where improvement has to be earned rather than memorised. Training longer moves the two apart rather than bringing both down.</p>
     </div>
@@ -216,7 +216,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
     <div class="sec-num">4</div>
     <div>
       <h2>Reading the table afterwards</h2>
-      <p>The rows are sixteen numbers each and nobody assigned them a meaning, so the only way to find out what they hold is to compare them. Beside each learned list is the counted list from lesson 8's method, run over these same 600 words and the same nine chapters, so the two differ in how they were arrived at and in nothing else.</p>
+      <p>The rows are sixteen numbers each and nobody assigned them a meaning, so the only way to find out what they hold is to compare them. Beside each learned list is the counted list from lesson 9's method, run over these same 600 words and the same nine chapters, so the two differ in how they were arrived at and in nothing else.</p>
     </div>
   </div>
 
@@ -239,7 +239,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
           <ul class="tally" id="n-learned"></ul>
         </div>
         <div>
-          <h3>counted, as lesson 8</h3>
+          <h3>counted, as lesson 9</h3>
           <ul class="tally" id="n-counted"></ul>
         </div>
       </div>
@@ -256,12 +256,12 @@ canvas.curve{aspect-ratio:auto;height:270px}
 </section>
 
 <section id="silent" class="panel" role="tabpanel" aria-labelledby="tab-silent">
-  <p class="experiment-prompt"><strong>Before you try:</strong> Lesson 7's table had no row for a fifth of chapter ten's positions. What should a network do at those positions, and how well?</p>
+  <p class="experiment-prompt"><strong>Before you try:</strong> Lesson 8's table had no row for a fifth of chapter ten's positions. What should a network do at those positions, and how well?</p>
   <div class="sec-head">
     <div class="sec-num">5</div>
     <div>
       <h2>What a function buys over a table</h2>
-      <p>Lesson 7 ended on the table's silence and lesson 8 narrowed it by borrowing from neighbours. A network cannot be silent: whatever two words go in, 600 probabilities come out. The question this section settles by measurement is whether the answers it gives where the table had nothing are worth anything.</p>
+      <p>Lesson 8 ended on the table's silence and lesson 9 narrowed it by borrowing from neighbours. A network cannot be silent: whatever two words go in, 600 probabilities come out. The question this section settles by measurement is whether the answers it gives where the table had nothing are worth anything.</p>
     </div>
   </div>
 
@@ -280,7 +280,7 @@ canvas.curve{aspect-ratio:auto;height:270px}
     <div class="stack">
       <p>The walk is restricted, and the restriction has to be stated before the numbers are. Chapter ten gives 2,085 positions. The network can only be asked about the 1,102 of them whose three words are all among its 600; the other 983 involve a word it has no slot for, and section 6 is about those. Both models are scored on the same 1,102 positions, so the comparison is fair even though it covers about half the chapter.</p>
       <p>With the default seed the table has a row for 873 of the 1,102 and gets 150 of them right, which is 17.2 per cent of the positions it answers and 13.6 per cent of all of them. The network gets 148 of those same 873, so on the table's own ground the two are level and the table is very slightly ahead. On the 229 positions where the table has nothing, the network gets 39 — a rate of 17.0 per cent, the same rate it manages on contexts it has seen.</p>
-      <p>That equality is the result worth having. The network is not better at recall; the table memorised those contexts and memorising is hard to beat. What the network has is a rate that does not depend on whether the exact context was in the training text, which is what it means for something to be a function of the words rather than a list of them. Lesson 8 bought the same coverage by borrowing counts from neighbours; here the coverage is not bought at all, because there was never a row to be missing.</p>
+      <p>That equality is the result worth having. The network is not better at recall; the table memorised those contexts and memorising is hard to beat. What the network has is a rate that does not depend on whether the exact context was in the training text, which is what it means for something to be a function of the words rather than a list of them. Lesson 9 bought the same coverage by borrowing counts from neighbours; here the coverage is not bought at all, because there was never a row to be missing.</p>
       <p>Two cautions on these figures. The sample is 1,102 positions, so a few percentage points is noise rather than signal. And the run depends on the seed: across the first few seeds the network's overall share of the 1,102 ranges from about 15 to about 17 per cent, which is enough to change whether it edges ahead of the table on the table's own rows. What does not move across seeds is the shape — full coverage, and much the same accuracy on seen and unseen contexts.</p>
     </div>
   </div>
@@ -288,12 +288,12 @@ canvas.curve{aspect-ratio:auto;height:270px}
 </section>
 
 <section id="limits" class="panel" role="tabpanel" aria-labelledby="tab-limits">
-  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; three times. Which of the three models in lessons 7, 8 and 9 can say anything at all about it?</p>
+  <p class="experiment-prompt"><strong>Before you try:</strong> The novel uses &ldquo;pillow&rdquo; three times. Which of the three models in lessons 8, 9 and 10 can say anything at all about it?</p>
   <div class="sec-head">
     <div class="sec-num">6</div>
     <div>
       <h2>Where the slot runs out</h2>
-      <p>The silence of lesson 7 has moved but it has not gone, and section 1 said where it went. A one-hot vector has a slot for each word in a fixed vocabulary and no way to represent anything else, so the boundary of what this network can even be shown was drawn before training began.</p>
+      <p>The silence of lesson 8 has moved but it has not gone, and section 1 said where it went. A one-hot vector has a slot for each word in a fixed vocabulary and no way to represent anything else, so the boundary of what this network can even be shown was drawn before training began.</p>
     </div>
   </div>
 
@@ -319,8 +319,8 @@ canvas.curve{aspect-ratio:auto;height:270px}
       <p class="msg" id="x-msg">Reports whether the word is inside the vocabulary, and what follows from the answer.</p>
     </div>
     <div class="stack">
-      <p>Take the coverage first. The novel uses 5,082 distinct words and this network holds 600 of them, the rarest being &ldquo;middle&rdquo; at sixteen sightings. Those 600 account for 84 per cent of the words in chapters one to nine, which is why so much can be trained on so few. In chapter ten, 403 of the 2,087 words — 326 distinct ones — fall outside the vocabulary. For each of them there is no input slot, so the word cannot be read; and no output slot, so it cannot be said. This is a harder silence than lesson 7's. A count table with no row for a context can still be given a new row when it meets one. Adding a word here means adding a column to the input, a row to the table and a unit to the output, and then training again.</p>
-      <p>Next, what the rows record. They were learned from one novel, so they carry that novel's usage in exactly the way lesson 8's profiles did. The proper names sit among the pronouns because the book is about a small cast, and the words this text happens to use interchangeably will look interchangeable here whether or not they are so in English. Nothing on this page knows English. It knows the first nine chapters of one translation of one book.</p>
+      <p>Take the coverage first. The novel uses 5,082 distinct words and this network holds 600 of them, the rarest being &ldquo;middle&rdquo; at sixteen sightings. Those 600 account for 84 per cent of the words in chapters one to nine, which is why so much can be trained on so few. In chapter ten, 403 of the 2,087 words — 326 distinct ones — fall outside the vocabulary. For each of them there is no input slot, so the word cannot be read; and no output slot, so it cannot be said. This is a harder silence than lesson 8's. A count table with no row for a context can still be given a new row when it meets one. Adding a word here means adding a column to the input, a row to the table and a unit to the output, and then training again.</p>
+      <p>Next, what the rows record. They were learned from one novel, so they carry that novel's usage in exactly the way lesson 9's profiles did. The proper names sit among the pronouns because the book is about a small cast, and the words this text happens to use interchangeably will look interchangeable here whether or not they are so in English. Nothing on this page knows English. It knows the first nine chapters of one translation of one book.</p>
       <p>Last, the honest scale note. The parts of this lesson that survive into a modern language model are the input convention and the learned table: words still enter as slots in a fixed vocabulary — usually pieces of words rather than whole ones — and the first weight matrix is still a table of vectors filled in by gradient descent. What does not survive is the rest of the architecture. A network of 30,456 weights reading two words of context is not a small version of a current model; it is the ancestor that showed the table could be learned at all. The distance between the two is measured in the amount of text, the length of context and a different arrangement of layers, and not one of those three is a detail.</p>
       <p class="cite">Yoshua Bengio, Réjean Ducharme, Pascal Vincent and Christian Jauvin, &ldquo;A Neural Probabilistic Language Model,&rdquo; <em>Journal of Machine Learning Research</em> 3 (2003), is the architecture on this page: a learned feature vector per word, a hidden layer over the concatenated vectors of the context, and a softmax over the vocabulary. Their argument was that learning the vectors and the predictor together would fight the sparseness that defeats a count table, and they measured it on corpora several hundred times the size of this one.</p>
     </div>
@@ -330,9 +330,9 @@ canvas.curve{aspect-ratio:auto;height:270px}
 
 <a class="nextup" href="../index.html">
   <div>
-    <p class="lab">Lesson 9 of 9</p>
+    <p class="lab">Lesson 10 of 10</p>
     <span class="ttl">Back to all lessons</span>
-    <p class="say">Nine machines, four ideas about where knowledge comes from: a labelled example, an expert with a rule, a number that arrives late, and the order of the words in a book. More are being written.</p>
+    <p class="say">Ten machines, four ideas about where knowledge comes from: a labelled example, an expert with a rule, a number that arrives late, and the order of the words in a book. And one lesson about what a machine knows before it has learned anything, because of the shape it was given. More are being written.</p>
   </div>
   <svg viewBox="0 0 168 118" aria-hidden="true">
     <rect x="12" y="14" width="60" height="90" fill="#EFEDE5"/>
@@ -368,14 +368,14 @@ canvas.curve{aspect-ratio:auto;height:270px}
 "use strict";
 
 /* ============================================================
-   Lesson 9. A word reaches the network as a one-hot vector: one slot
+   Lesson 10. A word reaches the network as a one-hot vector: one slot
    per vocabulary word, all zero but its own. Multiplying that by the
    first weight matrix therefore selects a single row, so the matrix is
    a table of word vectors — and its numbers are weights, moved by the
    same backpropagation as everything else. The network is Bengio's
    (2003): two context words in, a sigmoid hidden layer, a softmax over
-   the vocabulary out, trained on lesson 7's next-word question over
-   lesson 7 and 8's corpus. Nothing here is precomputed; the training
+   the vocabulary out, trained on lesson 8's next-word question over
+   lesson 8 and 9's corpus. Nothing here is precomputed; the training
    run happens in the page.
    ============================================================ */
 
@@ -389,8 +389,8 @@ const HIDDEN = 32;    /* hidden units, as in lesson 4 */
 const LR     = 0.1;
 const EPOCHS = 6;
 const MORE   = 3;     /* epochs the second button adds */
-const OFFSETS = [-2, -1, 1, 2];  /* the counted profile's window, as lesson 8 */
-const SMOOTH = 0.75;             /* damps the surprise of rare company, as lesson 8 */
+const OFFSETS = [-2, -1, 1, 2];  /* the counted profile's window, as lesson 9 */
+const SMOOTH = 0.75;             /* damps the surprise of rare company, as lesson 9 */
 const LN2 = Math.LN2;
 
 function seeded(seed){
@@ -527,11 +527,11 @@ function learnedNeighbours(net, a, k){
   return out.slice(0,k);
 }
 
-/* ---------------- lesson 8's counted profile, over these 600 words ----------------
-   Same recipe as lesson 8: how often each vocabulary word occupied each of
+/* ---------------- lesson 9's counted profile, over these 600 words ----------------
+   Same recipe as lesson 9: how often each vocabulary word occupied each of
    four positions around this one, each count turned into log(seen/expected)
    with negatives dropped, the row scaled to length one. Small enough here
-   to hold as one dense array rather than the sparse maps lesson 8 needs. */
+   to hold as one dense array rather than the sparse maps lesson 9 needs. */
 function countedProfiles(stream, index, V){
   const D = OFFSETS.length*V;
   const P = new Float64Array(V*D);
@@ -576,7 +576,7 @@ function countedNeighbours(prof, V, a, k){
   return out.slice(0,k);
 }
 
-/* ---------------- lesson 7's table, for the comparison in section 5 ---------------- */
+/* ---------------- lesson 8's table, for the comparison in section 5 ---------------- */
 function countTable(stream, k){
   const t = new Map();
   for(let i=k;i<stream.length;i++){
@@ -1026,7 +1026,7 @@ function paintCurve(p, hist){
       msg.textContent = "“" + w + "” occurs " + plural(c, "time")
         + " in chapters one to nine, which puts it among the 600. It has an input slot, a row in the table and an output unit, so the network can be shown it and can say it.";
     } else if(c === 0){
-      msg.textContent = "“" + w + "” never occurs in chapters one to nine. It has no slot, so there is no vector to hand the network and no unit that could ever produce it. Lesson 8 could at least report that the word was unknown; here it cannot be expressed at all.";
+      msg.textContent = "“" + w + "” never occurs in chapters one to nine. It has no slot, so there is no vector to hand the network and no unit that could ever produce it. Lesson 9 could at least report that the word was unknown; here it cannot be expressed at all.";
     } else {
       msg.textContent = "“" + w + "” occurs " + plural(c, "time")
         + ", too few for a place among the 600 commonest. The network was built before this word came up, and adding it now means a wider input, a longer table, a wider output and training the whole thing again.";
