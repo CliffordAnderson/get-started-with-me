@@ -200,7 +200,7 @@ canvas.bank{aspect-ratio:auto;height:112px}
   <div class="sec-head">
     <div class="sec-num">3</div>
     <div>
-      <h2>Keeping that it fired, not where</h2>
+      <h2>Keeping whether it fired, not where</h2>
       <p>The map still has a position for every answer, so a layer that reads the map position by position is back to caring where things are. The repair is to read it in a way that cannot tell. Take the largest value in the whole map and keep only that. The result says how strongly this detector responded anywhere in the picture, and says nothing whatever about where. This is <a class="term" href="../glossary.html#pooling">pooling</a>, and it is the step that buys the property lesson 2 lacked.</p>
     </div>
   </div>
@@ -379,7 +379,9 @@ canvas.bank{aspect-ratio:auto;height:112px}
 
       <p>Mirroring and inverting are not shifts, and nothing in this architecture was built to absorb them. Inverting is the worst of the three for the same reason it was in lesson 2: it flips the sign of every contribution, so a machine that was reliably right becomes reliably wrong. A convolutional network is not generally tolerant of change; it is tolerant of the one transformation that pooling was arranged to discard.</p>
 
-      <p>Then the cost of the repair itself. The maximum keeps whether a detector fired and drops where, so any question whose answer depends on where has been made unanswerable by construction. <em>Are the ears above the eyes or beside them</em> is such a question, and it happens to be the distinction these two classes are built on. This network gets that right because each filter looks at a patch big enough to contain the answer locally, not because the architecture preserved the arrangement. A single pooled layer taking the maximum over the entire picture is the most extreme version of this trade. Real networks pool over small windows and stack several layers, so they keep coarse position and discard fine position. This page does not demonstrate that compromise.</p>
+      <p>Then the cost of the repair itself. The maximum keeps whether a detector fired and drops where, so any question whose answer depends on where has been made unanswerable by construction. <em>Are the ears above the eyes or beside them</em> is such a question, and it happens to be the distinction these two classes are built on. This network gets that right because each filter looks at a patch big enough to contain the answer locally, not because the architecture preserved the arrangement.</p>
+
+      <p>A single pooled layer taking the maximum over the entire picture is the most extreme version of this trade. Real networks pool over small windows and stack several layers, so they keep coarse position and discard fine position. This page does not demonstrate that compromise.</p>
 
       <p>Last, the scale note. Four filters of nine weights on a twelve-by-twelve grid, trained on sixteen generated drawings, is not a small version of a modern vision model. The pictures are drawings this page generated, with the ears carrying all the information by construction, so a high score here is evidence about these drawings and not about photographs. What carries over is the pair of ideas and the order of their importance, which is what the previous section measured.</p>
     </div>
@@ -800,7 +802,7 @@ function setLamp(elm, cls){
   render();
 })();
 
-/* ==================== 3 · keeping that it fired ==================== */
+/* ==================== 3 · keeping whether it fired ==================== */
 
 (function pool(){
   const pp = Plot(el("m-pic"), [0,1,0,1]), pm = Plot(el("m-map"), [0,1,0,1]);
