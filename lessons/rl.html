@@ -145,7 +145,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
         <li><span>mean steps</span><span class="v">—</span></li>
         <li><span>mean reward</span><span class="v">—</span></li>
       </ul>
-      <p>Chance reaches the goal about a third of the time — much better than never, and worth being clear about why: the world is small and has two exits, so a walker that lives long enough falls out of one of them. It falls out of the wrong one twice as often, because the pit is nearer.</p>
+      <p>Chance reaches the goal about a third of the time, which is much better than never. The world is small and has two exits, so a walker that lives long enough falls out of one of them. It falls out of the wrong one twice as often, because the pit is nearer.</p>
       <p>The mean reward is the number to hold on to. It is negative. In this world, an agent that has learned nothing is worse than useless, and any method worth the name has to climb from below zero to <span class="nb">+1</span> while cutting sixty-odd steps to eight.</p>
       <p class="note">Every figure in this panel comes from the batch you just ran, in this browser, a moment ago. Run it twice and the numbers will move a little; that is what measuring a random process looks like.</p>
     </div>
@@ -159,7 +159,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="sec-num">3</div>
     <div>
       <h2>The value of standing somewhere</h2>
-      <p>Give every cell four numbers, one per direction: an estimate of what that move is ultimately worth — its <a class="term" href="../glossary.html#value-function">value</a>. All begin at zero: the agent starts with no opinion about anything. One rule changes them, and it is short enough to read in a breath.</p>
+      <p>Give every cell four numbers, one per direction: an estimate of what that move is ultimately worth — its <a class="term" href="../glossary.html#value-function">value</a>. All begin at zero: the agent starts with no opinion about anything. One rule changes them, and it is a single line.</p>
     </div>
   </div>
 
@@ -179,7 +179,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
     <div class="stack">
       <p class="formula">Q(s, a)  ←  r  +  γ · max Q(s′, a′)
 γ = 0.9</p>
-      <p>After moving in direction <span class="nb">a</span> from cell <span class="nb">s</span> and landing in <span class="nb">s′</span>, the agent sets its estimate for that move to whatever arrived, <span class="nb">r</span>, plus the best estimate it holds in the cell it landed in — discounted by <span class="nb">γ</span>, the <a class="term" href="../glossary.html#discount-factor">discount factor</a>, which makes a reward worth a little less for every step of distance. That fraction is the entire reason the agent prefers a short route; nothing in the rule mentions distance. The rule is called <a class="term" href="../glossary.html#q-learning">Q-learning</a>, after the letter conventionally given to the estimate.</p>
+      <p>After moving in direction <span class="nb">a</span> from cell <span class="nb">s</span> and landing in <span class="nb">s′</span>, the agent sets its estimate for that move to whatever arrived, <span class="nb">r</span>, plus the best estimate it holds in the cell it landed in. That second part is discounted by <span class="nb">γ</span>, the <a class="term" href="../glossary.html#discount-factor">discount factor</a>, which makes a reward worth a little less for every step of distance. That fraction is the entire reason the agent prefers a short route; nothing in the rule mentions distance. The rule is called <a class="term" href="../glossary.html#q-learning">Q-learning</a>, after the letter conventionally given to the estimate.</p>
       <div class="row">
         <button class="btn" id="l-one" type="button">One episode</button>
         <button class="btn" id="l-run" type="button">Run 50</button>
@@ -187,7 +187,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
       </div>
       <p class="readout" id="l-read">episode <b>0</b></p>
       <p class="msg" id="l-msg">Every estimate is zero. With nothing to prefer, it wanders.</p>
-      <p>Watch the brown arrive from the goal and spread backwards. It has to: the only cell whose value can be known outright is the one next to the reward, and every other cell has to wait for its neighbour to be worth something before it can be worth anything itself. This is what learning from a delayed reward looks like — a wave travelling backwards, one cell per visit, from the end of the journey to the beginning.</p>
+      <p>Watch the brown arrive from the goal and spread backwards. It has to: the only cell whose value can be known outright is the one next to the reward, and every other cell has to wait for its neighbour to be worth something before it can be worth anything itself. That is what learning from a delayed reward looks like: value spreading backwards, one cell per visit, from the end of the journey to the beginning.</p>
       <p>Let it settle and the numbers are exactly what the discount says they should be. The cell beside the goal is worth <span class="nb">1</span>; the next one back <span class="nb">0.9</span>; the one before that <span class="nb">0.81</span>. The start, eight moves out, settles at <span class="nb">0.478</span>, which is <span class="nb">0.9</span> multiplied by itself seven times. You can check the readout against the arithmetic.</p>
       <p class="note">The rule above uses a <a class="term" href="../glossary.html#learning-rate">learning rate</a> of 1, so it does not appear in the equation. That works here because the world is deterministic: the same move from the same cell always lands in the same place, so a new estimate can simply replace the old one. Where a move sometimes goes elsewhere, the agent has to average instead, and the rule grows the small step size that every other lesson on this site has needed.</p>
     </div>
@@ -225,9 +225,9 @@ canvas.chart{aspect-ratio:auto;height:230px}
     </div>
     <div class="stack">
       <p>Set <span class="nb">ε</span> to zero and the agent learned an optimal route in the measured batches, which is not what the argument for exploring would lead you to expect. The reason is worth stating plainly: a table of zeros has no best move, so an agent following its best move is choosing at random. Measured over two thousand runs, a purely greedy agent's first episode takes about sixty-five steps; the random walker in the last panel took about sixty-six. Until it knows something, greed and chance are the same <a class="term" href="../glossary.html#policy">policy</a>.</p>
-      <p>After that the coin only costs. The measured averages tend to fall below the result at <span class="nb">ε = 0</span>, and the reason is the pit: the learned route passes directly over it, so a random move at the wrong moment does not merely waste a step but throws away the whole episode. At <span class="nb">ε = 0.1</span> the agent falls in about one episode in a hundred; at <span class="nb">ε = 0.5</span>, one in fifteen.</p>
-      <p>So exploring is a tax, and in a small world you can see all of, it is a tax with no return. That conclusion is correct here and badly wrong in general, and the next panel is where it breaks.</p>
-      <p class="note">This lesson keeps <span class="nb">ε</span> fixed. One common strategy lowers it as the agent learns, so that it explores while ignorant and exploits once it is not — which is the same instinct that makes the tax look worth paying in the panel after this one.</p>
+      <p>After that the coin only costs. The measured averages tend to fall below the result at <span class="nb">ε = 0</span>, and the reason is the pit. The learned route passes directly over it, so a random move at the wrong moment does not merely waste a step. It throws away the whole episode. At <span class="nb">ε = 0.1</span> the agent falls in about one episode in a hundred; at <span class="nb">ε = 0.5</span>, one in fifteen.</p>
+      <p>So exploring costs something, and in a small world you can see all of, it buys nothing back. That conclusion is correct here and badly wrong in general, and the next panel is where it breaks.</p>
+      <p class="note">This lesson keeps <span class="nb">ε</span> fixed. One common strategy lowers it as the agent learns, so that the agent explores while ignorant and exploits once it is not. That is the same instinct that makes the cost look worth paying in the panel after this one.</p>
     </div>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Random exploration has a cost in this world; its benefit depends on what remains undiscovered.</p>
@@ -284,7 +284,7 @@ canvas.chart{aspect-ratio:auto;height:230px}
 
   <div class="split" style="margin-top:2.2rem">
     <div>
-      <p>This is the shape of the problem. An agent learning from reward can only be told about the parts of the world it walks into, and what it walks into is decided by what it already believes. It is not wrong about the route: eight moves to <span class="nb">+1</span> is a true and hard-won fact, and it will defend that fact for ever by never checking. Nothing in the arithmetic distinguishes a world it has understood from a world it has merely stopped looking at.</p>
+      <p>This is the shape of the problem. An agent learning from reward can only be told about the parts of the world it walks into, and what it walks into is decided by what it already believes. It is not wrong about the route: eight moves to <span class="nb">+1</span> is true, and it was hard to find. It simply never checks whether anything better exists. Nothing in the arithmetic distinguishes a world it has understood from a world it has merely stopped looking at.</p>
       <p>The other half of the warning is the reward itself. The agent has no opinion about what is worth doing; it has your number, and it will pursue exactly what you wrote down rather than what you meant. Everything this lesson's machine knows about the point of its existence is <span class="nb">+1</span> in one corner and <span class="nb">−1</span> in another, and it is faithful to that specification in a way that is easy to mistake for understanding.</p>
     </div>
     <div>

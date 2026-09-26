@@ -111,7 +111,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="sec-num">2</div>
     <div>
       <h2>What it learns is a picture too</h2>
-      <p>The learning rule is unchanged from the last lesson. Show it a <a class="term" href="../glossary.html#label">labelled</a> example; if the answer is right, do nothing. If it answered cat when the answer was dog, add that picture's 144 numbers to the 144 weights. If it answered dog when the answer was cat, subtract them. Because the weights are added and subtracted picture-shaped, they stay picture-shaped — so you can fold the list of 144 weights back into a grid and simply look at it.</p>
+      <p>The learning rule is unchanged from the last lesson. Show it a <a class="term" href="../glossary.html#label">labelled</a> example; if the answer is right, do nothing. If it answered cat when the answer was dog, add that picture's 144 numbers to the 144 weights. If it answered dog when the answer was cat, subtract them. The weights are added and subtracted a whole picture at a time, so they keep the shape of a picture. Fold the list of 144 weights back into a grid and you can look at it.</p>
     </div>
   </div>
 
@@ -162,7 +162,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
 
   <div class="split" style="margin-top:2.2rem">
     <p class="note">Set the display to the average dog minus the average cat and you get the same picture drawn more smoothly: bright at the top corners where cat ears go, bright along the flanks where dog ears hang. The rule gets close to that in four corrections, because it stops the instant it gets everything right. It is not looking for the best <a class="term" href="../glossary.html#template">template</a>. It is looking for any weights that make no mistakes, and the first ones it stumbles into are the ones it keeps.</p>
-    <p class="note">Notice that before the weight image starts to look like understanding. Both pictures say the same thing — <em>ink up here counts against, ink at the sides counts for</em> — and that one comparison of two regions is the machine's entire theory of animals.</p>
+    <p class="note">Keep that in mind before the weight image starts to look like understanding. Both pictures say the same thing — <em>ink up here counts against, ink at the sides counts for</em> — and that one comparison of two regions is the machine's entire theory of animals.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> The learned template records how pixels contribute to the classification.</p>
 </section>
@@ -220,7 +220,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
     <div class="sec-num">4</div>
     <div>
       <h2>Pictures it has never seen</h2>
-      <p>Getting the training pictures right is no achievement on its own — sixteen points in a 144-dimensional space can be split by a plane almost however they are labelled, so a machine with this many weights can memorise nonsense. The question is whether the template transfers. Draw fresh animals it has never been shown and see.</p>
+      <p>Getting the training pictures right is no achievement on its own. Sixteen points in a 144-dimensional space can be split by a plane almost however they are labelled, so a machine with this many weights can memorise nonsense. The question is whether the template transfers. Draw fresh animals it has never been shown and see.</p>
     </div>
   </div>
 
@@ -291,7 +291,7 @@ canvas.bar2{aspect-ratio:auto;height:52px}
   <div class="split" style="margin-top:2.2rem">
     <div>
       <p>Three pixels down and the score falls to what a coin could match. Invert the picture and it does worse than a coin — reliably wrong, because every contribution changes sign at once. Mirroring costs almost nothing, because these drawings are left-right symmetric. Exposure costs nothing at all, because scaling every pixel scales the total without moving it across zero. The machine is not fragile in general. It is fragile in exactly the ways its one template is.</p>
-      <p>The tempting fix is to train on shifted copies too. It half works, and it shows the real shape of the problem: the template blurs to cover every position it was shown, the sharp evidence smears out, and accuracy on centred pictures drops to pay for it. One template is being asked to be several. No setting of 144 weights says <em>pointed ears, wherever they are</em> — that is not a statement about a fixed list of pixels.</p>
+      <p>One obvious fix is to train on shifted copies too. It half works, and it shows what the problem really is: the template blurs to cover every position it was shown, the sharp evidence smears out, and accuracy on centred pictures drops to pay for it. One template is being asked to be several. No setting of 144 weights says <em>pointed ears, wherever they are</em> — that is not a statement about a fixed list of pixels.</p>
     </div>
     <div>
       <p>The next lesson walks into this same wall from the other side. Here it is a shortage of expressive power, found by dragging a slider until the score falls over. There it is the same shortage in a function of two inputs and four cases, small enough that the impossibility can be proved in four lines. In both lessons the limit belongs to the architecture, not the training, and no amount of correction reaches past it.</p>

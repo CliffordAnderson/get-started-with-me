@@ -77,7 +77,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
     <div class="sec-num">1</div>
     <div>
       <h2>A dial instead of a switch</h2>
-      <p>To walk downhill you need a hill. The <a class="term" href="../glossary.html#threshold">threshold</a> unit of the first three lessons does not give you one: its answer is 0 or 1 and nothing in between, so the error it makes sits on a flat step and stays there however you nudge the weights, right up to the moment it jumps. Replace the switch with a dial — a <a class="term" href="../glossary.html#sigmoid">sigmoid</a>, which slides smoothly from 0 to 1 — and the same error becomes a surface with a slope you can read off.</p>
+      <p>To walk downhill you need a hill. The <a class="term" href="../glossary.html#threshold">threshold</a> unit of the first three lessons does not give you one. Its answer is 0 or 1 and nothing in between, so the error sits on a flat step and stays there however you nudge the weights, right up to the moment it jumps. Replace the switch with a dial — a <a class="term" href="../glossary.html#sigmoid">sigmoid</a>, which slides smoothly from 0 to 1 — and the same error becomes a surface with a slope you can measure.</p>
       <p>The unit below has two inputs and is being asked for AND. Its second weight and its <a class="term" href="../glossary.html#bias">bias</a> are held still; you can move only the first. Watch the error as you do.</p>
     </div>
   </div>
@@ -125,7 +125,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">The staircase is not a poor slope; it is no slope at all. On every tread the derivative is exactly zero, so a rule that asks <em>which way is down</em> is told nothing, and at the two risers it is undefined. The <a class="term" href="../glossary.html#perceptron">perceptron</a> rule sidesteps this by not asking — it moves the weights by a fixed recipe whenever the answer comes out wrong — but that recipe needs to know which unit was wrong, and in a network with a <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> nobody tells the hidden units what they should have said.</p>
+    <p class="note">The staircase is not a poor slope; it is no slope at all. On every tread the derivative is exactly zero, so a rule that asks <em>which way is down</em> is told nothing, and at the two risers it is undefined. The <a class="term" href="../glossary.html#perceptron">perceptron</a> rule sidesteps this by not asking. It moves the weights by a fixed recipe whenever the answer comes out wrong. But that recipe needs to know which unit was wrong, and in a network with a <a class="term" href="../glossary.html#hidden-layer">hidden layer</a> nobody tells the hidden units what they should have said.</p>
     <p class="note">The sigmoid's valley has its lowest point at w₁ = 1.00, the middle of the flat tread where the step unit gets all four cases right. The smooth version is not solving a different problem; it is solving the same one in a way that leaves a trail to follow. Its error there is 0.230, not zero — a sigmoid never quite reaches 0 or 1, so a correct answer is always a confident approximation, never an exact one.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> A smooth activation permits local slope calculations; a threshold does not.</p>
@@ -224,7 +224,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">The second line does the work, and it is only the <a class="term" href="../glossary.html#chain-rule">chain rule</a> written out. A hidden unit's blame is the output's blame, times the weight its answer travelled along, times how far its own output would move if its input moved — <em>h</em>(1 − <em>h</em>), which is nearly zero once the unit is saturated near 0 or 1. A confident hidden unit is a deaf one. That factor is where the <a class="term" href="../glossary.html#step-function">step function</a>'s flatness went: not abolished, only softened from exactly zero to merely small.</p>
+    <p class="note">The second line does the work, and it is only the <a class="term" href="../glossary.html#chain-rule">chain rule</a> written out. A hidden unit's blame is the output's blame, times the weight its answer travelled along, times how far its own output would move if its input moved. That last factor is <em>h</em>(1 − <em>h</em>), which is nearly zero once the unit is saturated near 0 or 1, so a saturated hidden unit barely responds to correction. It is also what became of the <a class="term" href="../glossary.html#step-function">step function</a>'s flatness: not removed, only softened from exactly zero to merely small.</p>
     <p class="note">Nothing above is specific to two layers. The same two lines applied again reach a third layer, and again a fourth, each one multiplying in one more weight and one more slope. That is the whole method, and also its long-running weakness: a product of many small factors is a very small number, and a hidden unit twenty layers back can be told almost nothing about what it did wrong.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> The chain rule distributes the error’s derivatives through the connecting weights and activations.</p>
@@ -236,7 +236,7 @@ canvas.hist{aspect-ratio:auto;height:132px}
     <div class="sec-num">4</div>
     <div>
       <h2>Finding the fold</h2>
-      <p>Put the two passes in a loop over all four cases and let it run. The last lesson set the hidden weights by hand so that both units counted how many inputs were on, one firing at a count of one, the other only at two — which folded the awkward pair onto a single point. Nobody is going to tell this network about that. Watch where it puts the four cases instead.</p>
+      <p>Put the two passes in a loop over all four cases and let it run. The last lesson set the hidden weights by hand. Both units counted how many inputs were on, one firing at a count of one, the other only at two, and that folded the awkward pair onto a single point. Nobody is going to tell this network about that. Watch where it puts the four cases instead.</p>
     </div>
   </div>
 
@@ -277,7 +277,7 @@ y = σ(0.00·h₁ + 0.00·h₂ + 0.00)</p>
   </div>
 
   <div class="split" style="margin-top:2.2rem">
-    <p class="note">Watch the trace, not the <a class="term" href="../glossary.html#epoch">epoch</a> counter. A run usually sheds a little error early, then hangs for a long stretch — moving so slowly it looks finished — then drops steeply near the end. It is tempting to say the flat stretch is the two hidden units sitting identical until the fold appears, but the weights show otherwise: they have drifted well apart by then, and the stall is something less tidy. No part of the rule schedules that shape. It falls out of the surface the weights are walking on.</p>
+    <p class="note">Watch the trace, not the <a class="term" href="../glossary.html#epoch">epoch</a> counter. A run usually sheds a little error early, then hangs for a long stretch — moving so slowly it looks finished — then drops steeply near the end. It is tempting to say the flat stretch is the two hidden units sitting identical until the fold appears, but the weights show otherwise: they have drifted well apart by then, and the stall has some other cause. No part of the rule schedules that shape. It falls out of the surface the weights are walking on.</p>
     <p class="note">Train it a few times and the solutions will differ. Sometimes it recovers the neat arrangement from the last lesson, the two awkward cases landing on one point. Often it finds some other corner of hidden space where a line happens to work, the four cases spread out, no tidy interpretation available. Both compute XOR. Only one is the answer anybody would have written down, and the method has no preference between them.</p>
   </div>
   <p class="takeaway"><strong>Takeaway:</strong> Different parameters and internal representations can solve the same task.</p>

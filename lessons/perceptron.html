@@ -61,7 +61,7 @@
     <div class="sec-num">1</div>
     <div>
       <h2>What it computes</h2>
-      <p>Give the unit a list of numbers. It multiplies each by its own <a class="term" href="../glossary.html#weight">weight</a>, adds the results, adds one more number that belongs to no input — the <a class="term" href="../glossary.html#bias">bias</a> — and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts, and in which direction. The bias says how much evidence the unit needs before it fires.</p>
+      <p>Give the unit a list of numbers. It multiplies each by its own <a class="term" href="../glossary.html#weight">weight</a> and adds the results. Then it adds one more number that belongs to no input, the <a class="term" href="../glossary.html#bias">bias</a>, and fires if the total is at least zero. That is the whole machine. A weight says how much an input counts, and in which direction. The bias says how much evidence the unit needs before it fires.</p>
     </div>
   </div>
 
@@ -197,7 +197,7 @@
 
   <div class="split">
     <div>
-      <p>What the rule cannot do is tell you which situation you are in. Run it on classes no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. Nothing in the procedure distinguishes not yet from never. Keep that distinction in mind — a model that cannot express something, an optimizer that keeps trying anyway. It returns at every scale of this subject.</p>
+      <p>What the rule cannot do is tell you which situation you are in. Run it on classes no line can separate and it behaves exactly the same way: correcting, overshooting, correcting back, forever. Nothing in the procedure distinguishes not yet from never. That distinction matters: a model that cannot express something, and a rule that keeps trying anyway. It comes back at every scale of this subject.</p>
       <p>Keep the unit separate from the machine, too. What you have been operating is one threshold unit. Rosenblatt's perceptron was larger: a grid of input cells, a middle bank of feature detectors wired to them at random and never adjusted, and a final layer of threshold units whose weights were the only part that learned.</p>
       <p>The next lesson keeps the single unit and gives it a task nearer to what that machine was built for: a small grid of <a class="term" href="../glossary.html#pixel">pixels</a> to sort into two kinds of animal. One weight per pixel, the same rule, and a limit that turns out to be about where things sit in the frame. The lesson after that shrinks the same limit down to a function of two inputs, where it can be proved rather than demonstrated.</p>
     </div>

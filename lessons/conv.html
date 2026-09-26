@@ -59,7 +59,7 @@ canvas.bank{aspect-ratio:auto;height:112px}
     <div class="hero-intro">
       <p class="kicker">lesson 5 · convolution</p>
       <h1>Looking for the same thing everywhere</h1>
-      <p class="lede">Lesson 2 ended with a complaint: no setting of 144 <a class="term" href="../glossary.html#weight">weights</a> says <em>pointed ears, wherever they are</em>. A weight belongs to a <a class="term" href="../glossary.html#pixel">pixel</a> position, so the evidence it carries is evidence about that position, and moving the animal two pixels took the picture off the template. This lesson builds the standard repair. It has two parts, and the famous one turns out not to be the part that does the work.</p>
+      <p class="lede">Lesson 2 ended with a problem: no setting of 144 <a class="term" href="../glossary.html#weight">weights</a> says <em>pointed ears, wherever they are</em>. A weight belongs to a <a class="term" href="../glossary.html#pixel">pixel</a> position, so the evidence it carries is evidence about that position, and moving the animal two pixels took the picture off the template. This lesson builds the standard repair. It has two parts, and the famous one turns out not to be the part that does the work.</p>
     </div>
     <div class="hero-meta">
       <p class="readout" id="hero-read">strongest response at row <b>—</b>, column <b>—</b></p>
@@ -256,7 +256,7 @@ canvas.bank{aspect-ratio:auto;height:112px}
     <div class="sec-num">4</div>
     <div>
       <h2>Filling the filters in</h2>
-      <p>The four filters in the previous sections were set by hand. They do not have to be. A filter is a short list of weights, the maximum is a function of those weights, and the verdict is a function of the maximum, so there is a chain from the error back to every one of the nine numbers — which is exactly what lesson 4 built. <a class="term" href="../glossary.html#backpropagation">Backpropagation</a> runs through a shared filter the same way it runs through anything else, with one difference: a weight used at 100 positions collects blame from all 100, so the corrections are added up before the weight moves.</p>
+      <p>The four filters in the previous sections were set by hand. They do not have to be. A filter is a short list of weights, the maximum is a function of those weights, and the verdict is a function of the maximum. So there is a chain from the error back to every one of the nine numbers, which is exactly what lesson 4 built. <a class="term" href="../glossary.html#backpropagation">Backpropagation</a> runs through a shared filter the same way it runs through anything else, with one difference: a weight used at 100 positions collects blame from all 100, so the corrections are added up before the weight moves.</p>
     </div>
   </div>
 
@@ -379,7 +379,7 @@ canvas.bank{aspect-ratio:auto;height:112px}
 
       <p>Mirroring and inverting are not shifts, and nothing in this architecture was built to absorb them. Inverting is the worst of the three for the same reason it was in lesson 2: it flips the sign of every contribution, so a machine that was reliably right becomes reliably wrong. A convolutional network is not generally tolerant of change; it is tolerant of the one transformation that pooling was arranged to discard.</p>
 
-      <p>Then the cost of the repair itself. The maximum keeps whether a detector fired and drops where, so any question whose answer depends on where has been made unanswerable by construction. <em>Are the ears above the eyes or beside them</em> is such a question, and it happens to be the distinction these two classes are built on. This network gets that right because each filter looks at a patch big enough to contain the answer locally, not because the architecture preserved the arrangement. A single pooled layer taking the maximum over the entire picture is the most extreme version of the trade; real networks pool over small windows and stack several layers, keeping coarse position while discarding fine position, which is a compromise this page does not demonstrate.</p>
+      <p>Then the cost of the repair itself. The maximum keeps whether a detector fired and drops where, so any question whose answer depends on where has been made unanswerable by construction. <em>Are the ears above the eyes or beside them</em> is such a question, and it happens to be the distinction these two classes are built on. This network gets that right because each filter looks at a patch big enough to contain the answer locally, not because the architecture preserved the arrangement. A single pooled layer taking the maximum over the entire picture is the most extreme version of this trade. Real networks pool over small windows and stack several layers, so they keep coarse position and discard fine position. This page does not demonstrate that compromise.</p>
 
       <p>Last, the scale note. Four filters of nine weights on a twelve-by-twelve grid, trained on sixteen generated drawings, is not a small version of a modern vision model. The pictures are drawings this page generated, with the ears carrying all the information by construction, so a high score here is evidence about these drawings and not about photographs. What carries over is the pair of ideas and the order of their importance, which is what the previous section measured.</p>
     </div>
